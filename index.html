@@ -587,7 +587,6 @@
             font-size: 1.2em;
         }
 
-        /* Глобальна таблиця лідерів */
         .global-leaderboard {
             position: fixed;
             top: 20px;
@@ -861,7 +860,6 @@
             50% { transform: scale(1.02); }
         }
 
-        /* Сповіщення зліва */
         .notifications-panel {
             position: fixed;
             top: 50%;
@@ -1199,6 +1197,16 @@
             background: #D1FAE5;
             color: #065F46;
         }
+
+        /* Кнопка старту для хоста */
+        .start-game-btn {
+            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+            color: white;
+            font-size: 1.2em;
+            padding: 15px 40px;
+            margin-top: 15px;
+            animation: pulse 1.5s infinite;
+        }
     </style>
 </head>
 <body>
@@ -1343,6 +1351,8 @@
                 <div class="multiplayer-status status-waiting" id="waiting-status">
                     ⏳ Очікуємо суперника...
                 </div>
+                <!-- Кнопка старту з'явиться тут -->
+                <div id="start-game-container"></div>
                 <button class="control-btn btn-secondary" onclick="closeMultiplayerMenu()">❌ Скасувати</button>
             </div>
 
@@ -1643,6 +1653,9 @@
             document.getElementById('room-created').classList.add('hidden');
             document.getElementById('joining-room').classList.add('hidden');
             
+            // Очистити кнопку старту
+            document.getElementById('start-game-container').innerHTML = '';
+            
             document.querySelectorAll('.room-input input').forEach(input => input.value = '');
         }
 
@@ -1704,9 +1717,10 @@
 
             onDisconnect(roomRef).remove();
 
+            // СЛУХАЧ ЗМІН - ВИПРАВЛЕНО!
             unsubscribeRoom = onValue(roomRef, (snapshot) => {
                 const data = snapshot.val();
-                console.log("Room data:", data);
+                console.log("Host received data:", data);
                 
                 if (!data) {
                     showNotification('Кімната закрита', 'Суперник вийшов', 'warning');
@@ -1714,26 +1728,36 @@
                     return;
                 }
 
-                if (data.guest && !gameState.gameStarted && data.status === 'waiting') {
+                // ГІСТЬ ПРИЄДНАВСЯ - показати кнопку старту
+                if (data.guest && data.status === 'waiting') {
                     gameState.opponentName = data.guest;
-                    document.getElementById('waiting-status').className = 'multiplayer-status status-ready';
-                    document.getElementById('waiting-status').innerHTML = `✅ ${data.guest} приєднався!`;
                     
-                    setTimeout(() => {
-                        startCountdownAndGame();
-                    }, 1000);
-                }
-
-                // Реванш - обидва погодились
-                if (data.status === 'rematch' && data.rematchHost && data.rematchGuest) {
-                    if (!gameState.isRunning) {
-                        showNotification('Реванш!', 'Суперник погодився. Починаємо!', 'success');
-                        startCountdownAndGame();
+                    // Оновити статус
+                    const statusEl = document.getElementById('waiting-status');
+                    statusEl.className = 'multiplayer-status status-connected';
+                    statusEl.innerHTML = `✅ ${data.guest} приєднався!`;
+                    
+                    // Показати кнопку старту гри (тільки для хоста!)
+                    const startContainer = document.getElementById('start-game-container');
+                    if (!startContainer.innerHTML.includes('Почати гру')) {
+                        startContainer.innerHTML = `
+                            <button class="control-btn start-game-btn" onclick="hostStartGame()">
+                                🎮 Почати гру зараз!
+                            </button>
+                        `;
+                        showNotification('Гравець приєднався!', `${data.guest} готовий до гри. Натисніть "Почати гру"!`, 'success');
                     }
                 }
 
+                // СТАТУС PLAYING - почати гру
+                if (data.status === 'playing' && !gameState.gameStarted) {
+                    console.log("Host: status changed to playing, starting game...");
+                    startCountdownAndGame();
+                }
+
+                // Оновлення рахунку під час гри
                 if (data.status === 'playing' && gameState.isRunning) {
-                    const opponentScore = gameState.isHost ? data.guestScore : data.hostScore;
+                    const opponentScore = data.guestScore || 0;
                     updateOpponentDisplay(opponentScore);
                     
                     if (opponentScore >= gameState.gameTarget) {
@@ -1741,11 +1765,21 @@
                     }
                 }
 
+                // Реванш
+                if (data.status === 'rematch' && data.rematchHost && data.rematchGuest) {
+                    if (!gameState.isRunning) {
+                        showNotification('Реванш!', 'Суперник погодився. Починаємо!', 'success');
+                        startCountdownAndGame();
+                    }
+                }
+
+                // Гра закінчилась
                 if (data.status === 'finished' && data.winner && data.winner !== gameState.playerId && gameState.isRunning) {
                     endMultiplayerGame(false);
                 }
             });
 
+            // Таймаут 5 хвилин
             setTimeout(() => {
                 if (!gameState.isRunning && roomRef) {
                     const { remove } = window.firebaseRefs;
@@ -1754,6 +1788,26 @@
                     closeMultiplayerMenu();
                 }
             }, 300000);
+        }
+
+        // НОВА ФУНКЦІЯ - Хост натискає "Почати гру"
+        async function hostStartGame() {
+            if (!roomRef) return;
+            
+            const { update, serverTimestamp } = window.firebaseRefs;
+            
+            console.log("Host starting game...");
+            
+            // Змінити статус на playing - це запустить гру для обох!
+            await update(roomRef, {
+                status: 'playing',
+                startTime: serverTimestamp()
+            });
+            
+            // Приховати кнопку
+            document.getElementById('start-game-container').innerHTML = '';
+            
+            showNotification('Старт!', 'Гра починається через 3 секунди...', 'success');
         }
 
         function startCountdownAndGame() {
@@ -1806,16 +1860,6 @@
             document.getElementById('leave-btn').classList.remove('hidden');
             
             updateConnectionStatus('online');
-            
-            const { update, serverTimestamp } = window.firebaseRefs;
-            update(roomRef, {
-                status: 'playing',
-                startTime: serverTimestamp(),
-                hostScore: 0,
-                guestScore: 0,
-                rematchHost: false,
-                rematchGuest: false
-            });
 
             document.getElementById('game-container').innerHTML = `
                 <div class="typing-indicator" id="typing-indicator">
@@ -1895,15 +1939,17 @@
 
                 gameState.opponentName = data.host;
                 
+                // Приєднатися як гість
                 await update(roomRef, {
                     guest: playerName,
-                    guestReady: true,
-                    status: 'ready'
+                    guestReady: true
+                    // НЕ змінюємо статус! Хост має натиснути "Почати гру"
                 });
 
+                // СЛУХАЧ ЗМІН - ВИПРАВЛЕНО!
                 unsubscribeRoom = onValue(roomRef, (snapshot) => {
                     const data = snapshot.val();
-                    console.log("Guest data:", data);
+                    console.log("Guest received data:", data);
                     
                     if (!data) {
                         showNotification('Кімната закрита', 'Хост вийшов', 'warning');
@@ -1911,9 +1957,21 @@
                         return;
                     }
 
+                    // ХОСТ ЗАПУСТИВ ГРУ (status === 'playing')
                     if (data.status === 'playing' && !gameState.gameStarted) {
+                        console.log("Guest: host started game!");
                         gameState.opponentName = data.host;
                         startCountdownAndGame();
+                    }
+
+                    // Оновлення рахунку
+                    if (data.status === 'playing' && gameState.isRunning) {
+                        const opponentScore = data.hostScore || 0;
+                        updateOpponentDisplay(opponentScore);
+                        
+                        if (opponentScore >= gameState.gameTarget) {
+                            endMultiplayerGame(false);
+                        }
                     }
 
                     // Реванш
@@ -1924,25 +1982,21 @@
                         }
                     }
 
-                    if (data.status === 'playing' && gameState.isRunning) {
-                        const opponentScore = gameState.isHost ? data.guestScore : data.hostScore;
-                        updateOpponentDisplay(opponentScore);
-                        
-                        if (opponentScore >= gameState.gameTarget) {
-                            endMultiplayerGame(false);
-                        }
-                    }
-
+                    // Гра закінчилась
                     if (data.status === 'finished' && data.winner && data.winner !== gameState.playerId && gameState.isRunning) {
                         endMultiplayerGame(false);
                     }
                 });
 
+                // Показати що ми готові чекати
                 document.getElementById('joining-room').innerHTML = `
                     <div class="multiplayer-status status-ready">
-                        ✅ Приєднано! Очікуємо старт гри...
+                        ✅ Приєднано!<br>
+                        Очікуємо старт від хоста...
                     </div>
                 `;
+                
+                showNotification('Успішно!', `Ви приєдналися до ${data.host}. Очікуйте старту гри...`, 'success');
 
             } catch (error) {
                 console.error(error);
