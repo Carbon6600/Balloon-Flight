@@ -2,49 +2,1418 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Математичні кульки</title>
-    <link rel="stylesheet" href="styles/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Математичні Кульки - Пригоди в Небі</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #FFE4B5 100%);
+            transition: background 2s ease;
+            position: relative;
+        }
+
+        /* Адаптивний контейнер гри */
+        .game-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            padding: 10px;
+            max-width: 100vw;
+        }
+
+        /* Заголовок */
+        h1 {
+            color: #2D3748;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 900;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.5), 0 0 20px rgba(255,255,255,0.8);
+            margin-bottom: 10px;
+            text-align: center;
+            animation: titleBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes titleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* Панель статусу */
+        .status-panel {
+            display: flex;
+            gap: clamp(10px, 2vw, 20px);
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-weight: 700;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lives { color: #E53E3E; font-size: 1.2em; }
+        .score-display { color: #38A169; }
+        .level-display { color: #3182CE; }
+
+        /* Ігрове поле - адаптивне */
+        #game-container {
+            position: relative;
+            width: min(90vw, 450px);
+            height: min(50vh, 400px);
+            min-height: 300px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0.2));
+            border: 3px solid rgba(255,255,255,0.9);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.5);
+            margin-bottom: 10px;
+        }
+
+        /* Кульки */
+        .balloon {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            z-index: 5;
+            will-change: transform, top, left;
+        }
+
+        .balloon-body {
+            width: clamp(50px, 12vw, 60px);
+            height: clamp(60px, 14vw, 70px);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .balloon:hover .balloon-body, .balloon:active .balloon-body {
+            transform: scale(1.1);
+        }
+
+        .balloon-body::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 15px;
+            height: 20px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            transform: rotate(-20deg);
+        }
+
+        .balloon-string {
+            width: 2px;
+            height: 20px;
+            background: rgba(255,255,255,0.6);
+            margin-top: -3px;
+        }
+
+        .balloon-normal .balloon-body { background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); }
+        .balloon-golden .balloon-body { 
+            background: linear-gradient(135deg, #F6D365 0%, #FDA085 100%);
+            animation: goldenGlow 2s ease-in-out infinite;
+        }
+        .balloon-heart .balloon-body { 
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes goldenGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(246, 211, 101, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(246, 211, 101, 0.9); }
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .balloon.pop {
+            animation: popEffect 0.3s ease-out forwards;
+        }
+
+        @keyframes popEffect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        /* Індикатор набору */
+        .typing-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 215, 0, 0.95);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: #744210;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 20;
+            animation: typingPulse 1s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        .typing-indicator.active { display: block; }
+
+        @keyframes typingPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        /* Кнопки відповідей */
+        .answers-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(8px, 2vw, 15px);
+            margin-bottom: 10px;
+        }
+
+        .answer-btn {
+            width: clamp(70px, 18vw, 100px);
+            height: clamp(45px, 10vw, 60px);
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: 900;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .answer-btn:hover, .answer-btn:active {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.6);
+        }
+
+        .answer-btn.hint {
+            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+            animation: hintPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+            50% { box-shadow: 0 0 0 8px rgba(72, 187, 120, 0); }
+        }
+
+        /* Контроли */
+        .controls {
+            display: flex;
+            gap: clamp(8px, 2vw, 15px);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: clamp(8px, 2vw, 12px) clamp(15px, 3vw, 25px);
+            font-size: clamp(0.85rem, 2.2vw, 1rem);
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-start { background: linear-gradient(135deg, #48BB78 0%, #38A169 100%); color: white; }
+        .btn-pause { background: linear-gradient(135deg, #ED8936 0%, #DD6B20 100%); color: white; }
+        .btn-hint { background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%); color: white; }
+        .btn-sound { background: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%); color: white; }
+
+        .control-btn:hover, .control-btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Живий світ - фон */
+        .world {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Сонце */
+        .sun {
+            position: absolute;
+            top: 3%;
+            right: 5%;
+            width: clamp(60px, 15vw, 100px);
+            height: clamp(60px, 15vw, 100px);
+            background: radial-gradient(circle at 30% 30%, #FFF700, #FFD700);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            cursor: pointer;
+            animation: sunPulse 4s ease-in-out infinite;
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .sun::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140%;
+            height: 140%;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(255, 215, 0, 0.3) 10deg, transparent 20deg,
+                transparent 45deg, rgba(255, 215, 0, 0.3) 55deg, transparent 65deg,
+                transparent 90deg, rgba(255, 215, 0, 0.3) 100deg, transparent 110deg,
+                transparent 135deg, rgba(255, 215, 0, 0.3) 145deg, transparent 155deg,
+                transparent 180deg, rgba(255, 215, 0, 0.3) 190deg, transparent 200deg,
+                transparent 225deg, rgba(255, 215, 0, 0.3) 235deg, transparent 245deg,
+                transparent 270deg, rgba(255, 215, 0, 0.3) 280deg, transparent 290deg,
+                transparent 315deg, rgba(255, 215, 0, 0.3) 325deg, transparent 335deg);
+            border-radius: 50%;
+            animation: sunRays 20s linear infinite;
+        }
+
+        @keyframes sunPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes sunRays {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Хмари */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 100px;
+            opacity: 0.8;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 100px;
+        }
+
+        .cloud1 {
+            width: 100px;
+            height: 40px;
+            top: 10%;
+            left: -150px;
+            animation: floatCloud 30s linear infinite;
+        }
+        .cloud1::before { width: 50px; height: 50px; top: -25px; left: 10px; }
+        .cloud1::after { width: 40px; height: 40px; top: -15px; left: 50px; }
+
+        .cloud2 {
+            width: 80px;
+            height: 35px;
+            top: 20%;
+            left: -120px;
+            animation: floatCloud 40s linear infinite;
+            animation-delay: 10s;
+        }
+        .cloud2::before { width: 40px; height: 40px; top: -20px; left: 15px; }
+
+        .cloud3 {
+            width: 120px;
+            height: 45px;
+            top: 8%;
+            left: -180px;
+            animation: floatCloud 35s linear infinite;
+            animation-delay: 20s;
+        }
+        .cloud3::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+        .cloud3::after { width: 50px; height: 50px; top: -20px; left: 60px; }
+
+        @keyframes floatCloud {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        /* Пташки - різні типи польотів */
+        .bird {
+            position: absolute;
+            z-index: 5;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+            font-size: clamp(20px, 5vw, 30px);
+        }
+
+        /* Одиночна пташка - плавний політ */
+        .bird-solo {
+            top: 15%;
+            animation: birdSolo 25s linear infinite;
+        }
+
+        @keyframes birdSolo {
+            0% { left: -50px; transform: translateY(0); }
+            25% { transform: translateY(-15px); }
+            50% { transform: translateY(10px); }
+            75% { transform: translateY(-20px); }
+            100% { left: calc(100% + 50px); transform: translateY(0); }
+        }
+
+        /* Зграя пташок */
+        .flock {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .flock-bird {
+            position: absolute;
+            font-size: clamp(16px, 4vw, 24px);
+            animation: flockFly 20s linear infinite;
+            opacity: 0;
+        }
+
+        .flock-bird:nth-child(1) { top: 12%; animation-delay: 0s; --offset: 0px; }
+        .flock-bird:nth-child(2) { top: 15%; animation-delay: 0.2s; --offset: 30px; }
+        .flock-bird:nth-child(3) { top: 10%; animation-delay: 0.4s; --offset: 60px; }
+        .flock-bird:nth-child(4) { top: 18%; animation-delay: 0.1s; --offset: 15px; }
+        .flock-bird:nth-child(5) { top: 14%; animation-delay: 0.3s; --offset: 45px; }
+
+        @keyframes flockFly {
+            0% { 
+                left: calc(-100px - var(--offset)); 
+                opacity: 0;
+                transform: translateY(0) scale(0.8);
+            }
+            10% { opacity: 1; }
+            25% { transform: translateY(-20px) scale(1); }
+            50% { transform: translateY(15px) scale(1); }
+            75% { transform: translateY(-10px) scale(1); }
+            90% { opacity: 1; }
+            100% { 
+                left: calc(100% + 50px); 
+                opacity: 0;
+                transform: translateY(0) scale(0.8);
+            }
+        }
+
+        /* Швидка пташка */
+        .bird-fast {
+            top: 25%;
+            animation: birdFast 12s linear infinite;
+            animation-delay: 5s;
+        }
+
+        @keyframes birdFast {
+            0% { left: -50px; transform: translateY(0) scaleX(1); }
+            20% { transform: translateY(-25px) scaleX(1); }
+            40% { transform: translateY(15px) scaleX(1); }
+            60% { transform: translateY(-20px) scaleX(1); }
+            80% { transform: translateY(10px) scaleX(1); }
+            100% { left: calc(100% + 50px); transform: translateY(0) scaleX(1); }
+        }
+
+        /* Пташка з правого боку */
+        .bird-reverse {
+            top: 30%;
+            animation: birdReverse 18s linear infinite;
+            animation-delay: 8s;
+        }
+
+        @keyframes birdReverse {
+            0% { right: -50px; transform: translateY(0) scaleX(-1); }
+            25% { transform: translateY(20px) scaleX(-1); }
+            50% { transform: translateY(-15px) scaleX(-1); }
+            75% { transform: translateY(25px) scaleX(-1); }
+            100% { right: calc(100% + 50px); transform: translateY(0) scaleX(-1); }
+        }
+
+        /* Гори */
+        .mountains {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to bottom, #4A5568 0%, #2D3748 100%);
+            clip-path: polygon(0% 100%, 0% 60%, 15% 40%, 30% 70%, 45% 30%, 60% 65%, 75% 35%, 90% 60%, 100% 45%, 100% 100%);
+            z-index: 1;
+        }
+
+        .mountains::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #718096 0%, #4A5568 100%);
+            clip-path: polygon(0% 100%, 10% 50%, 25% 80%, 40% 40%, 55% 75%, 70% 45%, 85% 70%, 100% 50%, 100% 100%);
+            opacity: 0.6;
+        }
+
+        /* Погода */
+        .weather-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            overflow: hidden;
+        }
+
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.6));
+            animation: rainFall linear infinite;
+        }
+
+        @keyframes rainFall {
+            to { transform: translateY(100vh); }
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            font-size: 20px;
+            animation: snowFall linear infinite;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+
+        @keyframes snowFall {
+            to { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        /* Повідомлення */
+        .message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            padding: 20px;
+        }
+
+        .message-box {
+            background: white;
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 20px;
+            text-align: center;
+            max-width: 90vw;
+            animation: messageAppear 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        @keyframes messageAppear {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .message-box h2 {
+            color: #2D3748;
+            margin-bottom: 15px;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+        }
+
+        .message-box p {
+            color: #4A5568;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+        }
+
+        /* Таблиця рекордів */
+        .highscores-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 50;
+            width: min(200px, 40vw);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .highscores-panel h3 {
+            color: #2D3748;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+        }
+
+        .highscores-list {
+            list-style: none;
+        }
+
+        .highscores-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: linear-gradient(90deg, #F7FAFC 0%, #EDF2F7 100%);
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .highscores-list .rank {
+            font-weight: 900;
+            color: #ECC94B;
+        }
+
+        /* Модальне вікно */
+        .name-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+        }
+
+        .name-modal:not(.hidden) {
+            display: flex;
+        }
+
+        .name-box {
+            background: white;
+            padding: clamp(30px, 8vw, 40px);
+            border-radius: 20px;
+            text-align: center;
+            max-width: 90vw;
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .name-box h2 {
+            color: #2D3748;
+            margin-bottom: 20px;
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+        }
+
+        .name-box p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .name-box input {
+            padding: 15px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            border: 3px solid #E2E8F0;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+
+        .name-box input:focus {
+            outline: none;
+            border-color: #667EEA;
+        }
+
+        .name-box button {
+            padding: 15px 40px;
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .name-box button:hover {
+            transform: scale(1.05);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Медіа-запити для адаптивності */
+        @media (max-width: 480px) {
+            .game-wrapper {
+                padding: 5px;
+            }
+
+            .status-panel {
+                padding: 8px 15px;
+                gap: 15px;
+            }
+
+            .highscores-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                width: 100%;
+                max-width: 300px;
+                margin-bottom: 10px;
+                max-height: 150px;
+            }
+
+            .mountains {
+                height: 25%;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .game-wrapper {
+                justify-content: center;
+            }
+        }
+
+        /* Анімація листя/природи */
+        .leaf {
+            position: absolute;
+            font-size: 20px;
+            animation: leafFall 10s linear infinite;
+            opacity: 0.7;
+            z-index: 2;
+        }
+
+        @keyframes leafFall {
+            0% { 
+                transform: translateY(-50px) rotate(0deg); 
+                opacity: 0;
+            }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { 
+                transform: translateY(100vh) rotate(360deg); 
+                opacity: 0;
+            }
+        }
+    </style>
+<base target="_blank">
 </head>
 <body>
-    <div class="background">
+    <!-- Живий світ -->
+    <div class="world">
         <div class="sun" id="sun"></div>
-        <div class="sun-ray"></div>
-        <div class="bird">🐦</div>
-        <div class="mountain"></div>
-        <div id="weather-animation"></div>
+
+        <!-- Хмари -->
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+
+        <!-- Пташки: одиночні та зграї -->
+        <div class="bird bird-solo">🐦</div>
+        <div class="bird bird-fast">🕊️</div>
+        <div class="bird bird-reverse">🦅</div>
+
+        <!-- Зграя пташок -->
+        <div class="flock" id="flock">
+            <div class="flock-bird">🐤</div>
+            <div class="flock-bird">🐤</div>
+            <div class="flock-bird">🐤</div>
+            <div class="flock-bird">🐤</div>
+            <div class="flock-bird">🐤</div>
+        </div>
+
+        <!-- Гори -->
+        <div class="mountains"></div>
+
+        <!-- Погода -->
+        <div class="weather-container" id="weather-container"></div>
     </div>
 
-    <h1>Математичні кульки</h1>
-    <div class="game-info">
-        <div class="lives">❤️❤️❤️</div>
-        <div class="score">Очки: <span id="score">0</span></div>
-        <div class="level">Рівень: <span id="level">1</span></div>
-    </div>
-    <div id="game-container"></div>
-    <div class="answer-buttons">
-        <button onclick="checkAnswer(this)"></button>
-        <button onclick="checkAnswer(this)"></button>
-        <button onclick="checkAnswer(this)"></button>
-        <button onclick="checkAnswer(this)"></button>
-    </div>
-    <div class="game-controls">
-        <button id="start-game-button" onclick="startGame()">Почати гру</button>
-        <button id="pause-button" onclick="pauseGame()">Пауза</button>
-        <button onclick="showHint()">Підказка</button>
-    </div>
-    <div class="game-message" id="game-message"></div>
+    <!-- Гра -->
+    <div class="game-wrapper">
+        <h1>🎈 Математичні Кульки 🎈</h1>
 
-    <div id="highscores">
-        <h2>Таблиця рекордів</h2>
-        <ul id="highscores-list"></ul>
+        <div class="status-panel">
+            <div class="status-item lives">
+                <span>❤️</span>
+                <span id="lives-count">3</span>
+            </div>
+            <div class="status-item score-display">
+                <span>⭐</span>
+                <span id="score">0</span>
+            </div>
+            <div class="status-item level-display">
+                <span>🏆</span>
+                <span>Рівень: <span id="level">1</span></span>
+            </div>
+        </div>
+
+        <!-- Таблиця рекордів для мобільних -->
+        <div class="highscores-panel" id="mobile-highscores">
+            <h3>🏆 Рекорди</h3>
+            <ul class="highscores-list" id="highscores-list"></ul>
+        </div>
+
+        <div id="game-container">
+            <div class="typing-indicator" id="typing-indicator">
+                ✏️ Набираєш: <span id="typed-number"></span>
+            </div>
+        </div>
+
+        <div class="answers-container">
+            <button class="answer-btn" onclick="checkAnswer(this)"></button>
+            <button class="answer-btn" onclick="checkAnswer(this)"></button>
+            <button class="answer-btn" onclick="checkAnswer(this)"></button>
+            <button class="answer-btn" onclick="checkAnswer(this)"></button>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn btn-start" id="start-btn" onclick="startGame()">▶️ Почати</button>
+            <button class="control-btn btn-pause" id="pause-btn" onclick="togglePause()">⏸️ Пауза</button>
+            <button class="control-btn btn-hint" onclick="useHint()">💡 Підказка</button>
+            <button class="control-btn btn-sound" id="sound-btn" onclick="toggleSound()">🔊 Звук</button>
+        </div>
     </div>
 
-    <div id="name-input">
-        <input type="text" id="player-name" placeholder="Введіть ваше ім'я">
-        <button onclick="saveName()">Зберегти</button>
+    <!-- Повідомлення -->
+    <div class="message-overlay" id="message-overlay" onclick="hideMessage()">
+        <div class="message-box">
+            <h2 id="message-title"></h2>
+            <p id="message-text"></p>
+        </div>
     </div>
 
-    <script src="scripts/script.js"></script>
+    <!-- Модальне вікно імені -->
+    <div class="name-modal" id="name-modal">
+        <div class="name-box">
+            <h2>Вітаємо у грі! 👋</h2>
+            <p>Введіть своє ім'я, щоб розпочати пригоду</p>
+            <input type="text" id="player-name" placeholder="Твоє ім'я" maxlength="12" onkeypress="if(event.key==='Enter')savePlayerName()">
+            <button onclick="savePlayerName()">🚀 Поїхали!</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== ІГРОВІ ЗМІННІ =====
+        let gameState = {
+            isRunning: false,
+            isPaused: false,
+            score: 0,
+            lives: 3,
+            level: 1,
+            balloons: [],
+            spawnInterval: 3000,
+            baseSpeed: 0.8,
+            heartsCollected: 0,
+            sunClicks: 0,
+            cheatUsed: false,
+            typingBuffer: '',
+            isTyping: false,
+            slowMotion: false,
+            weatherIndex: 0,
+            soundEnabled: true
+        };
+
+        let intervals = { spawn: null, move: null };
+        let playerName = localStorage.getItem('mathBalloonPlayer') || '';
+        let highscores = JSON.parse(localStorage.getItem('mathBalloonScores')) || [];
+        let audioContext = null;
+        let backgroundMusic = null;
+
+        // Погода
+        const weatherTypes = [
+            { name: 'Сонячно', speed: 0.8, bg: 'linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #FFE4B5 100%)' },
+            { name: 'Дощ', speed: 0.6, bg: 'linear-gradient(to bottom, #4A5568 0%, #2D3748 100%)', effect: 'rain' },
+            { name: 'Сніг', speed: 0.5, bg: 'linear-gradient(to bottom, #E2E8F0 0%, #A0AEC0 100%)', effect: 'snow' },
+            { name: 'Веселка', speed: 0.9, bg: 'linear-gradient(to bottom, #F6E05E 0%, #9F7AEA 50%, #667EEA 100%)' },
+            { name: 'Захід', speed: 0.7, bg: 'linear-gradient(to bottom, #F6AD55 0%, #FC8181 50%, #9F7AEA 100%)' }
+        ];
+
+        // ===== AUDIO API =====
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Генерація звуку вибуху
+        function playPopSound(type = 'normal') {
+            if (!gameState.soundEnabled || !audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'golden') {
+                // Золотий звук - вищий та приємніший
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            } else if (type === 'heart') {
+                // Звук сердечка - м'який
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+            } else {
+                // Звичайний вибух
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.15);
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            }
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000, audioContext.currentTime);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Фонова мелодія
+        function playBackgroundMusic() {
+            if (!gameState.soundEnabled || !audioContext) return;
+
+            // Проста мелодія використовуючи осцилятори
+            const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; // C major arpeggio
+            let noteIndex = 0;
+
+            function playNote() {
+                if (!gameState.isRunning || !gameState.soundEnabled) return;
+
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = 'sine';
+                osc.frequency.value = notes[noteIndex];
+                gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.5);
+
+                noteIndex = (noteIndex + 1) % notes.length;
+
+                setTimeout(playNote, 800);
+            }
+
+            playNote();
+        }
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.textContent = gameState.soundEnabled ? '🔊 Звук' : '🔇 Звук';
+
+            if (gameState.soundEnabled && !audioContext) {
+                initAudio();
+            }
+        }
+
+        // ===== ІНІЦІАЛІЗАЦІЯ =====
+        window.onload = () => {
+            updateHighscores();
+            playerName = localStorage.getItem('mathBalloonPlayer') || '';
+            if (!playerName || playerName === '') {
+                const modal = document.getElementById('name-modal');
+                modal.style.display = 'flex';
+                modal.classList.remove('hidden');
+            } else {
+                document.getElementById('name-modal').style.display = 'none';
+                document.getElementById('name-modal').classList.add('hidden');
+            }
+            setupKeyboardControls();
+            initAudio();
+            setScene('summer');
+        };
+
+        function savePlayerName() {
+            const input = document.getElementById('player-name');
+            const name = input.value.trim();
+            if (name && name.length > 0) {
+                playerName = name;
+                localStorage.setItem('mathBalloonPlayer', playerName);
+                document.getElementById('name-modal').style.display = 'none';
+                document.getElementById('name-modal').classList.add('hidden');
+                initAudio();
+                console.log('Name saved:', playerName);
+            } else {
+                input.style.borderColor = '#F56565';
+                input.placeholder = 'Введіть ім'я!';
+                setTimeout(() => {
+                    input.style.borderColor = '#E2E8F0';
+                    input.placeholder = 'Твоє ім'я';
+                }, 2000);
+            }
+        }
+
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                if (!gameState.isRunning || gameState.isPaused) {
+                    if (e.key === 'Escape' && gameState.isRunning) togglePause();
+                    return;
+                }
+
+                if (e.key >= '0' && e.key <= '9') {
+                    gameState.typingBuffer += e.key;
+                    gameState.isTyping = true;
+                    gameState.slowMotion = true;
+                    updateTypingIndicator();
+
+                    clearTimeout(window.typingTimeout);
+                    window.typingTimeout = setTimeout(() => {
+                        submitTypedAnswer();
+                    }, 1500);
+                } else if (e.key === 'Enter' && gameState.typingBuffer) {
+                    submitTypedAnswer();
+                } else if (e.key === 'Backspace') {
+                    gameState.typingBuffer = gameState.typingBuffer.slice(0, -1);
+                    updateTypingIndicator();
+                } else if (e.key === 'Escape') {
+                    togglePause();
+                }
+            });
+        }
+
+        function updateTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            const typedSpan = document.getElementById('typed-number');
+
+            if (gameState.typingBuffer) {
+                indicator.classList.add('active');
+                typedSpan.textContent = gameState.typingBuffer;
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        function submitTypedAnswer() {
+            if (!gameState.typingBuffer) return;
+
+            const answer = parseInt(gameState.typingBuffer);
+            gameState.typingBuffer = '';
+            gameState.isTyping = false;
+            gameState.slowMotion = false;
+            updateTypingIndicator();
+
+            processAnswer(answer);
+        }
+
+        // ===== ІГРОВІ ФУНКЦІЇ =====
+        function startGame() {
+            if (gameState.isRunning) return;
+
+            gameState = {
+                isRunning: true,
+                isPaused: false,
+                score: 0,
+                lives: 3,
+                level: 1,
+                balloons: [],
+                spawnInterval: 3000,
+                baseSpeed: 0.8,
+                heartsCollected: 0,
+                sunClicks: 0,
+                cheatUsed: false,
+                typingBuffer: '',
+                isTyping: false,
+                slowMotion: false,
+                weatherIndex: 0,
+                soundEnabled: gameState.soundEnabled
+            };
+
+            updateDisplay();
+            setWeather(0);
+
+            document.getElementById('game-container').innerHTML = `
+                <div class="typing-indicator" id="typing-indicator">
+                    ✏️ Набираєш: <span id="typed-number"></span>
+                </div>
+            `;
+
+            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
+            intervals.move = setInterval(moveBalloons, 50);
+
+            document.getElementById('start-btn').classList.add('hidden');
+            showMessage('Поїхали! 🎈', 'Ловіть кульки з правильними відповідями!');
+
+            if (gameState.soundEnabled) {
+                playBackgroundMusic();
+            }
+        }
+
+        function togglePause() {
+            if (!gameState.isRunning) return;
+
+            gameState.isPaused = !gameState.isPaused;
+            const btn = document.getElementById('pause-btn');
+
+            if (gameState.isPaused) {
+                clearInterval(intervals.spawn);
+                clearInterval(intervals.move);
+                btn.textContent = '▶️ Продовжити';
+                showMessage('Пауза ⏸️', 'Натисніть ESC або кнопку, щоб продовжити');
+            } else {
+                btn.textContent = '⏸️ Пауза';
+                intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
+                intervals.move = setInterval(moveBalloons, 50);
+                hideMessage();
+            }
+        }
+
+        function spawnBalloon() {
+            if (!gameState.isRunning || gameState.isPaused) return;
+
+            const container = document.getElementById('game-container');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+
+            const maxNum = Math.min(5 + gameState.level * 2, 15);
+            const type = Math.random();
+
+            let num1, num2, answer, balloonClass;
+
+            if (type < 0.1 && gameState.heartsCollected < 2) {
+                num1 = Math.floor(Math.random() * 3) + 1;
+                num2 = Math.floor(Math.random() * 3) + 1;
+                balloonClass = 'balloon-heart';
+                gameState.heartsCollected++;
+            } else if (type < 0.2) {
+                num1 = Math.floor(Math.random() * maxNum) + 1;
+                num2 = Math.floor(Math.random() * maxNum) + 1;
+                balloonClass = 'balloon-golden';
+            } else {
+                num1 = Math.floor(Math.random() * (maxNum - 2)) + 1;
+                num2 = Math.floor(Math.random() * (maxNum - 2)) + 1;
+                balloonClass = 'balloon-normal';
+            }
+
+            answer = num1 + num2;
+
+            const balloon = document.createElement('div');
+            balloon.className = `balloon ${balloonClass}`;
+            balloon.innerHTML = `
+                <div class="balloon-body">${num1}+${num2}</div>
+                <div class="balloon-string"></div>
+            `;
+
+            // Випадкова позиція X з відступами від країв
+            const padding = 40;
+            const maxLeft = containerWidth - padding * 2;
+            balloon.style.left = padding + Math.random() * maxLeft + 'px';
+            balloon.style.top = containerHeight + 'px';
+            balloon.dataset.answer = answer;
+
+            container.appendChild(balloon);
+
+            let speed = gameState.baseSpeed + Math.random() * 0.3;
+            if (gameState.slowMotion) speed *= 0.2;
+
+            gameState.balloons.push({
+                element: balloon,
+                speed: speed,
+                baseSpeed: speed,
+                sway: (Math.random() - 0.5) * 1.5
+            });
+
+            updateAnswerButtons();
+        }
+
+        function moveBalloons() {
+            if (!gameState.isRunning || gameState.isPaused) return;
+
+            const container = document.getElementById('game-container');
+            const containerHeight = container.clientHeight;
+
+            gameState.balloons.forEach((b, index) => {
+                let top = parseFloat(b.element.style.top) - b.speed;
+                let left = parseFloat(b.element.style.left) + Math.sin(top / 80) * b.sway;
+
+                if (top < -80) {
+                    b.element.remove();
+                    gameState.balloons.splice(index, 1);
+                    if (!b.element.classList.contains('balloon-heart')) {
+                        loseLife();
+                    }
+                } else {
+                    b.element.style.top = top + 'px';
+                    b.element.style.left = left + 'px';
+                }
+            });
+
+            // Оновлення швидкості
+            if (gameState.slowMotion) {
+                gameState.balloons.forEach(b => b.speed = b.baseSpeed * 0.2);
+            } else {
+                gameState.balloons.forEach(b => b.speed = b.baseSpeed);
+            }
+        }
+
+        function updateAnswerButtons() {
+            const answers = gameState.balloons
+                .map(b => parseInt(b.element.dataset.answer))
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .slice(0, 4);
+
+            while (answers.length < 4) {
+                const fake = Math.floor(Math.random() * 20) + 1;
+                if (!answers.includes(fake)) answers.push(fake);
+            }
+
+            answers.sort(() => Math.random() - 0.5);
+
+            document.querySelectorAll('.answer-btn').forEach((btn, i) => {
+                btn.textContent = answers[i] || '?';
+                btn.dataset.answer = answers[i] || 0;
+                btn.classList.remove('hint');
+            });
+        }
+
+        function checkAnswer(btn) {
+            if (!gameState.isRunning || gameState.isPaused) return;
+            processAnswer(parseInt(btn.dataset.answer));
+        }
+
+        function processAnswer(answer) {
+            const matches = gameState.balloons.filter(b => 
+                parseInt(b.element.dataset.answer) === answer
+            );
+
+            if (matches.length > 0) {
+                matches.forEach(b => {
+                    let soundType = 'normal';
+                    if (b.element.classList.contains('balloon-golden')) {
+                        gameState.score += 25;
+                        soundType = 'golden';
+                    } else if (b.element.classList.contains('balloon-heart')) {
+                        gameState.lives = Math.min(gameState.lives + 1, 5);
+                        gameState.score += 10;
+                        soundType = 'heart';
+                    } else {
+                        gameState.score += 10;
+                    }
+
+                    playPopSound(soundType);
+                    b.element.classList.add('pop');
+                    setTimeout(() => b.element.remove(), 300);
+                });
+
+                gameState.balloons = gameState.balloons.filter(b => 
+                    parseInt(b.element.dataset.answer) !== answer
+                );
+
+                if (gameState.score >= gameState.level * 40) {
+                    levelUp();
+                }
+            } else {
+                gameState.score = Math.max(0, gameState.score - 3);
+            }
+
+            updateDisplay();
+            updateAnswerButtons();
+        }
+
+        function levelUp() {
+            gameState.level++;
+            gameState.heartsCollected = 0;
+            showMessage(`Рівень ${gameState.level}! 🎉`, 'Швидше та цікавіше!');
+
+            gameState.spawnInterval = Math.max(1500, gameState.spawnInterval - 200);
+
+            const weatherIdx = Math.min(gameState.level - 1, weatherTypes.length - 1);
+            setWeather(weatherIdx);
+
+            clearInterval(intervals.spawn);
+            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
+        }
+
+        function setWeather(index) {
+            gameState.weatherIndex = index;
+            const weather = weatherTypes[index];
+            document.body.style.background = weather.bg;
+            gameState.baseSpeed = weather.speed;
+
+            const container = document.getElementById('weather-container');
+            container.innerHTML = '';
+
+            if (weather.effect === 'rain') {
+                for (let i = 0; i < 40; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'raindrop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+                    drop.style.animationDelay = Math.random() * 2 + 's';
+                    container.appendChild(drop);
+                }
+            } else if (weather.effect === 'snow') {
+                for (let i = 0; i < 25; i++) {
+                    const flake = document.createElement('div');
+                    flake.className = 'snowflake';
+                    flake.textContent = '❄';
+                    flake.style.left = Math.random() * 100 + '%';
+                    flake.style.fontSize = (10 + Math.random() * 15) + 'px';
+                    flake.style.animationDuration = (2 + Math.random() * 3) + 's';
+                    flake.style.animationDelay = Math.random() * 5 + 's';
+                    container.appendChild(flake);
+                }
+            }
+        }
+
+        
+                showNotification('Немає життів! ❤️', 'Потрібно мінімум 2 життя', 'warning', 2000);
+            }
+        }
+
+        function loseLife() {
+            gameState.lives--;
+            updateDisplay();
+
+            if (gameState.lives <= 0) {
+                endGame(false);
+            } else {
+                showNotification('Увага! ⚠️', `Залишилось ${gameState.lives} життів`, 'warning', 2000);
+            }
+        }
+
+        function endGame(victory = false) {
+            gameState.isRunning = false;
+            clearInterval(intervals.spawn);
+            clearInterval(intervals.move);
+            clearInterval(intervals.music);
+
+            highscores.push({
+                name: playerName,
+                score: gameState.score,
+                date: new Date().toLocaleDateString()
+            });
+            highscores.sort((a, b) => b.score - a.score);
+            highscores = highscores.slice(0, 5);
+            localStorage.setItem('mathBalloonScores', JSON.stringify(highscores));
+
+            if (victory) {
+                showNotification(
+                    '🏆 Перемога!', 
+                    `${playerName}, ти пройшов усі рівні! Рахунок: ${gameState.score}`, 
+                    'success', 
+                    5000
+                );
+            } else {
+                showNotification(
+                    'Гру завершено! 🎮', 
+                    `${playerName}, твій рахунок: ${gameState.score}`, 
+                    'info', 
+                    4000
+                );
+            }
+
+            setTimeout(() => {
+                document.getElementById('start-btn').classList.remove('hidden');
+            }, 4000);
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('lives-count').textContent = gameState.lives;
+
+            const accuracy = gameState.totalAnswers > 0 
+                ? Math.round((gameState.correctAnswers / gameState.totalAnswers) * 100)
+                : 100;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.textContent = gameState.soundEnabled ? '🔊 Звук' : '🔇 Звук';
+            if (gameState.soundEnabled && !audioContext) {
+                initAudio();
+            }
+            showNotification(
+                gameState.soundEnabled ? 'Звук увімкнено 🔊' : 'Звук вимкнено 🔇', 
+                '', 
+                'info', 
+                1500
+            );
+        }
+
+        // Випадкові зграї пташок
+        setInterval(() => {
+            if (Math.random() < 0.2 && !gameState.isPaused) {
+                const flock = document.getElementById('flock-container');
+                flock.style.display = 'block';
+                setTimeout(() => {
+                    flock.style.display = 'none';
+                }, 12000);
+            }
+        }, 15000);
+
+        // Чит-код
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.sun')) {
+                gameState.sunClicks++;
+                if (gameState.sunClicks === 3 && !gameState.cheatUsed) {
+                    gameState.lives = Math.min(gameState.lives + 2, 5);
+                    gameState.cheatUsed = true;
+                    updateDisplay();
+                    showNotification('Сонячний бонус! ☀️', '+2 життя!', 'bonus', 3000);
+                }
+            }
+        });
+    </script>
 </body>
 </html>
