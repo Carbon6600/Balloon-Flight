@@ -20,7 +20,6 @@
             serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        // Твоя конфігурація Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCbs6Tazgr5r3S6AnwJVk1WVYulBSzV32U",
             authDomain: "balloon-app-7cd05.firebaseapp.com",
@@ -31,11 +30,9 @@
             appId: "1:938956090462:web:9d150454218cd5ea8198cf"
         };
 
-        // Ініціалізація
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         
-        // Зробити доступним глобально
         window.firebaseDB = database;
         window.firebaseRefs = { ref, set, onValue, update, remove, onDisconnect, get, serverTimestamp };
         window.isFirebaseReady = true;
@@ -60,7 +57,6 @@
             transition: background 2s ease;
         }
 
-        /* Живий фон з паралаксом */
         .world {
             position: fixed;
             width: 100%;
@@ -69,7 +65,6 @@
             overflow: hidden;
         }
 
-        /* Сонце з променями */
         .sun {
             position: absolute;
             top: 5%;
@@ -114,7 +109,6 @@
             to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        /* Хмари */
         .cloud {
             position: absolute;
             background: rgba(255, 255, 255, 0.8);
@@ -181,7 +175,6 @@
             to { transform: translateX(calc(100vw + 200px)); }
         }
 
-        /* Пташки */
         .bird {
             position: absolute;
             font-size: 30px;
@@ -231,7 +224,6 @@
             100% { left: calc(100% + 50px); transform: translateY(0) scaleX(1) rotate(0deg); }
         }
 
-        /* Гори */
         .mountains {
             position: absolute;
             bottom: 0;
@@ -253,7 +245,6 @@
             opacity: 0.7;
         }
 
-        /* Погодні ефекти */
         .weather-container {
             position: fixed;
             width: 100%;
@@ -289,7 +280,6 @@
             }
         }
 
-        /* Основний контейнер гри */
         .game-wrapper {
             position: relative;
             z-index: 10;
@@ -315,7 +305,6 @@
             50% { transform: translateY(-5px); }
         }
 
-        /* Панель статусу */
         .status-panel {
             display: flex;
             gap: 20px;
@@ -347,7 +336,6 @@
             color: #3182CE;
         }
 
-        /* Ігрове поле */
         #game-container {
             position: relative;
             width: 450px;
@@ -359,7 +347,6 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.5);
         }
 
-        /* Кульки */
         .balloon {
             position: absolute;
             display: flex;
@@ -437,7 +424,6 @@
             100% { transform: scale(0); opacity: 0; }
         }
 
-        /* Індикатор набору */
         .typing-indicator {
             position: absolute;
             bottom: 20px;
@@ -464,7 +450,6 @@
             display: block;
         }
 
-        /* Кнопки відповідей */
         .answers-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -506,7 +491,6 @@
             50% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
         }
 
-        /* Контроли */
         .controls {
             display: flex;
             gap: 15px;
@@ -557,7 +541,6 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
-        /* Повідомлення */
         .message-overlay {
             position: fixed;
             top: 0;
@@ -597,7 +580,6 @@
             font-size: 1.2em;
         }
 
-        /* Таблиця рекордів */
         .highscores-panel {
             position: fixed;
             top: 20px;
@@ -636,7 +618,6 @@
             color: #ECC94B;
         }
 
-        /* Введення імені */
         .name-modal {
             position: fixed;
             top: 0;
@@ -701,7 +682,6 @@
             transform: scale(1.05);
         }
 
-        /* Мультиплеєр модальне вікно */
         .multiplayer-modal {
             position: fixed;
             top: 0;
@@ -791,14 +771,25 @@
             color: #92400E;
         }
 
+        .status-ready {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
         .status-connected {
             background: #D1FAE5;
             color: #065F46;
         }
 
         .status-playing {
-            background: #DBEAFE;
-            color: #1E40AF;
+            background: #C6F6D5;
+            color: #22543D;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
 
         .opponent-panel {
@@ -1016,6 +1007,33 @@
         .copy-hint.show {
             opacity: 1;
         }
+
+        .countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 250;
+            backdrop-filter: blur(5px);
+        }
+
+        .countdown-number {
+            font-size: 10em;
+            font-weight: 900;
+            color: white;
+            animation: countdownPulse 1s ease-out;
+        }
+
+        @keyframes countdownPulse {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -1161,6 +1179,11 @@
         </div>
     </div>
 
+    <!-- Зворотній відлік -->
+    <div class="countdown-overlay" id="countdown-overlay">
+        <div class="countdown-number" id="countdown-number">3</div>
+    </div>
+
     <!-- Оголошення переможця -->
     <div class="winner-announcement" id="winner-announcement">
         <div class="winner-trophy">🏆</div>
@@ -1197,7 +1220,8 @@
             opponentName: '',
             opponentScore: 0,
             isHost: false,
-            gameTarget: 100
+            gameTarget: 100,
+            gameStarted: false
         };
 
         let intervals = {
@@ -1225,7 +1249,6 @@
 
         // ==================== ІНІЦІАЛІЗАЦІЯ ====================
         window.onload = () => {
-            // Чекати поки Firebase завантажиться
             setTimeout(() => {
                 if (window.isFirebaseReady && window.firebaseDB) {
                     db = window.firebaseDB;
@@ -1234,7 +1257,7 @@
                     console.log("Firebase підключено!");
                 } else {
                     updateConnectionStatus('offline');
-                    console.log("Firebase не доступний, працюємо в офлайн режимі");
+                    console.log("Firebase не доступний");
                 }
             }, 1000);
 
@@ -1378,13 +1401,12 @@
 
             updateConnectionStatus('connecting');
 
-            // Створити кімнату
             roomRef = ref(db, 'rooms/' + roomCode);
             
             await set(roomRef, {
                 host: playerName,
                 hostScore: 0,
-                hostReady: false,
+                hostReady: true,
                 guest: null,
                 guestScore: 0,
                 guestReady: false,
@@ -1392,25 +1414,29 @@
                 created: serverTimestamp()
             });
 
-            // Автоматичне видалення при відключенні
             onDisconnect(roomRef).remove();
 
-            // Слухати зміни
+            // Слухати зміни - ВИПРАВЛЕНО!
             unsubscribeRoom = onValue(roomRef, (snapshot) => {
                 const data = snapshot.val();
+                console.log("Room data updated:", data); // Для дебагу
+                
                 if (!data) return;
 
-                if (data.guest && data.status === 'waiting') {
+                // Гість приєднався
+                if (data.guest && !gameState.gameStarted) {
                     gameState.opponentName = data.guest;
-                    document.getElementById('waiting-status').className = 'multiplayer-status status-connected';
-                    document.getElementById('waiting-status').innerHTML = `✅ ${data.guest} приєднався!<br>Підготовка до гри...`;
+                    document.getElementById('waiting-status').className = 'multiplayer-status status-ready';
+                    document.getElementById('waiting-status').innerHTML = `✅ ${data.guest} приєднався!`;
                     
+                    // Запускаємо гру з відліком!
                     setTimeout(() => {
-                        startMultiplayerGame();
-                    }, 2000);
+                        startCountdownAndGame();
+                    }, 1000);
                 }
 
-                if (gameState.isRunning && data.status === 'playing') {
+                // Оновлення рахунку під час гри
+                if (data.status === 'playing' && gameState.isRunning) {
                     const opponentScore = gameState.isHost ? data.guestScore : data.hostScore;
                     updateOpponentDisplay(opponentScore);
                     
@@ -1419,7 +1445,8 @@
                     }
                 }
 
-                if (data.status === 'finished' && data.winner && data.winner !== gameState.playerId) {
+                // Гра закінчилась
+                if (data.status === 'finished' && data.winner && data.winner !== gameState.playerId && gameState.isRunning) {
                     endMultiplayerGame(false);
                 }
             });
@@ -1432,6 +1459,80 @@
                     closeMultiplayerMenu();
                 }
             }, 300000);
+        }
+
+        function startCountdownAndGame() {
+            const overlay = document.getElementById('countdown-overlay');
+            const numberEl = document.getElementById('countdown-number');
+            
+            overlay.style.display = 'flex';
+            
+            let count = 3;
+            numberEl.textContent = count;
+            
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    numberEl.textContent = count;
+                    numberEl.style.animation = 'none';
+                    setTimeout(() => numberEl.style.animation = 'countdownPulse 1s ease-out', 10);
+                } else if (count === 0) {
+                    numberEl.textContent = '🏁';
+                } else {
+                    clearInterval(interval);
+                    overlay.style.display = 'none';
+                    launchMultiplayerGame();
+                }
+            }, 1000);
+        }
+
+        function launchMultiplayerGame() {
+            // Закрити меню і запустити гру
+            document.getElementById('multiplayer-modal').style.display = 'none';
+            
+            gameState.isMultiplayer = true;
+            gameState.isRunning = true;
+            gameState.gameStarted = true;
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.level = 1;
+            gameState.balloons = [];
+            gameState.spawnInterval = 2000; // Швидше для перегонів
+            gameState.baseSpeed = 1.2;
+            
+            // UI оновлення
+            document.getElementById('mode-indicator').classList.add('active');
+            document.getElementById('opponent-panel').classList.add('active');
+            document.getElementById('opponent-name').textContent = gameState.opponentName;
+            document.getElementById('start-btn').classList.add('hidden');
+            document.getElementById('multiplayer-btn').classList.add('hidden');
+            document.getElementById('pause-btn').classList.remove('hidden');
+            document.getElementById('hint-btn').classList.remove('hidden');
+            document.getElementById('leave-btn').classList.remove('hidden');
+            
+            updateConnectionStatus('online');
+            
+            // Оновити статус кімнати на playing
+            const { update, serverTimestamp } = window.firebaseRefs;
+            update(roomRef, {
+                status: 'playing',
+                startTime: serverTimestamp()
+            });
+
+            // Очистити поле
+            document.getElementById('game-container').innerHTML = `
+                <div class="typing-indicator" id="typing-indicator">
+                    ✏️ Набираєш: <span id="typed-number"></span>
+                </div>
+            `;
+
+            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
+            intervals.move = setInterval(moveBalloons, 50);
+            
+            updateDisplay();
+            setWeather(0);
+            
+            showMessage('Перегони! 🏁', 'Хто перший набере 100 очок!');
         }
 
         function copyRoomCode() {
@@ -1469,7 +1570,7 @@
                 return;
             }
 
-            const { ref, get, set, onValue, update } = window.firebaseRefs;
+            const { ref, get, set, onValue, update, serverTimestamp } = window.firebaseRefs;
 
             gameState.isHost = false;
             gameState.playerId = 'player2';
@@ -1480,7 +1581,7 @@
             document.getElementById('joining-room').classList.remove('hidden');
             updateConnectionStatus('connecting');
 
-            const roomRef = ref(db, 'rooms/' + code);
+            roomRef = ref(db, 'rooms/' + code);
             
             try {
                 const snapshot = await get(roomRef);
@@ -1491,25 +1592,33 @@
                 }
 
                 if (data.status !== 'waiting' || data.guest) {
-                    throw new Error('Кімната зайнята');
+                    throw new Error('Кімната зайнята або гра вже йде');
                 }
 
                 gameState.opponentName = data.host;
                 
+                // Приєднатися як гість
                 await update(roomRef, {
                     guest: playerName,
+                    guestReady: true,
                     status: 'ready'
                 });
 
+                // Слухати зміни - ВИПРАВЛЕНО!
                 unsubscribeRoom = onValue(roomRef, (snapshot) => {
                     const data = snapshot.val();
+                    console.log("Guest received data:", data); // Для дебагу
+                    
                     if (!data) return;
 
-                    if (data.status === 'playing' && !gameState.isRunning) {
-                        startMultiplayerGame();
+                    // Хост запустив гру (status змінився на playing)
+                    if (data.status === 'playing' && !gameState.gameStarted) {
+                        gameState.opponentName = data.host;
+                        startCountdownAndGame();
                     }
 
-                    if (gameState.isRunning) {
+                    // Оновлення рахунку
+                    if (data.status === 'playing' && gameState.isRunning) {
                         const opponentScore = gameState.isHost ? data.guestScore : data.hostScore;
                         updateOpponentDisplay(opponentScore);
                         
@@ -1518,59 +1627,24 @@
                         }
                     }
 
-                    if (data.status === 'finished' && data.winner && data.winner !== gameState.playerId) {
+                    // Гра закінчилась
+                    if (data.status === 'finished' && data.winner && data.winner !== gameState.playerId && gameState.isRunning) {
                         endMultiplayerGame(false);
                     }
                 });
+
+                // Показати що ми готові
+                document.getElementById('joining-room').innerHTML = `
+                    <div class="multiplayer-status status-ready">
+                        ✅ Приєднано! Очікуємо старт гри...
+                    </div>
+                `;
 
             } catch (error) {
                 console.error(error);
                 showMessage('Помилка!', error.message);
                 openMultiplayerMenu();
             }
-        }
-
-        function startMultiplayerGame() {
-            closeMultiplayerMenu();
-            gameState.isMultiplayer = true;
-            gameState.isRunning = true;
-            gameState.score = 0;
-            gameState.lives = 3;
-            gameState.level = 1;
-            gameState.balloons = [];
-            gameState.spawnInterval = 2500;
-            gameState.baseSpeed = 1.0;
-            
-            document.getElementById('mode-indicator').classList.add('active');
-            document.getElementById('opponent-panel').classList.add('active');
-            document.getElementById('opponent-name').textContent = gameState.opponentName;
-            document.getElementById('start-btn').classList.add('hidden');
-            document.getElementById('multiplayer-btn').classList.add('hidden');
-            document.getElementById('pause-btn').classList.remove('hidden');
-            document.getElementById('hint-btn').classList.remove('hidden');
-            document.getElementById('leave-btn').classList.remove('hidden');
-            
-            updateConnectionStatus('online');
-            
-            const { update, serverTimestamp } = window.firebaseRefs;
-            update(roomRef, {
-                status: 'playing',
-                startTime: serverTimestamp()
-            });
-
-            document.getElementById('game-container').innerHTML = `
-                <div class="typing-indicator" id="typing-indicator">
-                    ✏️ Набираєш: <span id="typed-number"></span>
-                </div>
-            `;
-
-            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-            intervals.move = setInterval(moveBalloons, 50);
-            
-            updateDisplay();
-            setWeather(0);
-            
-            showMessage('Перегони почались! 🏁', 'Хто перший набере 100 очок!');
         }
 
         function updateOpponentDisplay(score) {
@@ -1583,7 +1657,7 @@
         async function updateMyScoreInFirebase() {
             if (!gameState.isMultiplayer || !roomRef) return;
             
-            const { update } = window.firebaseRefs;
+            const { update, serverTimestamp } = window.firebaseRefs;
             const updateData = gameState.isHost ? 
                 { hostScore: gameState.score } : 
                 { guestScore: gameState.score };
@@ -1602,6 +1676,7 @@
 
         function endMultiplayerGame(iWon) {
             gameState.isRunning = false;
+            gameState.gameStarted = false;
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
 
@@ -1660,11 +1735,12 @@
         function leaveRoom() {
             if (confirm('Вийти з гри? Ти програєш автоматично.')) {
                 if (roomRef) {
-                    const { update } = window.firebaseRefs;
+                    const { update, serverTimestamp } = window.firebaseRefs;
                     update(roomRef, {
                         status: 'finished',
                         winner: gameState.opponentId,
-                        reason: 'player_left'
+                        reason: 'player_left',
+                        leftAt: serverTimestamp()
                     });
                 }
                 endMultiplayerGame(false);
@@ -1674,6 +1750,7 @@
         function resetToMainMenu() {
             gameState.isMultiplayer = false;
             gameState.isRunning = false;
+            gameState.gameStarted = false;
             gameState.roomId = null;
             gameState.opponentScore = 0;
             
