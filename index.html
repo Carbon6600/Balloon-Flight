@@ -1322,7 +1322,7 @@
             gameTarget: 100,
             gameStarted: false,
             rematchRequested: false,
-            gameEnded: false  // НОВЕ - позначає що гра закінчена
+            gameEnded: false
         };
 
         let intervals = {
@@ -1340,6 +1340,7 @@
         let isFirebaseConnected = false;
         let currentLeaderboard = 'all';
         let leaderboardExpanded = false;
+        let allLeaderboardData = []; // Кеш всіх даних
 
         // Погодні умови
         const weatherTypes = [
@@ -1370,7 +1371,6 @@
             }
             setupKeyboardControls();
             
-            // Автоматично згорнути таблицю лідерів на мобільних
             if (window.innerWidth <= 768) {
                 leaderboardExpanded = false;
             }
@@ -1429,26 +1429,50 @@
 
         // ==================== ГЛОБАЛЬНА ТАБЛИЦЯ ЛІДЕРІВ ====================
         async function loadGlobalLeaderboard() {
-            if (!db) return;
+            if (!db) {
+                console.log("DB not ready");
+                return;
+            }
             
-            const { ref, onValue, query, orderByChild, limitToLast } = window.firebaseRefs;
-            const leaderboardRef = ref(db, 'leaderboard');
-            
-            onValue(query(leaderboardRef, orderByChild('score'), limitToLast(100)), (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    renderLeaderboard([]);
-                    return;
-                }
+            try {
+                const { ref, onValue, query, orderByChild, limitToLast } = window.firebaseRefs;
+                const leaderboardRef = ref(db, 'leaderboard');
                 
-                const scores = Object.values(data).sort((a, b) => b.score - a.score);
-                renderLeaderboard(scores);
-            });
+                console.log("Loading leaderboard...");
+                
+                // Слухаємо останні 100 записів
+                onValue(query(leaderboardRef, orderByChild('score'), limitToLast(100)), (snapshot) => {
+                    const data = snapshot.val();
+                    console.log("Leaderboard data received:", data);
+                    
+                    if (!data) {
+                        allLeaderboardData = [];
+                        renderLeaderboard([]);
+                        return;
+                    }
+                    
+                    // Конвертуємо об'єкт в масив
+                    allLeaderboardData = Object.entries(data).map(([key, value]) => ({
+                        id: key,
+                        ...value
+                    }));
+                    
+                    console.log("Processed data:", allLeaderboardData.length, "entries");
+                    renderLeaderboard(allLeaderboardData);
+                }, (error) => {
+                    console.error("Firebase error:", error);
+                    document.getElementById('leaderboard-list').innerHTML = 
+                        '<li style="text-align: center; color: #E53E3E; padding: 10px;">Помилка завантаження</li>';
+                });
+            } catch (e) {
+                console.error("Error loading leaderboard:", e);
+            }
         }
 
         function renderLeaderboard(scores) {
             const list = document.getElementById('leaderboard-list');
             
+            // Фільтрація за режимом
             let filtered = scores;
             if (currentLeaderboard === 'single') {
                 filtered = scores.filter(s => s.mode === 'single');
@@ -1456,15 +1480,31 @@
                 filtered = scores.filter(s => s.mode === 'multiplayer-win' || s.mode === 'multiplayer');
             }
             
-            // Показати тільки топ-10 для компактності
-            filtered = filtered.slice(0, 10);
+            // Сортування за очками (спадання)
+            filtered.sort((a, b) => b.score - a.score);
             
-            if (filtered.length === 0) {
+            // Групування за іменем - беремо тільки найкращий результат для кожного гравця
+            const bestByPlayer = {};
+            filtered.forEach(score => {
+                const key = score.name + '_' + score.mode;
+                if (!bestByPlayer[key] || bestByPlayer[key].score < score.score) {
+                    bestByPlayer[key] = score;
+                }
+            });
+            
+            // Конвертуємо назад в масив і сортуємо
+            let uniqueScores = Object.values(bestByPlayer);
+            uniqueScores.sort((a, b) => b.score - a.score);
+            
+            // Беремо топ-10
+            uniqueScores = uniqueScores.slice(0, 10);
+            
+            if (uniqueScores.length === 0) {
                 list.innerHTML = '<li style="text-align: center; color: #718096; padding: 10px;">Немає даних</li>';
                 return;
             }
             
-            list.innerHTML = filtered.map((score, index) => {
+            list.innerHTML = uniqueScores.map((score, index) => {
                 const rank = index + 1;
                 const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
                 const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
@@ -1486,43 +1526,36 @@
             currentLeaderboard = type;
             document.querySelectorAll('.leaderboard-tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById(`tab-${type}`).classList.add('active');
-            // Не закриваємо при перемиканні
+            renderLeaderboard(allLeaderboardData);
         }
 
+        // СПРОЩЕНЕ ЗБЕРЕЖЕННЯ - просто додаємо запис, без перевірок
         async function saveToGlobalLeaderboard(scoreData) {
-            if (!db) return;
-            
-            // Перевірити чи вже є запис з таким іменем і кращим результатом
-            const { ref, get, query, orderByChild, equalTo } = window.firebaseRefs;
-            const nameQuery = query(ref(db, 'leaderboard'), orderByChild('name'), equalTo(scoreData.name));
+            if (!db) {
+                console.log("Cannot save - DB not ready");
+                return;
+            }
             
             try {
-                const snapshot = await get(nameQuery);
-                let shouldSave = true;
+                console.log("Saving to leaderboard:", scoreData);
+                const { ref, push, serverTimestamp } = window.firebaseRefs;
+                const leaderboardRef = ref(db, 'leaderboard');
                 
-                if (snapshot.exists()) {
-                    const existing = Object.values(snapshot.val());
-                    // Якщо є кращий результат - не зберігати
-                    if (existing.some(e => e.score >= scoreData.score && e.mode === scoreData.mode)) {
-                        shouldSave = false;
-                    }
-                }
+                const dataToSave = {
+                    ...scoreData,
+                    timestamp: serverTimestamp()
+                };
                 
-                if (shouldSave) {
-                    const { push, serverTimestamp } = window.firebaseRefs;
-                    const leaderboardRef = ref(db, 'leaderboard');
-                    await push(leaderboardRef, {
-                        ...scoreData,
-                        timestamp: serverTimestamp()
-                    });
-                    
-                    // Показати тільки якщо топ-10
-                    if (scoreData.score > 50) {
-                        showNotification('Новий рекорд!', `${scoreData.score} очок!`, 'success');
-                    }
+                const newRef = await push(leaderboardRef, dataToSave);
+                console.log("Saved with key:", newRef.key);
+                
+                // Показати сповіщення тільки для хороших результатів
+                if (scoreData.score >= 50) {
+                    showNotification('Новий рекорд!', `${scoreData.score} очок!`, 'success');
                 }
             } catch (e) {
-                console.error("Помилка збереження:", e);
+                console.error("Error saving to leaderboard:", e);
+                showNotification('Помилка', 'Не вдалося зберегти результат', 'error');
             }
         }
 
@@ -1656,7 +1689,7 @@
                 guestReady: false,
                 status: 'waiting',
                 created: serverTimestamp(),
-                gameEnded: false  // НОВЕ
+                gameEnded: false
             });
 
             onDisconnect(roomRef).remove();
@@ -1671,7 +1704,6 @@
                     return;
                 }
 
-                // ВАЖЛИВО: Перевірка чи гра не закінчена
                 if (data.gameEnded && !gameState.gameEnded) {
                     console.log("Game already ended");
                     return;
@@ -1702,13 +1734,11 @@
                     const opponentScore = data.guestScore || 0;
                     updateOpponentDisplay(opponentScore);
                     
-                    // Перевірка перемоги суперника
                     if (opponentScore >= gameState.gameTarget && !gameState.gameEnded) {
                         endMultiplayerGame(false);
                     }
                 }
 
-                // Реванш
                 if (data.status === 'rematch' && data.rematchHost && data.rematchGuest) {
                     if (!gameState.isRunning && gameState.gameEnded) {
                         showNotification('Реванш!', 'Починаємо!', 'success');
@@ -1744,7 +1774,6 @@
         }
 
         function startCountdownAndGame() {
-            // Очистити попередні інтервали
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
             
@@ -1773,7 +1802,6 @@
         }
 
         function launchMultiplayerGame() {
-            // Скидання стану
             gameState.gameEnded = false;
             gameState.isMultiplayer = true;
             gameState.isRunning = true;
@@ -1798,7 +1826,6 @@
             document.getElementById('hint-btn').classList.remove('hidden');
             document.getElementById('leave-btn').classList.remove('hidden');
 
-            // Очистити контейнер
             document.getElementById('game-container').innerHTML = `
                 <div class="typing-indicator" id="typing-indicator">
                     ✏️ <span id="typed-number"></span>
@@ -1888,7 +1915,6 @@
                         return;
                     }
 
-                    // Перевірка чи гра не закінчена
                     if (data.gameEnded && !gameState.gameEnded) {
                         console.log("Game ended by host");
                         if (gameState.isRunning) {
@@ -1958,7 +1984,7 @@
                     status: 'finished',
                     winner: gameState.playerId,
                     finishTime: serverTimestamp(),
-                    gameEnded: true  // НОВЕ - позначити що гра закінчена
+                    gameEnded: true
                 });
                 endMultiplayerGame(true);
             }
@@ -1997,7 +2023,6 @@
         }
 
         function resetGameStateForRematch() {
-            // Скидання всіх змінних для нової гри
             gameState.gameEnded = false;
             gameState.isRunning = false;
             gameState.gameStarted = false;
@@ -2008,11 +2033,9 @@
             gameState.balloons = [];
             gameState.rematchRequested = false;
             
-            // Очистити інтервали
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
             
-            // Очистити кульки
             document.getElementById('game-container').innerHTML = `
                 <div class="typing-indicator" id="typing-indicator">
                     ✏️ <span id="typed-number"></span>
@@ -2032,20 +2055,16 @@
             resetToMainMenu();
         }
 
-        // ВАЖЛИВО: Правильне завершення гри
         function endMultiplayerGame(iWon) {
-            // Захист від подвійного виклику
             if (gameState.gameEnded) return;
             
             gameState.gameEnded = true;
             gameState.isRunning = false;
             gameState.gameStarted = false;
             
-            // Зупинити всі інтервали
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
             
-            // Видалити всі кульки
             gameState.balloons.forEach(b => {
                 if (b.element && b.element.parentNode) {
                     b.element.remove();
@@ -2063,7 +2082,6 @@
             rematchButtons.style.display = 'flex';
             rematchStatus.classList.add('hidden');
             
-            // Скинути кнопку реваншу
             const rematchBtn = document.querySelector('.btn-rematch');
             if (rematchBtn) {
                 rematchBtn.textContent = '🔄 Реванш';
@@ -2113,7 +2131,6 @@
             for (let i = 0; i < 30; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + '%';
                     confetti.style.background = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'][Math.floor(Math.random() * 5)];
                     confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
@@ -2150,7 +2167,6 @@
         }
 
         function resetToMainMenu() {
-            // Повне скидання стану
             gameState.isMultiplayer = false;
             gameState.isRunning = false;
             gameState.gameStarted = false;
@@ -2166,7 +2182,6 @@
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
             
-            // Видалити всі кульки
             const container = document.getElementById('game-container');
             const balloons = container.querySelectorAll('.balloon');
             balloons.forEach(b => b.remove());
@@ -2243,7 +2258,6 @@
         }
 
         function spawnBalloon() {
-            // Не створювати нові кульки якщо гра закінчена
             if (gameState.gameEnded || !gameState.isRunning) return;
             
             const maxNum = Math.min(5 + gameState.level * 2, 12);
@@ -2275,7 +2289,6 @@
                 <div class="balloon-string"></div>
             `;
             
-            // Адаптивна позиція для мобільних
             const containerWidth = document.getElementById('game-container').offsetWidth;
             const balloonWidth = 50;
             const maxLeft = containerWidth - balloonWidth - 10;
@@ -2530,7 +2543,7 @@
         }
 
         function updateHighscores() {
-            // Локальна таблиця не використовується, використовуємо глобальну
+            // Локальна таблиця не використовується
         }
 
         function showMessage(title, text) {
