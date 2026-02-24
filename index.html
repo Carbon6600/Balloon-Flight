@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Математичні Кульки - Мультиплеєр</title>
+    <title>Математичні Кульки - AI Edition</title>
     
     <!-- Firebase SDK v9 (modular) -->
     <script type="module">
@@ -62,196 +62,30 @@
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #FFE4B5 100%);
-            transition: background 2s ease;
             touch-action: manipulation;
         }
 
-        .world {
+        #game-canvas {
             position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .sun {
-            position: absolute;
-            top: 2%;
-            right: 5%;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle at 30% 30%, #FFF700, #FFD700);
-            border-radius: 50%;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
-            cursor: pointer;
-            animation: sunPulse 4s ease-in-out infinite;
-            z-index: 2;
-        }
-
-        @keyframes sunPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .cloud {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 100px;
-            opacity: 0.9;
-        }
-
-        .cloud::before {
-            content: '';
-            position: absolute;
-            background: white;
-            border-radius: 100px;
-        }
-
-        .cloud1 {
-            width: 80px;
-            height: 30px;
-            top: 10%;
-            left: -150px;
-            animation: floatCloud 25s linear infinite;
-        }
-
-        .cloud1::before {
-            width: 40px;
-            height: 40px;
-            top: -20px;
-            left: 10px;
-        }
-
-        .cloud2 {
-            width: 60px;
-            height: 25px;
-            top: 20%;
-            left: -120px;
-            animation: floatCloud 35s linear infinite;
-            animation-delay: 5s;
-        }
-
-        .cloud2::before {
-            width: 30px;
-            height: 30px;
-            top: -15px;
-            left: 10px;
-        }
-
-        .cloud3 {
-            width: 100px;
-            height: 35px;
-            top: 8%;
-            left: -180px;
-            animation: floatCloud 30s linear infinite;
-            animation-delay: 12s;
-        }
-
-        .cloud3::before {
-            width: 50px;
-            height: 50px;
-            top: -25px;
-            left: 15px;
-        }
-
-        @keyframes floatCloud {
-            from { transform: translateX(0); }
-            to { transform: translateX(calc(100vw + 200px)); }
-        }
-
-        .bird {
-            position: absolute;
-            font-size: 20px;
-            z-index: 5;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
-            pointer-events: none;
-        }
-
-        .bird-fly-1 {
-            top: 15%;
-            animation: birdFly1 20s linear infinite;
-        }
-
-        .bird-fly-2 {
-            top: 25%;
-            animation: birdFly2 25s linear infinite;
-            animation-delay: 8s;
-        }
-
-        .bird-fly-3 {
-            top: 12%;
-            animation: birdFly3 18s linear infinite;
-            animation-delay: 15s;
-        }
-
-        @keyframes birdFly1 {
-            0% { left: -50px; transform: translateY(0) scaleX(1); }
-            100% { left: calc(100% + 50px); transform: translateY(0) scaleX(1); }
-        }
-
-        @keyframes birdFly2 {
-            0% { right: -50px; transform: translateY(0) scaleX(-1); }
-            100% { right: calc(100% + 50px); transform: translateY(0) scaleX(-1); }
-        }
-
-        @keyframes birdFly3 {
-            0% { left: -50px; transform: translateY(0) scaleX(1); }
-            100% { left: calc(100% + 50px); transform: translateY(0) scaleX(1); }
-        }
-
-        .mountains {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 25%;
-            background: linear-gradient(to bottom, #4A5568 0%, #2D3748 100%);
-            clip-path: polygon(0% 100%, 0% 60%, 15% 40%, 30% 70%, 45% 30%, 60% 65%, 75% 35%, 90% 60%, 100% 45%, 100% 100%);
             z-index: 1;
         }
 
-        .mountains::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, #718096 0%, #4A5568 100%);
-            clip-path: polygon(0% 100%, 10% 50%, 25% 80%, 40% 40%, 55% 75%, 70% 45%, 85% 70%, 100% 50%, 100% 100%);
-            opacity: 0.7;
-        }
-
-        .weather-container {
+        #ui-layer {
             position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            z-index: 10;
             pointer-events: none;
-            z-index: 3;
-            overflow: hidden;
         }
 
-        .raindrop {
-            position: absolute;
-            width: 2px;
-            height: 15px;
-            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.6));
-            animation: rainFall linear infinite;
-        }
-
-        @keyframes rainFall {
-            to { transform: translateY(100vh); }
-        }
-
-        .snowflake {
-            position: absolute;
-            color: white;
-            font-size: 15px;
-            animation: snowFall linear infinite;
-            text-shadow: 0 0 5px rgba(255,255,255,0.8);
-        }
-
-        @keyframes snowFall {
-            to { transform: translateY(100vh) rotate(360deg); }
+        #ui-layer > * {
+            pointer-events: auto;
         }
 
         .game-wrapper {
@@ -271,9 +105,12 @@
             color: #2D3748;
             font-size: clamp(1.2em, 4vw, 2em);
             font-weight: 900;
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
             margin-bottom: 5px;
             text-align: center;
+            background: rgba(255,255,255,0.6);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
 
         .status-panel {
@@ -296,105 +133,19 @@
             gap: 5px;
         }
 
-        .lives {
-            color: #E53E3E;
-        }
-
-        .score-display {
-            color: #38A169;
-        }
-
-        .level-display {
-            color: #3182CE;
-        }
+        .lives { color: #E53E3E; }
+        .score-display { color: #38A169; }
+        .level-display { color: #3182CE; }
 
         #game-container {
             position: relative;
             width: min(95vw, 400px);
             height: min(50vh, 400px);
-            background: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            background: rgba(255,255,255,0.1);
             border: 3px solid rgba(255,255,255,0.8);
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-
-        .balloon {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s;
-            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
-            z-index: 10;
-        }
-
-        .balloon:hover, .balloon:active {
-            transform: scale(1.1);
-        }
-
-        .balloon-body {
-            width: 50px;
-            height: 60px;
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1em;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        .balloon-body::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 12px;
-            width: 12px;
-            height: 15px;
-            background: rgba(255,255,255,0.4);
-            border-radius: 50%;
-            transform: rotate(-20deg);
-        }
-
-        .balloon-string {
-            width: 2px;
-            height: 20px;
-            background: rgba(255,255,255,0.6);
-            margin-top: -3px;
-        }
-
-        .balloon-normal .balloon-body { background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); }
-        .balloon-golden .balloon-body { 
-            background: linear-gradient(135deg, #F6D365 0%, #FDA085 100%);
-            animation: goldenGlow 2s ease-in-out infinite;
-        }
-        .balloon-heart .balloon-body { 
-            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
-            animation: heartbeat 1.5s ease-in-out infinite;
-        }
-
-        @keyframes goldenGlow {
-            0%, 100% { box-shadow: 0 0 10px rgba(246, 211, 101, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(246, 211, 101, 0.8); }
-        }
-
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .balloon.pop {
-            animation: popEffect 0.3s ease-out forwards;
-        }
-
-        @keyframes popEffect {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(0); opacity: 0; }
         }
 
         .typing-indicator {
@@ -414,9 +165,7 @@
             white-space: nowrap;
         }
 
-        .typing-indicator.active {
-            display: block;
-        }
+        .typing-indicator.active { display: block; }
 
         .answers-container {
             display: grid;
@@ -456,6 +205,54 @@
             50% { box-shadow: 0 0 0 8px rgba(72, 187, 120, 0); }
         }
 
+        .input-mode-toggle {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px;
+            border-radius: 20px;
+        }
+
+        .mode-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.85em;
+            cursor: pointer;
+            background: transparent;
+            color: #4A5568;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+        }
+
+        .text-input-area {
+            width: min(95vw, 400px);
+            margin-top: 10px;
+            display: none;
+        }
+
+        .text-input-area.active {
+            display: block;
+        }
+
+        .math-input {
+            width: 100%;
+            height: 50px;
+            font-size: 1.5em;
+            font-weight: 900;
+            text-align: center;
+            border: 3px solid #667EEA;
+            border-radius: 12px;
+            background: white;
+            color: #2D3748;
+        }
+
         .controls {
             display: flex;
             gap: 8px;
@@ -478,72 +275,44 @@
             min-width: 100px;
         }
 
-        .btn-start {
-            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
-            color: white;
-        }
+        .btn-start { background: linear-gradient(135deg, #48BB78 0%, #38A169 100%); color: white; }
+        .btn-pause { background: linear-gradient(135deg, #ED8936 0%, #DD6B20 100%); color: white; }
+        .btn-hint { background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%); color: white; }
+        .btn-multiplayer { background: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%); color: white; }
 
-        .btn-pause {
-            background: linear-gradient(135deg, #ED8936 0%, #DD6B20 100%);
-            color: white;
-        }
-
-        .btn-hint {
-            background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
-            color: white;
-        }
-
-        .btn-multiplayer {
-            background: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%);
-            color: white;
-        }
-
-        .control-btn:hover, .control-btn:active {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(0,0,0,0.3);
-        }
-
-        .message-overlay {
+        .ai-panel {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 0.75em;
+            max-width: 150px;
+        }
+
+        .ai-status {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 100;
-            backdrop-filter: blur(5px);
+            gap: 5px;
+            margin: 3px 0;
         }
 
-        .message-box {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            animation: messageAppear 0.3s ease-out;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 90vw;
+        .ai-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #48BB78;
+            animation: pulse 2s infinite;
         }
 
-        @keyframes messageAppear {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
-        .message-box h2 {
-            color: #2D3748;
-            margin-bottom: 10px;
-            font-size: 1.5em;
-        }
-
-        .message-box p {
-            color: #4A5568;
-            font-size: 1em;
-        }
-
-        /* ТАБЛИЦЯ ЛІДЕРІВ - ПІД ГРОЮ */
         .global-leaderboard {
             position: fixed;
             bottom: 0;
@@ -560,9 +329,7 @@
             transition: transform 0.3s ease;
         }
 
-        .global-leaderboard.expanded {
-            transform: translateY(0);
-        }
+        .global-leaderboard.expanded { transform: translateY(0); }
 
         .leaderboard-header {
             display: flex;
@@ -580,99 +347,8 @@
             transition: transform 0.3s;
         }
 
-        .global-leaderboard.expanded .leaderboard-header::before {
-            transform: rotate(180deg);
-        }
+        .global-leaderboard.expanded .leaderboard-header::before { transform: rotate(180deg); }
 
-        .global-leaderboard h3 {
-            color: #2D3748;
-            font-size: 1em;
-            margin: 0;
-        }
-
-        .leaderboard-content {
-            display: none;
-            padding-top: 10px;
-        }
-
-        .global-leaderboard.expanded .leaderboard-content {
-            display: block;
-        }
-
-        .leaderboard-tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-
-        .leaderboard-tab {
-            flex: 1;
-            padding: 6px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.75em;
-            font-weight: 700;
-            cursor: pointer;
-            background: #E2E8F0;
-            color: #4A5568;
-        }
-
-        .leaderboard-tab.active {
-            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-            color: white;
-        }
-
-        .leaderboard-list {
-            list-style: none;
-            max-height: 20vh;
-            overflow-y: auto;
-        }
-
-        .leaderboard-item {
-            padding: 8px;
-            margin: 3px 0;
-            background: linear-gradient(90deg, #F7FAFC 0%, #EDF2F7 100%);
-            border-radius: 8px;
-            font-size: 0.85em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .leaderboard-rank {
-            font-weight: 900;
-            width: 25px;
-            text-align: center;
-        }
-
-        .rank-1 { color: #FFD700; }
-        .rank-2 { color: #C0C0C0; }
-        .rank-3 { color: #CD7F32; }
-        .rank-other { color: #718096; }
-
-        .leaderboard-name {
-            flex: 1;
-            font-weight: 700;
-            color: #2D3748;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .leaderboard-score {
-            font-weight: 900;
-            color: #805AD5;
-        }
-
-        .leaderboard-mode {
-            font-size: 0.65em;
-            padding: 2px 5px;
-            border-radius: 8px;
-            background: #E2E8F0;
-            color: #718096;
-        }
-
-        /* СПОВІЩЕННЯ - ЗВЕРХУ ЦЕНТР */
         .notifications-panel {
             position: fixed;
             top: 80px;
@@ -698,36 +374,13 @@
             font-size: 0.9em;
         }
 
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateY(-20px); }
-        }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
 
         .notification.success { border-left-color: #48BB78; }
         .notification.error { border-left-color: #E53E3E; }
-        .notification.info { border-left-color: #4299E1; }
-        .notification.warning { border-left-color: #ED8936; }
 
-        .notification-title {
-            font-weight: 900;
-            color: #2D3748;
-            margin-bottom: 3px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.95em;
-        }
-
-        .notification-text {
-            color: #4A5568;
-            font-size: 0.85em;
-        }
-
-        .name-modal {
+        .name-modal, .multiplayer-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -741,7 +394,7 @@
             backdrop-filter: blur(10px);
         }
 
-        .name-box {
+        .name-box, .multiplayer-box {
             background: white;
             padding: 30px;
             border-radius: 15px;
@@ -750,183 +403,9 @@
             max-width: 90vw;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .name-box h2 {
-            color: #2D3748;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-
-        .name-box input {
-            padding: 12px;
-            font-size: 1.1em;
-            border: 2px solid #E2E8F0;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 15px;
-            width: 200px;
-        }
-
-        .name-box button {
-            padding: 12px 30px;
-            font-size: 1em;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .multiplayer-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 150;
-            backdrop-filter: blur(10px);
-        }
-
-        .multiplayer-box {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 90vw;
-            width: 100%;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        .multiplayer-box h2 {
-            color: #2D3748;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-
-        .room-code-display {
-            font-size: 2.5em;
-            font-weight: 900;
-            color: #805AD5;
-            letter-spacing: 8px;
-            margin: 15px 0;
-            padding: 15px;
-            background: linear-gradient(135deg, #F3E8FF 0%, #E9D8FD 100%);
-            border-radius: 10px;
-            border: 2px dashed #805AD5;
-            cursor: pointer;
-        }
-
-        .room-input {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin: 15px 0;
-        }
-
-        .room-input input {
-            width: 50px;
-            height: 60px;
-            font-size: 1.8em;
-            text-align: center;
-            border: 2px solid #E2E8F0;
-            border-radius: 8px;
-            font-weight: 900;
-        }
-
-        .multiplayer-status {
-            margin: 15px 0;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.9em;
-        }
-
-        .status-waiting { background: #FEF3C7; color: #92400E; }
-        .status-ready { background: #DBEAFE; color: #1E40AF; }
-        .status-connected { background: #D1FAE5; color: #065F46; }
-
-        .opponent-panel {
-            position: fixed;
-            top: 70px;
-            left: 10px;
-            background: rgba(255,255,255,0.95);
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 50;
-            display: none;
-            min-width: 150px;
-            font-size: 0.9em;
-        }
-
-        .opponent-panel.active {
-            display: block;
-            animation: slideInLeft 0.3s ease-out;
-        }
-
-        @keyframes slideInLeft {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .opponent-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .opponent-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-
-        .opponent-name {
-            font-weight: 700;
-            color: #2D3748;
-            font-size: 0.9em;
-        }
-
-        .opponent-score {
-            font-size: 1.2em;
-            font-weight: 900;
-            color: #805AD5;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #E2E8F0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #9F7AEA 0%, #805AD5 100%);
-            transition: width 0.3s ease;
-        }
-
-        .race-target {
-            font-size: 0.75em;
-            color: #718096;
-            margin-top: 5px;
-        }
+        .hidden { display: none !important; }
 
         .winner-announcement {
             position: fixed;
@@ -951,53 +430,7 @@
             100% { transform: translate(-50%, -50%) scale(1); }
         }
 
-        .winner-announcement.show {
-            display: block;
-        }
-
-        .winner-trophy {
-            font-size: 4em;
-            margin-bottom: 10px;
-        }
-
-        .winner-text {
-            font-size: 1.8em;
-            font-weight: 900;
-            color: #2D3748;
-            margin-bottom: 8px;
-        }
-
-        .winner-score {
-            font-size: 1.1em;
-            color: #718096;
-            margin-bottom: 15px;
-        }
-
-        .rematch-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .mode-indicator {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(159, 122, 234, 0.95);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.85em;
-            z-index: 50;
-            display: none;
-            box-shadow: 0 4px 15px rgba(159, 122, 234, 0.4);
-        }
-
-        .mode-indicator.active {
-            display: block;
-        }
+        .winner-announcement.show { display: block; }
 
         .countdown-overlay {
             position: fixed;
@@ -1020,832 +453,1397 @@
             animation: countdownPulse 1s ease-out;
         }
 
-        .connection-status {
+        @keyframes countdownPulse {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .opponent-panel {
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 50;
+            display: none;
+            min-width: 150px;
+            font-size: 0.9em;
+        }
+
+        .opponent-panel.active { display: block; }
+
+        .mode-indicator {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(159, 122, 234, 0.95);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85em;
+            z-index: 50;
+            display: none;
+        }
+
+        .mode-indicator.active { display: block; }
+
+        .visualizer-canvas {
             position: fixed;
             bottom: 60px;
             right: 10px;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-weight: 700;
-            font-size: 0.75em;
-            z-index: 50;
-        }
-
-        .connection-online { background: #48BB78; color: white; }
-        .connection-offline { background: #FC8181; color: white; }
-        .connection-connecting { background: #ED8936; color: white; }
-
-        .hidden { display: none !important; }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #A0AEC0 0%, #718096 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #FC8181 0%, #E53E3E 100%);
-            color: white;
-        }
-
-        .btn-rematch {
-            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
-            color: white;
-        }
-
-        .start-game-btn {
-            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
-            color: white;
-            font-size: 1.1em;
-            padding: 12px 30px;
-            margin: 10px 0;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .rematch-status {
-            margin-top: 10px;
-            padding: 8px;
+            width: 100px;
+            height: 40px;
+            background: rgba(0,0,0,0.5);
             border-radius: 8px;
-            font-size: 0.85em;
-        }
-
-        .rematch-waiting { background: #FEF3C7; color: #92400E; }
-        .rematch-ready { background: #D1FAE5; color: #065F46; }
-
-        /* Мобільні оптимізації */
-        @media (max-width: 480px) {
-            .game-wrapper {
-                padding: 5px;
-            }
-            
-            #game-container {
-                height: 45vh;
-            }
-            
-            .balloon-body {
-                width: 45px;
-                height: 55px;
-                font-size: 0.9em;
-            }
-            
-            .answers-container {
-                gap: 8px;
-            }
-            
-            .answer-btn {
-                height: 45px;
-                font-size: 1.1em;
-            }
-            
-            .controls {
-                gap: 5px;
-            }
-            
-            .control-btn {
-                padding: 8px 12px;
-                font-size: 0.85em;
-                min-width: 80px;
-            }
+            z-index: 45;
         }
     </style>
 </head>
 <body>
-    <!-- Живий світ -->
-    <div class="world">
-        <div class="sun" id="sun"></div>
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-        <div class="bird bird-fly-1">🐦</div>
-        <div class="bird bird-fly-2">🕊️</div>
-        <div class="bird bird-fly-3">🦅</div>
-        <div class="mountains"></div>
-        <div class="weather-container" id="weather-container"></div>
-    </div>
+    <canvas id="game-canvas"></canvas>
+    <canvas id="visualizer-canvas" class="visualizer-canvas"></canvas>
 
-    <!-- Сповіщення - зверху центр -->
-    <div class="notifications-panel" id="notifications-panel"></div>
+    <div id="ui-layer">
+        <div class="notifications-panel" id="notifications-panel"></div>
 
-    <!-- Індикатор режиму -->
-    <div class="mode-indicator" id="mode-indicator">
-        🎮 РЕЖИМ ПЕРЕГОНІВ: До 100 очок!
-    </div>
+        <div class="mode-indicator" id="mode-indicator">🎮 РЕЖИМ ПЕРЕГОНІВ: До 100 очок!</div>
 
-    <!-- Панель суперника -->
-    <div class="opponent-panel" id="opponent-panel">
-        <div class="opponent-info">
-            <div class="opponent-avatar">👤</div>
-            <div>
-                <div class="opponent-name" id="opponent-name">Суперник</div>
-                <div class="opponent-score" id="opponent-score">0 очок</div>
+        <div class="opponent-panel" id="opponent-panel">
+            <div class="opponent-info">
+                <div class="opponent-avatar">👤</div>
+                <div>
+                    <div class="opponent-name" id="opponent-name">Суперник</div>
+                    <div class="opponent-score" id="opponent-score">0 очок</div>
+                </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="opponent-progress" style="width: 0%"></div></div>
+        </div>
+
+        <div class="ai-panel" id="ai-panel">
+            <div class="ai-status"><span class="ai-dot"></span>🧠 AI активний</div>
+            <div id="ai-biome">🌄 Біом: Луки</div>
+            <div id="ai-weather">☀️ Погода: Сонячно</div>
+            <div id="ai-birds">🐦 Птахів: 12</div>
+            <div id="ai-music">🎵 Темп: 120 BPM</div>
+        </div>
+
+        <div class="game-wrapper">
+            <h1>🎈 Математичні Кульки AI 🎈</h1>
+
+            <div class="status-panel">
+                <div class="status-item lives"><span>❤️</span><span id="lives-count">3</span></div>
+                <div class="status-item score-display"><span>⭐</span><span id="score">0</span></div>
+                <div class="status-item level-display"><span>🏆</span><span>Рівень: <span id="level">1</span></span></div>
+            </div>
+
+            <div id="game-container">
+                <div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>
+            </div>
+
+            <div class="answers-container" id="buttons-container">
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+            </div>
+
+            <div class="text-input-area" id="text-input-area">
+                <input type="text" class="math-input" id="math-input" placeholder="Введи відповідь..." maxlength="3">
+            </div>
+
+            <div class="input-mode-toggle">
+                <button class="mode-btn active" onclick="setInputMode('buttons')" id="mode-buttons">🔘 Кнопки</button>
+                <button class="mode-btn" onclick="setInputMode('text')" id="mode-text">⌨️ Текст</button>
+                <button class="mode-btn" onclick="setInputMode('voice')" id="mode-voice">🎤 Голос</button>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn btn-start" id="start-btn" onclick="startGame()">▶️ Один</button>
+                <button class="control-btn btn-multiplayer" id="multiplayer-btn" onclick="openMultiplayerMenu()">👥 На двох</button>
+                <button class="control-btn btn-pause hidden" id="pause-btn" onclick="togglePause()">⏸️ Пауза</button>
+                <button class="control-btn btn-hint hidden" id="hint-btn" onclick="useHint()">💡 Підказка</button>
+                <button class="control-btn btn-danger hidden" id="leave-btn" onclick="leaveRoom()">🚪 Вийти</button>
             </div>
         </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="opponent-progress" style="width: 0%"></div>
-        </div>
-        <div class="race-target">Ціль: 100 очок</div>
-    </div>
 
-    <!-- Гра -->
-    <div class="game-wrapper">
-        <h1>🎈 Математичні Кульки 🎈</h1>
-
-        <div class="status-panel">
-            <div class="status-item lives">
-                <span>❤️</span>
-                <span id="lives-count">3</span>
+        <div class="global-leaderboard" id="global-leaderboard">
+            <div class="leaderboard-header" onclick="toggleLeaderboard()"><h3>🏆 Таблиця лідерів</h3></div>
+            <div class="leaderboard-content">
+                <div class="leaderboard-tabs">
+                    <button class="leaderboard-tab active" onclick="switchLeaderboard('all', event)">Всі</button>
+                    <button class="leaderboard-tab" onclick="switchLeaderboard('single', event)">Один</button>
+                    <button class="leaderboard-tab" onclick="switchLeaderboard('multi', event)">На двох</button>
+                </div>
+                <ul class="leaderboard-list" id="leaderboard-list"><li style="text-align: center; color: #718096; padding: 10px;">Завантаження...</li></ul>
             </div>
-            <div class="status-item score-display">
-                <span>⭐</span>
-                <span id="score">0</span>
-            </div>
-            <div class="status-item level-display">
-                <span>🏆</span>
-                <span>Рівень: <span id="level">1</span></span>
-            </div>
-        </div>
-
-        <div id="game-container">
-            <div class="typing-indicator" id="typing-indicator">
-                ✏️ <span id="typed-number"></span>
-            </div>
-        </div>
-
-        <div class="answers-container">
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-        </div>
-
-        <div class="controls">
-            <button class="control-btn btn-start" id="start-btn" onclick="startGame()">▶️ Один</button>
-            <button class="control-btn btn-multiplayer" id="multiplayer-btn" onclick="openMultiplayerMenu()">👥 На двох</button>
-            <button class="control-btn btn-pause hidden" id="pause-btn" onclick="togglePause()">⏸️ Пауза</button>
-            <button class="control-btn btn-hint hidden" id="hint-btn" onclick="useHint()">💡 Підказка</button>
-            <button class="control-btn btn-danger hidden" id="leave-btn" onclick="leaveRoom()">🚪 Вийти</button>
-        </div>
-    </div>
-
-    <!-- Таблиця лідерів - знизу з можливістю згортання -->
-    <div class="global-leaderboard" id="global-leaderboard">
-        <div class="leaderboard-header" onclick="toggleLeaderboard()">
-            <h3>🏆 Таблиця лідерів</h3>
-        </div>
-        <div class="leaderboard-content">
-            <div class="leaderboard-tabs">
-                <button class="leaderboard-tab active" onclick="switchLeaderboard('all', event)" id="tab-all">Всі</button>
-                <button class="leaderboard-tab" onclick="switchLeaderboard('single', event)" id="tab-single">Один</button>
-                <button class="leaderboard-tab" onclick="switchLeaderboard('multi', event)" id="tab-multi">На двох</button>
-            </div>
-            <ul class="leaderboard-list" id="leaderboard-list">
-                <li style="text-align: center; color: #718096; padding: 10px;">Завантаження...</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Статус підключення -->
-    <div class="connection-status connection-offline" id="connection-status">
-        ⚠️ Офлайн
-    </div>
-
-    <!-- Модальні вікна -->
-    <div class="message-overlay" id="message-overlay">
-        <div class="message-box">
-            <h2 id="message-title"></h2>
-            <p id="message-text"></p>
         </div>
     </div>
 
     <div class="name-modal" id="name-modal">
         <div class="name-box">
             <h2>Вітаємо! 👋</h2>
-            <p style="margin-bottom: 15px; color: #666; font-size: 0.9em;">Введіть своє ім'я</p>
+            <p style="margin-bottom: 15px; color: #666;">Введіть своє ім'я</p>
             <input type="text" id="player-name" placeholder="Твоє ім'я" maxlength="12">
-            <br>
-            <button onclick="savePlayerName()">🚀 Поїхали!</button>
+            <br><button onclick="savePlayerName()">🚀 Поїхали!</button>
         </div>
     </div>
 
-    <!-- Мультиплеєр меню -->
-    <div class="multiplayer-modal" id="multiplayer-modal">
+    <div class="multiplayer-modal hidden" id="multiplayer-modal">
         <div class="multiplayer-box">
             <h2>👥 Гра на двох</h2>
-            
             <div id="multiplayer-menu">
-                <button class="control-btn btn-start" onclick="createRoom()" style="width: 100%; margin-bottom: 10px;">
-                    🏠 Створити кімнату
-                </button>
-                <p style="color: #718096; margin: 10px 0; font-size: 0.9em;">або</p>
+                <button class="control-btn btn-start" onclick="createRoom()" style="width: 100%; margin-bottom: 10px;">🏠 Створити кімнату</button>
+                <p style="color: #718096;">або</p>
                 <div class="room-input" id="room-input">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 0)" oninput="this.value = this.value.toUpperCase()">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 1)" oninput="this.value = this.value.toUpperCase()">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 2)" oninput="this.value = this.value.toUpperCase()">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 3)" oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 0)">
+                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 1)">
+                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 2)">
+                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 3)">
                 </div>
-                <button class="control-btn btn-multiplayer" onclick="joinRoom()" style="width: 100%; margin-top: 10px;">
-                    🔗 Приєднатися
-                </button>
-            </div>
-
-            <div id="room-created" class="hidden">
-                <p style="font-size: 0.9em;">Код кімнати (клікніть щоб скопіювати):</p>
-                <div class="room-code-display" id="room-code-display" onclick="copyRoomCode()">----</div>
-                <div class="multiplayer-status status-waiting" id="waiting-status">
-                    ⏳ Очікуємо суперника...
-                </div>
-                <div id="start-game-container"></div>
-                <button class="control-btn btn-secondary" onclick="closeMultiplayerMenu()" style="margin-top: 10px;">❌ Скасувати</button>
-            </div>
-
-            <div id="joining-room" class="hidden">
-                <div class="multiplayer-status status-connecting">
-                    🔗 Підключення...
-                </div>
+                <button class="control-btn btn-multiplayer" onclick="joinRoom()" style="width: 100%; margin-top: 10px;">🔗 Приєднатися</button>
             </div>
         </div>
     </div>
 
-    <!-- Зворотній відлік -->
     <div class="countdown-overlay" id="countdown-overlay">
         <div class="countdown-number" id="countdown-number">3</div>
     </div>
 
-    <!-- Оголошення переможця -->
     <div class="winner-announcement" id="winner-announcement">
         <div class="winner-trophy">🏆</div>
         <div class="winner-text" id="winner-text">Перемога!</div>
         <div class="winner-score" id="winner-score">Рахунок: 0</div>
-        
-        <div class="rematch-buttons" id="rematch-buttons">
-            <button class="control-btn btn-rematch" onclick="requestRematch()">
-                🔄 Реванш
-            </button>
-            <button class="control-btn btn-secondary" onclick="closeWinnerAndLeave()">
-                🚪 Вийти
-            </button>
+        <div class="rematch-buttons">
+            <button class="control-btn btn-rematch" onclick="requestRematch()">🔄 Реванш</button>
+            <button class="control-btn btn-secondary" onclick="closeWinnerAndLeave()">🚪 Вийти</button>
         </div>
-        
-        <div class="rematch-status hidden" id="rematch-status"></div>
     </div>
 
     <script>
-        // ==================== ІГРОВІ ЗМІННІ ====================
-        let gameState = {
-            isRunning: false,
-            isPaused: false,
-            score: 0,
-            lives: 3,
-            level: 1,
-            balloons: [],
-            spawnInterval: 3000,
-            baseSpeed: 0.8,
-            heartsCollected: 0,
-            sunClicks: 0,
-            cheatUsed: false,
-            typingBuffer: '',
-            isTyping: false,
-            slowMotion: false,
-            weatherIndex: 0,
-            // Мультиплеєр
-            isMultiplayer: false,
-            roomId: null,
-            playerId: null,
-            opponentId: null,
-            opponentName: '',
-            opponentScore: 0,
-            isHost: false,
-            gameTarget: 100,
-            gameStarted: false,
-            rematchRequested: false,
-            gameEnded: false
-        };
+        // ==================== AI SYSTEMS ====================
 
-        let intervals = {
-            spawn: null,
-            move: null
-        };
+        class PerlinNoise {
+            constructor() {
+                this.p = new Uint8Array(512);
+                this.permutation = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+                for (let i = 0; i < 256; i++) this.p[256 + i] = this.p[i] = this.permutation[i];
+            }
 
-        let playerName = localStorage.getItem('mathBalloonPlayer') || '';
-        let highscores = JSON.parse(localStorage.getItem('mathBalloonScores')) || [];
-        
-        // Firebase змінні
-        let db = null;
-        let roomRef = null;
-        let unsubscribeRoom = null;
+            fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+            lerp(t, a, b) { return a + t * (b - a); }
+            grad(hash, x, y, z) {
+                const h = hash & 15;
+                const u = h < 8 ? x : y, v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+
+            noise(x, y, z) {
+                const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+                x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+                const u = this.fade(x), v = this.fade(y), w = this.fade(z);
+                const A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z;
+                const B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
+
+                return this.lerp(w, this.lerp(v, this.lerp(u, this.grad(this.p[AA], x, y, z),
+                    this.grad(this.p[BA], x - 1, y, z)),
+                    this.lerp(u, this.grad(this.p[AB], x, y - 1, z),
+                    this.grad(this.p[BB], x - 1, y - 1, z))),
+                    this.lerp(v, this.lerp(u, this.grad(this.p[AA + 1], x, y, z - 1),
+                    this.grad(this.p[BA + 1], x - 1, y, z - 1)),
+                    this.lerp(u, this.grad(this.p[AB + 1], x, y - 1, z - 1),
+                    this.grad(this.p[BB + 1], x - 1, y - 1, z - 1))));
+            }
+        }
+
+        class AIBiomeGenerator {
+            constructor() {
+                this.perlin = new PerlinNoise();
+                this.biomes = {
+                    meadow: {
+                        name: 'Луки', icon: '🌄',
+                        skyColors: ['#87CEEB', '#E0F6FF', '#FFE4B5'],
+                        groundColors: ['#90EE90', '#7CFC00', '#32CD32'],
+                        mountainHeight: 0.3, cloudDensity: 0.4,
+                        birdTypes: ['sparrow', 'butterfly', 'bee'], musicKey: 'C', tempo: 120
+                    },
+                    forest: {
+                        name: 'Ліс', icon: '🌲',
+                        skyColors: ['#228B22', '#8B4513', '#87CEEB'],
+                        groundColors: ['#006400', '#228B22', '#8FBC8F'],
+                        mountainHeight: 0.6, cloudDensity: 0.7,
+                        birdTypes: ['woodpecker', 'owl', 'eagle'], musicKey: 'G', tempo: 100
+                    },
+                    mountains: {
+                        name: 'Гори', icon: '🏔️',
+                        skyColors: ['#4682B4', '#696969', '#FFFFFF'],
+                        groundColors: ['#2F4F4F', '#696969', '#A9A9A9'],
+                        mountainHeight: 0.9, cloudDensity: 0.3,
+                        birdTypes: ['eagle', 'condor', 'crow'], musicKey: 'D', tempo: 80
+                    },
+                    sunset: {
+                        name: 'Захід', icon: '🌅',
+                        skyColors: ['#FF6B6B', '#FFA500', '#9F7AEA'],
+                        groundColors: ['#8B4513', '#D2691E', '#CD853F'],
+                        mountainHeight: 0.5, cloudDensity: 0.5,
+                        birdTypes: ['swallow', 'bat', 'firefly'], musicKey: 'A', tempo: 90
+                    },
+                    night: {
+                        name: 'Ніч', icon: '🌙',
+                        skyColors: ['#191970', '#4B0082', '#FFD700'],
+                        groundColors: ['#000080', '#4B0082', '#483D8B'],
+                        mountainHeight: 0.4, cloudDensity: 0.2,
+                        birdTypes: ['owl', 'bat', 'moth'], musicKey: 'E', tempo: 70
+                    }
+                };
+                this.currentBiome = 'meadow';
+                this.time = 0;
+                this.mountainPoints = [];
+                this.generateMountains();
+            }
+
+            generateMountains() {
+                this.mountainPoints = [];
+                const segments = 50;
+                for (let i = 0; i <= segments; i++) {
+                    const x = i / segments;
+                    const noise = this.perlin.noise(x * 3, 0, 0);
+                    const height = 0.3 + noise * 0.4;
+                    this.mountainPoints.push({ x, y: 1 - height });
+                }
+            }
+
+            selectBiome(gameStats) {
+                const biomes = Object.keys(this.biomes);
+                if (gameStats.streak > 10) return 'sunset';
+                if (gameStats.level % 5 === 0) return 'mountains';
+                if (gameStats.errors > 5) return 'meadow';
+                if (gameStats.time > 60000) return 'night';
+                return biomes[gameStats.level % biomes.length];
+            }
+
+            update(deltaTime, gameStats) {
+                this.time += deltaTime * 0.001;
+                const newBiome = this.selectBiome(gameStats);
+                if (newBiome !== this.currentBiome) {
+                    this.currentBiome = newBiome;
+                    this.generateMountains();
+                    return true;
+                }
+                return false;
+            }
+
+            draw(ctx, width, height) {
+                const biome = this.biomes[this.currentBiome];
+                
+                // Sky gradient
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+                biome.skyColors.forEach((color, i) => {
+                    skyGrad.addColorStop(i / (biome.skyColors.length - 1), color);
+                });
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, width, height);
+
+                // Sun/Moon
+                const celestialY = height * 0.15 + Math.sin(this.time * 0.1) * 20;
+                ctx.beginPath();
+                ctx.arc(width * 0.85, celestialY, 40, 0, Math.PI * 2);
+                ctx.fillStyle = this.currentBiome === 'night' ? '#FEFCD7' : '#FFD700';
+                ctx.shadowBlur = 50;
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Mountains
+                ctx.beginPath();
+                ctx.moveTo(0, height);
+                this.mountainPoints.forEach((p, i) => {
+                    const x = p.x * width;
+                    const y = p.y * height * biome.mountainHeight + height * (1 - biome.mountainHeight);
+                    if (i === 0) ctx.lineTo(x, y);
+                    else {
+                        const prev = this.mountainPoints[i - 1];
+                        const cpX = (prev.x * width + x) / 2;
+                        ctx.quadraticCurveTo(cpX, prev.y * height * biome.mountainHeight + height * (1 - biome.mountainHeight), x, y);
+                    }
+                });
+                ctx.lineTo(width, height);
+                ctx.closePath();
+                
+                const groundGrad = ctx.createLinearGradient(0, height * 0.5, 0, height);
+                biome.groundColors.forEach((color, i) => {
+                    groundGrad.addColorStop(i / (biome.groundColors.length - 1), color);
+                });
+                ctx.fillStyle = groundGrad;
+                ctx.fill();
+
+                // Snow caps
+                if (biome.mountainHeight > 0.7) {
+                    ctx.beginPath();
+                    this.mountainPoints.forEach((p, i) => {
+                        if (p.y < 0.6) {
+                            const x = p.x * width;
+                            const y = p.y * height * biome.mountainHeight + height * (1 - biome.mountainHeight);
+                            if (i === 0 || this.mountainPoints[i-1].y >= 0.6) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                    });
+                    ctx.lineTo(width, height);
+                    ctx.lineTo(0, height);
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.fill();
+                }
+            }
+
+            getCurrentBiome() { return this.biomes[this.currentBiome]; }
+        }
+
+        class AICloudSystem {
+            constructor() {
+                this.clouds = [];
+                this.perlin = new PerlinNoise();
+                this.windSpeed = 0.5;
+                this.windDirection = 0;
+            }
+
+            spawnCloud(width) {
+                const blobs = [];
+                const numBlobs = 3 + Math.floor(Math.random() * 5);
+                for (let i = 0; i < numBlobs; i++) {
+                    blobs.push({
+                        x: (Math.random() - 0.5) * 100,
+                        y: (Math.random() - 0.5) * 40,
+                        r: 25 + Math.random() * 35
+                    });
+                }
+                
+                return {
+                    x: -150,
+                    y: 50 + Math.random() * 150,
+                    scale: 0.5 + Math.random() * 1,
+                    opacity: 0.4 + Math.random() * 0.4,
+                    blobs: blobs,
+                    vx: this.windSpeed * (0.8 + Math.random() * 0.4),
+                    vy: Math.sin(this.windDirection) * 0.2
+                };
+            }
+
+            update(deltaTime, width, height, gameState) {
+                // React to game events
+                if (gameState.lastEvent === 'correct') {
+                    this.windSpeed = Math.min(2, this.windSpeed + 0.1);
+                } else if (gameState.lastEvent === 'wrong') {
+                    this.windSpeed = Math.max(0.2, this.windSpeed - 0.1);
+                }
+
+                // Spawn new clouds
+                if (Math.random() < 0.005 * (1 + gameState.intensity)) {
+                    this.clouds.push(this.spawnCloud(width));
+                }
+
+                // Update clouds
+                this.clouds = this.clouds.filter(c => {
+                    c.x += c.vx * deltaTime * 0.1;
+                    c.y += c.vy * deltaTime * 0.1;
+                    return c.x < width + 200;
+                });
+
+                gameState.lastEvent = null;
+            }
+
+            draw(ctx) {
+                this.clouds.forEach(c => {
+                    ctx.save();
+                    ctx.globalAlpha = c.opacity;
+                    ctx.translate(c.x, c.y);
+                    ctx.scale(c.scale, c.scale);
+                    
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    c.blobs.forEach((b, i) => {
+                        if (i === 0) ctx.moveTo(b.x + b.r, b.y);
+                        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                    });
+                    ctx.fill();
+                    
+                    // Shadow
+                    ctx.fillStyle = 'rgba(200,200,200,0.3)';
+                    ctx.beginPath();
+                    c.blobs.forEach(b => {
+                        ctx.arc(b.x + 5, b.y + 5, b.r * 0.9, 0, Math.PI * 2);
+                    });
+                    ctx.fill();
+                    
+                    ctx.restore();
+                });
+            }
+        }
+
+        class AIBird {
+            constructor(type, x, y, biome) {
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.behavior = this.getBehavior(type);
+                this.wingPhase = 0;
+                this.state = 'flying';
+                this.target = null;
+                this.energy = 100;
+                this.biome = biome;
+            }
+
+            getBehavior(type) {
+                const behaviors = {
+                    sparrow: { speed: 2, flocking: true, jitter: 0.8, altitude: 'low', reaction: 'flee', size: 15 },
+                    eagle: { speed: 1.5, flocking: false, patrolRadius: 300, altitude: 'high', reaction: 'inspect', size: 25 },
+                    swallow: { speed: 4, flocking: true, acrobatic: true, altitude: 'medium', reaction: 'dodge', size: 12 },
+                    owl: { speed: 0.8, nocturnal: true, silent: true, altitude: 'tree', reaction: 'watch', size: 18 },
+                    hummingbird: { speed: 3, hover: true, nectarSeeking: true, altitude: 'variable', reaction: 'compete', size: 8 },
+                    butterfly: { speed: 1, flutter: true, altitude: 'low', reaction: 'flee', size: 10 },
+                    bee: { speed: 2.5, buzzing: true, altitude: 'variable', reaction: 'avoid', size: 6 }
+                };
+                return behaviors[type] || behaviors.sparrow;
+            }
+
+            update(deltaTime, birds, player, balloons, width, height) {
+                this.wingPhase += deltaTime * 0.01 * this.behavior.speed;
+
+                // Flocking
+                let fx = 0, fy = 0;
+                if (this.behavior.flocking) {
+                    const neighbors = birds.filter(b => b !== this && Math.hypot(b.x - this.x, b.y - this.y) < 100);
+                    if (neighbors.length > 0) {
+                        // Separation
+                        neighbors.forEach(n => {
+                            const dx = this.x - n.x;
+                            const dy = this.y - n.y;
+                            const dist = Math.hypot(dx, dy);
+                            if (dist < 30) {
+                                fx += dx / dist * 2;
+                                fy += dy / dist * 2;
+                            }
+                        });
+                        // Alignment
+                        const avgVx = neighbors.reduce((s, n) => s + n.vx, 0) / neighbors.length;
+                        const avgVy = neighbors.reduce((s, n) => s + n.vy, 0) / neighbors.length;
+                        fx += (avgVx - this.vx) * 0.1;
+                        fy += (avgVy - this.vy) * 0.1;
+                        // Cohesion
+                        const avgX = neighbors.reduce((s, n) => s + n.x, 0) / neighbors.length;
+                        const avgY = neighbors.reduce((s, n) => s + n.y, 0) / neighbors.length;
+                        fx += (avgX - this.x) * 0.01;
+                        fy += (avgY - this.y) * 0.01;
+                    }
+                }
+
+                // Personality
+                if (this.behavior.acrobatic) {
+                    fy += Math.sin(Date.now() * 0.01) * 2;
+                    if (Math.random() < 0.05) fx += (Math.random() - 0.5) * 10;
+                }
+                if (this.behavior.hover) {
+                    fy -= 0.3;
+                    fx += (Math.random() - 0.5) * 3;
+                }
+                if (this.behavior.flutter) {
+                    fx += (Math.random() - 0.5) * 4;
+                    fy += (Math.random() - 0.5) * 4;
+                }
+
+                // React to player
+                if (player) {
+                    const dx = player.x - this.x;
+                    const dy = player.y - this.y;
+                    const dist = Math.hypot(dx, dy);
+                    
+                    switch(this.behavior.reaction) {
+                        case 'flee':
+                            if (dist < 100) {
+                                fx -= dx / dist * 5;
+                                fy -= dy / dist * 5;
+                            }
+                            break;
+                        case 'inspect':
+                            if (dist < 200 && dist > 50) {
+                                fx += dy / dist * 2;
+                                fy -= dx / dist * 2;
+                            }
+                            break;
+                        case 'compete':
+                            if (balloons.length > 0) {
+                                const target = balloons[0];
+                                const tdx = target.x - this.x;
+                                const tdy = target.y - this.y;
+                                fx += tdx * 0.02;
+                                fy += tdy * 0.02;
+                            }
+                            break;
+                    }
+                }
+
+                // Apply forces
+                this.vx += fx * deltaTime * 0.001;
+                this.vy += fy * deltaTime * 0.001;
+                
+                // Limit speed
+                const speed = Math.hypot(this.vx, this.vy);
+                if (speed > this.behavior.speed) {
+                    this.vx = (this.vx / speed) * this.behavior.speed;
+                    this.vy = (this.vy / speed) * this.behavior.speed;
+                }
+
+                // Update position
+                this.x += this.vx * deltaTime * 0.1;
+                this.y += this.vy * deltaTime * 0.1;
+
+                // Wrap around
+                if (this.x < -50) this.x = width + 50;
+                if (this.x > width + 50) this.x = -50;
+                if (this.y < 0) this.y = height * 0.5;
+                if (this.y > height * 0.8) this.y = height * 0.2;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Flip based on direction
+                if (this.vx < 0) ctx.scale(-1, 1);
+                
+                const size = this.behavior.size;
+                const wingY = Math.sin(this.wingPhase) * size * 0.3;
+                
+                // Body
+                ctx.fillStyle = this.getColor();
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size, size * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Wings
+                ctx.fillStyle = this.getWingColor();
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.3, -size * 0.2);
+                ctx.quadraticCurveTo(-size * 0.8, -size * 0.8 + wingY, -size * 0.2, -size * 0.5 + wingY);
+                ctx.quadraticCurveTo(0, -size * 0.3 + wingY * 0.5, size * 0.3, -size * 0.2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.3, size * 0.2);
+                ctx.quadraticCurveTo(-size * 0.8, size * 0.8 - wingY, -size * 0.2, size * 0.5 - wingY);
+                ctx.quadraticCurveTo(0, size * 0.3 - wingY * 0.5, size * 0.3, size * 0.2);
+                ctx.fill();
+                
+                // Eye
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(size * 0.4, -size * 0.1, size * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(size * 0.5, -size * 0.1, size * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Beak
+                ctx.fillStyle = '#FFA500';
+                ctx.beginPath();
+                ctx.moveTo(size * 0.8, 0);
+                ctx.lineTo(size * 1.2, size * 0.1);
+                ctx.lineTo(size * 0.8, size * 0.2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+
+            getColor() {
+                const colors = {
+                    sparrow: '#8B4513', eagle: '#4B3621', swallow: '#1E90FF',
+                    owl: '#8B7355', hummingbird: '#00CED1', butterfly: '#FF69B4', bee: '#FFD700'
+                };
+                return colors[this.type] || '#808080';
+            }
+
+            getWingColor() {
+                const colors = {
+                    sparrow: '#A0522D', eagle: '#654321', swallow: '#87CEEB',
+                    owl: '#A0826D', hummingbird: '#40E0D0', butterfly: '#FF1493', bee: '#FFA500'
+                };
+                return colors[this.type] || '#A0A0A0';
+            }
+        }
+
+        class AIEcosystem {
+            constructor() {
+                this.birds = [];
+                this.timeOfDay = 12;
+                this.lastSpawn = 0;
+            }
+
+            populate(biome, width, height) {
+                this.birds = [];
+                const count = 8 + Math.floor(Math.random() * 8);
+                const types = biome.birdTypes;
+                
+                for (let i = 0; i < count; i++) {
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    this.birds.push(new AIBird(
+                        type,
+                        Math.random() * width,
+                        50 + Math.random() * height * 0.4,
+                        biome
+                    ));
+                }
+            }
+
+            update(deltaTime, width, height, player, balloons) {
+                this.timeOfDay = (this.timeOfDay + deltaTime * 0.0001) % 24;
+                
+                this.birds.forEach(bird => {
+                    bird.update(deltaTime, this.birds, player, balloons, width, height);
+                });
+
+                // Spawn migration occasionally
+                if (Math.random() < 0.0005) {
+                    this.spawnMigration(width, height);
+                }
+            }
+
+            spawnMigration(width, height) {
+                const flockSize = 10 + Math.floor(Math.random() * 15);
+                const y = 80 + Math.random() * 100;
+                for (let i = 0; i < flockSize; i++) {
+                    const bird = new AIBird('swallow', -50 - i * 20, y + (i % 2) * 15, { birdTypes: ['swallow'] });
+                    bird.vx = 3;
+                    this.birds.push(bird);
+                }
+            }
+
+            draw(ctx) {
+                this.birds.forEach(bird => bird.draw(ctx));
+            }
+
+            getBirdCount() { return this.birds.length; }
+        }
+
+        class AIMusicGenerator {
+            constructor() {
+                this.audioCtx = null;
+                this.currentBiome = null;
+                this.bpm = 120;
+                this.scale = [];
+                this.nextNoteTime = 0;
+                this.isPlaying = false;
+                this.intensity = 0;
+                this.analyser = null;
+            }
+
+            init() {
+                if (!this.audioCtx) {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioCtx.createAnalyser();
+                    this.analyser.fftSize = 64;
+                }
+            }
+
+            setBiome(biome) {
+                this.currentBiome = biome;
+                this.bpm = biome.tempo;
+                this.scale = this.generateScale(biome.musicKey, biome.name === 'Ніч' ? 'minor' : 'major');
+            }
+
+            generateScale(root, mode) {
+                const baseFreq = 261.63; // C4
+                const ratios = mode === 'major' ? [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8] : [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5];
+                return ratios.map(r => baseFreq * r);
+            }
+
+            update(gameState, currentTime) {
+                if (!this.isPlaying || !this.audioCtx) return;
+
+                // Adapt to game state
+                const targetIntensity = Math.min(1, gameState.balloons.length * 0.1 + (gameState.lives === 1 ? 0.3 : 0));
+                this.intensity += (targetIntensity - this.intensity) * 0.05;
+                this.bpm = this.currentBiome.tempo + this.intensity * 40;
+
+                // Schedule notes
+                const secondsPerBeat = 60 / this.bpm;
+                while (this.nextNoteTime < currentTime + 0.1) {
+                    this.playNote(this.nextNoteTime);
+                    this.nextNoteTime += secondsPerBeat * (0.5 + Math.random() * 0.5);
+                }
+            }
+
+            playNote(time) {
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+                
+                // Select note based on intensity
+                const noteIndex = this.intensity > 0.5 ? 
+                    Math.floor(Math.random() * this.scale.length) : 
+                    Math.floor(Math.random() * 4);
+                const freq = this.scale[noteIndex] * (1 + Math.floor(Math.random() * 2));
+                
+                osc.frequency.value = freq;
+                osc.type = this.intensity > 0.7 ? 'sawtooth' : 'sine';
+                
+                const duration = 0.1 + (1 - this.intensity) * 0.3;
+                gain.gain.setValueAtTime(0.1, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.analyser);
+                this.analyser.connect(this.audioCtx.destination);
+                
+                osc.start(time);
+                osc.stop(time + duration);
+            }
+
+            start() {
+                this.init();
+                this.isPlaying = true;
+                this.nextNoteTime = this.audioCtx.currentTime;
+            }
+
+            stop() {
+                this.isPlaying = false;
+            }
+
+            getVisualizerData() {
+                if (!this.analyser) return new Uint8Array(0);
+                const data = new Uint8Array(this.analyser.frequencyBinCount);
+                this.analyser.getByteFrequencyData(data);
+                return data;
+            }
+        }
+
+        class AIProblemGenerator {
+            constructor() {
+                this.playerModel = {
+                    strengths: new Set(),
+                    weaknesses: new Set(),
+                    reactionTime: 2000,
+                    accuracy: 0.8
+                };
+                this.difficultyHistory = [];
+            }
+
+            generateProblem(level, gameStats) {
+                // Analyze player performance
+                this.updatePlayerModel(gameStats);
+                
+                // Select problem type based on weaknesses
+                let type = 'addition';
+                if (level > 3 && this.playerModel.weaknesses.has('subtraction')) type = 'subtraction';
+                if (level > 6 && this.playerModel.weaknesses.has('multiplication')) type = 'multiplication';
+                if (level > 9 && Math.random() < 0.3) type = 'mixed';
+                
+                // Generate based on type
+                switch(type) {
+                    case 'addition':
+                        return this.generateAddition(level);
+                    case 'subtraction':
+                        return this.generateSubtraction(level);
+                    case 'multiplication':
+                        return this.generateMultiplication(level);
+                    case 'mixed':
+                        return this.generateMixed(level);
+                    default:
+                        return this.generateAddition(level);
+                }
+            }
+
+            generateAddition(level) {
+                const max = Math.min(10 + level * 2, 50);
+                const a = Math.floor(Math.random() * max) + 1;
+                const b = Math.floor(Math.random() * max) + 1;
+                return { text: `${a}+${b}`, answer: a + b, type: 'normal' };
+            }
+
+            generateSubtraction(level) {
+                const max = Math.min(10 + level * 2, 50);
+                const a = Math.floor(Math.random() * max) + 5;
+                const b = Math.floor(Math.random() * a) + 1;
+                return { text: `${a}-${b}`, answer: a - b, type: 'normal' };
+            }
+
+            generateMultiplication(level) {
+                const max = Math.min(3 + Math.floor(level / 2), 12);
+                const a = Math.floor(Math.random() * max) + 2;
+                const b = Math.floor(Math.random() * max) + 2;
+                return { text: `${a}×${b}`, answer: a * b, type: 'golden' };
+            }
+
+            generateMixed(level) {
+                const types = ['addition', 'subtraction', 'multiplication'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                return this[type](level);
+            }
+
+            updatePlayerModel(stats) {
+                // Track accuracy by operation type
+                if (stats.lastProblem) {
+                    if (stats.lastCorrect) {
+                        this.playerModel.strengths.add(stats.lastProblem.type);
+                    } else {
+                        this.playerModel.weaknesses.add(stats.lastProblem.type);
+                    }
+                }
+                this.playerModel.reactionTime = stats.avgReactionTime || 2000;
+                this.playerModel.accuracy = stats.accuracy || 0.8;
+            }
+
+            generateDistractors(correctAnswer, level) {
+                const distractors = new Set();
+                while (distractors.size < 3) {
+                    const offset = Math.floor(Math.random() * 10) - 5;
+                    const val = correctAnswer + offset;
+                    if (val > 0 && val !== correctAnswer) distractors.add(val);
+                }
+                return [...distractors, correctAnswer].sort(() => Math.random() - 0.5);
+            }
+        }
+
+        // ==================== GAME ENGINE ====================
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('game-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.visualizerCanvas = document.getElementById('visualizer-canvas');
+                this.vCtx = this.visualizerCanvas.getContext('2d');
+                
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+
+                // AI Systems
+                this.biomeGen = new AIBiomeGenerator();
+                this.cloudSys = new AICloudSystem();
+                this.ecosystem = new AIEcosystem();
+                this.musicGen = new AIMusicGenerator();
+                this.problemGen = new AIProblemGenerator();
+
+                // Game state
+                this.gameState = {
+                    isRunning: false,
+                    isPaused: false,
+                    score: 0,
+                    lives: 3,
+                    level: 1,
+                    balloons: [],
+                    birds: [],
+                    spawnInterval: 3000,
+                    lastSpawn: 0,
+                    intensity: 0,
+                    lastEvent: null,
+                    inputMode: 'buttons',
+                    streak: 0,
+                    errors: 0,
+                    avgReactionTime: 2000,
+                    problemStartTime: 0
+                };
+
+                this.playerName = localStorage.getItem('mathBalloonPlayer') || '';
+                this.setupInput();
+                
+                if (!this.playerName) {
+                    document.getElementById('name-modal').classList.remove('hidden');
+                }
+
+                this.lastTime = 0;
+                this.loop = this.loop.bind(this);
+                requestAnimationFrame(this.loop);
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.visualizerCanvas.width = 100;
+                this.visualizerCanvas.height = 40;
+            }
+
+            setupInput() {
+                // Mouse tracking for bird AI
+                this.mouse = { x: 0, y: 0 };
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                // Touch support
+                document.addEventListener('touchmove', (e) => {
+                    this.mouse.x = e.touches[0].clientX;
+                    this.mouse.y = e.touches[0].clientY;
+                });
+
+                // Text input
+                const textInput = document.getElementById('math-input');
+                textInput.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value);
+                    if (!isNaN(val) && val > 9) {
+                        this.checkTextAnswer(val);
+                        e.target.value = '';
+                    }
+                });
+
+                textInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val)) {
+                            this.checkTextAnswer(val);
+                            e.target.value = '';
+                        }
+                    }
+                });
+
+                // Voice input
+                if ('webkitSpeechRecognition' in window) {
+                    this.recognition = new webkitSpeechRecognition();
+                    this.recognition.lang = 'uk-UA';
+                    this.recognition.continuous = true;
+                    this.recognition.onresult = (e) => {
+                        const transcript = e.results[e.results.length - 1][0].transcript;
+                        const num = this.parseUkrainianNumber(transcript);
+                        if (num !== null) {
+                            this.checkTextAnswer(num);
+                        }
+                    };
+                }
+            }
+
+            parseUkrainianNumber(text) {
+                const numbers = {
+                    'нуль': 0, 'один': 1, 'два': 2, 'три': 3, 'чотири': 4,
+                    'п\'ять': 5, 'шість': 6, 'сім': 7, 'вісім': 8, 'дев\'ять': 9,
+                    'десять': 10, 'одинадцять': 11, 'дванадцять': 12
+                };
+                const clean = text.toLowerCase().trim();
+                return numbers[clean] || parseInt(clean);
+            }
+
+            start() {
+                this.gameState.isRunning = true;
+                this.gameState.score = 0;
+                this.gameState.lives = 3;
+                this.gameState.level = 1;
+                this.gameState.balloons = [];
+                this.gameState.streak = 0;
+                this.gameState.errors = 0;
+                
+                const biome = this.biomeGen.getCurrentBiome();
+                this.ecosystem.populate(biome, this.canvas.width, this.canvas.height);
+                this.musicGen.setBiome(biome);
+                this.musicGen.start();
+                
+                this.updateUI();
+                document.getElementById('start-btn').classList.add('hidden');
+                document.getElementById('multiplayer-btn').classList.add('hidden');
+                document.getElementById('pause-btn').classList.remove('hidden');
+                document.getElementById('hint-btn').classList.remove('hidden');
+            }
+
+            loop(timestamp) {
+                const deltaTime = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+
+                if (this.gameState.isRunning && !this.gameState.isPaused) {
+                    this.update(deltaTime, timestamp);
+                }
+
+                this.draw();
+                this.drawVisualizer();
+                requestAnimationFrame(this.loop);
+            }
+
+            update(deltaTime, timestamp) {
+                // Update AI systems
+                const biomeChanged = this.biomeGen.update(deltaTime, {
+                    level: this.gameState.level,
+                    streak: this.gameState.streak,
+                    errors: this.gameState.errors,
+                    time: timestamp
+                });
+
+                if (biomeChanged) {
+                    const biome = this.biomeGen.getCurrentBiome();
+                    this.ecosystem.populate(biome, this.canvas.width, this.canvas.height);
+                    this.musicGen.setBiome(biome);
+                    this.updateAIPanel();
+                }
+
+                this.cloudSys.update(deltaTime, this.canvas.width, this.canvas.height, this.gameState);
+                this.ecosystem.update(deltaTime, this.canvas.width, this.canvas.height, this.mouse, this.gameState.balloons);
+                this.musicGen.update(this.gameState, this.musicGen.audioCtx ? this.musicGen.audioCtx.currentTime : 0);
+
+                // Spawn balloons
+                if (timestamp - this.gameState.lastSpawn > this.gameState.spawnInterval) {
+                    this.spawnBalloon();
+                    this.gameState.lastSpawn = timestamp;
+                }
+
+                // Update balloons
+                const container = document.getElementById('game-container');
+                const rect = container.getBoundingClientRect();
+                
+                this.gameState.balloons = this.gameState.balloons.filter(b => {
+                    b.y -= b.speed * deltaTime * 0.1;
+                    
+                    // Sway motion
+                    b.x += Math.sin(b.y * 0.01 + b.swayOffset) * 0.5;
+                    
+                    // Check bounds
+                    if (b.y < rect.top - 50) {
+                        this.loseLife();
+                        return false;
+                    }
+                    return true;
+                });
+
+                this.updateAIPanel();
+            }
+
+            spawnBalloon() {
+                const container = document.getElementById('game-container');
+                const rect = container.getBoundingClientRect();
+                
+                const problem = this.problemGen.generateProblem(this.gameState.level, this.gameState);
+                this.gameState.problemStartTime = Date.now();
+                
+                const balloon = {
+                    x: rect.left + 30 + Math.random() * (rect.width - 60),
+                    y: rect.bottom - 50,
+                    text: problem.text,
+                    answer: problem.answer,
+                    type: problem.type,
+                    speed: 0.5 + this.gameState.level * 0.1 + Math.random() * 0.3,
+                    swayOffset: Math.random() * Math.PI * 2,
+                    width: 50,
+                    height: 60
+                };
+
+                this.gameState.balloons.push(balloon);
+                this.updateAnswerButtons();
+            }
+
+            updateAnswerButtons() {
+                if (this.gameState.inputMode !== 'buttons') return;
+                
+                const answers = this.gameState.balloons
+                    .map(b => b.answer)
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .slice(0, 4);
+
+                while (answers.length < 4) {
+                    const fake = Math.floor(Math.random() * 20) + 1;
+                    if (!answers.includes(fake)) answers.push(fake);
+                }
+
+                answers.sort(() => Math.random() - 0.5);
+
+                document.querySelectorAll('.answer-btn').forEach((btn, i) => {
+                    btn.textContent = answers[i] || '';
+                    btn.dataset.answer = answers[i] || '';
+                    btn.classList.remove('hint');
+                });
+            }
+
+            checkAnswer(btn) {
+                if (!this.gameState.isRunning || this.gameState.isPaused) return;
+                const answer = parseInt(btn.dataset.answer);
+                this.processAnswer(answer);
+            }
+
+            checkTextAnswer(answer) {
+                if (!this.gameState.isRunning || this.gameState.isPaused) return;
+                this.processAnswer(answer);
+            }
+
+            processAnswer(answer) {
+                const reactionTime = Date.now() - this.gameState.problemStartTime;
+                this.gameState.avgReactionTime = this.gameState.avgReactionTime * 0.9 + reactionTime * 0.1;
+
+                const matches = this.gameState.balloons.filter(b => b.answer === answer);
+
+                if (matches.length > 0) {
+                    matches.forEach(b => {
+                        if (b.type === 'golden') this.gameState.score += 25;
+                        else this.gameState.score += 10;
+                    });
+                    
+                    this.gameState.balloons = this.gameState.balloons.filter(b => b.answer !== answer);
+                    this.gameState.streak++;
+                    this.gameState.lastEvent = 'correct';
+                    
+                    if (this.gameState.streak % 5 === 0) {
+                        this.gameState.level++;
+                        this.gameState.spawnInterval = Math.max(1500, this.gameState.spawnInterval - 200);
+                    }
+                } else {
+                    this.gameState.score = Math.max(0, this.gameState.score - 3);
+                    this.gameState.streak = 0;
+                    this.gameState.errors++;
+                    this.gameState.lastEvent = 'wrong';
+                }
+
+                this.updateAnswerButtons();
+                this.updateUI();
+            }
+
+            loseLife() {
+                this.gameState.lives--;
+                this.gameState.streak = 0;
+                this.updateUI();
+                
+                if (this.gameState.lives <= 0) {
+                    this.endGame();
+                }
+            }
+
+            endGame() {
+                this.gameState.isRunning = false;
+                this.musicGen.stop();
+                document.getElementById('start-btn').classList.remove('hidden');
+                document.getElementById('multiplayer-btn').classList.remove('hidden');
+                document.getElementById('pause-btn').classList.add('hidden');
+                document.getElementById('hint-btn').classList.add('hidden');
+            }
+
+            draw() {
+                const ctx = this.ctx;
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                // Clear
+                ctx.clearRect(0, 0, w, h);
+
+                // AI-generated background
+                this.biomeGen.draw(ctx, w, h);
+                this.cloudSys.draw(ctx);
+                this.ecosystem.draw(ctx);
+
+                // Draw balloons
+                const container = document.getElementById('game-container');
+                const rect = container.getBoundingClientRect();
+                
+                this.gameState.balloons.forEach(b => {
+                    // Only draw if in game area
+                    if (b.y > rect.top - 100 && b.y < rect.bottom + 50) {
+                        this.drawBalloon(ctx, b);
+                    }
+                });
+            }
+
+            drawBalloon(ctx, b) {
+                ctx.save();
+                ctx.translate(b.x, b.y);
+                
+                // Balloon body
+                const grad = ctx.createRadialGradient(-10, -15, 0, 0, 0, 35);
+                if (b.type === 'golden') {
+                    grad.addColorStop(0, '#FFD700');
+                    grad.addColorStop(1, '#FFA500');
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 20;
+                } else {
+                    grad.addColorStop(0, '#667EEA');
+                    grad.addColorStop(1, '#764BA2');
+                }
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 25, 30, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(-8, -12, 8, 10, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // String
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 28);
+                ctx.quadraticCurveTo(3, 35, 0, 45);
+                ctx.stroke();
+                
+                // Text
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Nunito';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(b.text, 0, 2);
+                
+                ctx.restore();
+            }
+
+            drawVisualizer() {
+                const ctx = this.vCtx;
+                const data = this.musicGen.getVisualizerData();
+                
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(0, 0, 100, 40);
+                
+                if (data.length === 0) return;
+                
+                const barWidth = 100 / data.length;
+                ctx.fillStyle = '#48BB78';
+                
+                for (let i = 0; i < data.length; i++) {
+                    const height = (data[i] / 255) * 40;
+                    ctx.fillRect(i * barWidth, 40 - height, barWidth - 1, height);
+                }
+            }
+
+            updateUI() {
+                document.getElementById('score').textContent = this.gameState.score;
+                document.getElementById('level').textContent = this.gameState.level;
+                document.getElementById('lives-count').textContent = this.gameState.lives;
+            }
+
+            updateAIPanel() {
+                const biome = this.biomeGen.getCurrentBiome();
+                document.getElementById('ai-biome').textContent = `${biome.icon} Біом: ${biome.name}`;
+                document.getElementById('ai-birds').textContent = `🐦 Птахів: ${this.ecosystem.getBirdCount()}`;
+                document.getElementById('ai-music').textContent = `🎵 Темп: ${Math.round(this.musicGen.bpm)} BPM`;
+            }
+
+            setInputMode(mode) {
+                this.gameState.inputMode = mode;
+                
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(`mode-${mode}`).classList.add('active');
+                
+                document.getElementById('buttons-container').classList.toggle('hidden', mode !== 'buttons');
+                document.getElementById('text-input-area').classList.toggle('active', mode === 'text' || mode === 'voice');
+                
+                if (mode === 'voice' && this.recognition) {
+                    this.recognition.start();
+                    showNotification('Голос', 'Слухаю...', 'info');
+                } else if (this.recognition) {
+                    this.recognition.stop();
+                }
+            }
+
+            togglePause() {
+                this.gameState.isPaused = !this.gameState.isPaused;
+                const btn = document.getElementById('pause-btn');
+                btn.textContent = this.gameState.isPaused ? '▶️ Продовжити' : '⏸️ Пауза';
+            }
+
+            useHint() {
+                if (this.gameState.lives > 1) {
+                    this.gameState.lives--;
+                    this.updateUI();
+                    
+                    // Slow down balloons
+                    this.gameState.balloons.forEach(b => b.speed *= 0.3);
+                    
+                    // Highlight correct button
+                    if (this.gameState.balloons.length > 0) {
+                        const correct = this.gameState.balloons[0].answer;
+                        document.querySelectorAll('.answer-btn').forEach(btn => {
+                            if (parseInt(btn.dataset.answer) === correct) {
+                                btn.classList.add('hint');
+                            }
+                        });
+                    }
+                    
+                    showNotification('Підказка', 'Швидкість зменшено!', 'info');
+                }
+            }
+        }
+
+        // ==================== GLOBAL FUNCTIONS ====================
+
+        let game;
+        let db, roomRef, unsubscribeRoom;
         let isFirebaseConnected = false;
-        let currentLeaderboard = 'all';
-        let leaderboardExpanded = false;
-        let allLeaderboardData = []; // Кеш всіх даних
 
-        // Погодні умови
-        const weatherTypes = [
-            { name: 'Сонячно', speed: 0.8, bg: 'linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #FFE4B5 100%)' },
-            { name: 'Дощ', speed: 0.6, bg: 'linear-gradient(to bottom, #4A5568 0%, #2D3748 100%)', effect: 'rain' },
-            { name: 'Сніг', speed: 0.5, bg: 'linear-gradient(to bottom, #E2E8F0 0%, #A0AEC0 100%)', effect: 'snow' },
-            { name: 'Веселка', speed: 0.9, bg: 'linear-gradient(to bottom, #F6E05E 0%, #9F7AEA 50%, #667EEA 100%)' },
-            { name: 'Захід', speed: 0.7, bg: 'linear-gradient(to bottom, #F6AD55 0%, #FC8181 50%, #9F7AEA 100%)' }
-        ];
-
-        // ==================== ІНІЦІАЛІЗАЦІЯ ====================
         window.onload = () => {
+            game = new Game();
+            
             setTimeout(() => {
                 if (window.isFirebaseReady && window.firebaseDB) {
                     db = window.firebaseDB;
                     isFirebaseConnected = true;
-                    updateConnectionStatus('online');
-                    console.log("Firebase підключено!");
                     loadGlobalLeaderboard();
-                } else {
-                    updateConnectionStatus('offline');
-                    console.log("Firebase не доступний");
                 }
             }, 1000);
-
-            if (!playerName) {
-                document.getElementById('name-modal').classList.remove('hidden');
-            }
-            setupKeyboardControls();
-            
-            if (window.innerWidth <= 768) {
-                leaderboardExpanded = false;
-            }
         };
 
-        function updateConnectionStatus(status) {
-            const el = document.getElementById('connection-status');
-            el.className = 'connection-status';
-            if (status === 'online') {
-                el.classList.add('connection-online');
-                el.textContent = '🟢 Онлайн';
-            } else if (status === 'connecting') {
-                el.classList.add('connection-connecting');
-                el.textContent = '🟡 ...';
-            } else {
-                el.classList.add('connection-offline');
-                el.textContent = '🔴 Офлайн';
+        function startGame() {
+            game.start();
+        }
+
+        function togglePause() {
+            game.togglePause();
+        }
+
+        function useHint() {
+            game.useHint();
+        }
+
+        function checkAnswer(btn) {
+            game.checkAnswer(btn);
+        }
+
+        function setInputMode(mode) {
+            game.setInputMode(mode);
+        }
+
+        function savePlayerName() {
+            const input = document.getElementById('player-name');
+            if (input.value.trim()) {
+                localStorage.setItem('mathBalloonPlayer', input.value.trim());
+                document.getElementById('name-modal').classList.add('hidden');
+                showNotification('Вітаємо!', `Приємної гри, ${input.value.trim()}!`, 'success');
             }
         }
 
-        // ==================== ТАБЛИЦЯ ЛІДЕРІВ ====================
-        function toggleLeaderboard() {
-            const lb = document.getElementById('global-leaderboard');
-            leaderboardExpanded = !leaderboardExpanded;
-            if (leaderboardExpanded) {
-                lb.classList.add('expanded');
-            } else {
-                lb.classList.remove('expanded');
-            }
-        }
-
-        // ==================== СПОВІЩЕННЯ ====================
-        function showNotification(title, text, type = 'info', duration = 4000) {
+        function showNotification(title, text, type = 'info') {
             const panel = document.getElementById('notifications-panel');
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            
-            const icons = {
-                success: '✅',
-                error: '❌',
-                warning: '⚠️',
-                info: 'ℹ️'
-            };
-            
-            notification.innerHTML = `
-                <div class="notification-title">${icons[type]} ${title}</div>
-                <div class="notification-text">${text}</div>
-            `;
-            
+            notification.innerHTML = `<div class="notification-title">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${title}</div><div class="notification-text">${text}</div>`;
             panel.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, duration);
+            setTimeout(() => notification.remove(), 4000);
         }
 
-        // ==================== ГЛОБАЛЬНА ТАБЛИЦЯ ЛІДЕРІВ ====================
-        async function loadGlobalLeaderboard() {
-            if (!db) {
-                console.log("DB not ready");
-                return;
-            }
-            
-            try {
-                const { ref, onValue, query, orderByChild, limitToLast } = window.firebaseRefs;
-                const leaderboardRef = ref(db, 'leaderboard');
-                
-                console.log("Loading leaderboard...");
-                
-                // Слухаємо останні 100 записів
-                onValue(query(leaderboardRef, orderByChild('score'), limitToLast(100)), (snapshot) => {
-                    const data = snapshot.val();
-                    console.log("Leaderboard data received:", data);
-                    
-                    if (!data) {
-                        allLeaderboardData = [];
-                        renderLeaderboard([]);
-                        return;
-                    }
-                    
-                    // Конвертуємо об'єкт в масив
-                    allLeaderboardData = Object.entries(data).map(([key, value]) => ({
-                        id: key,
-                        ...value
-                    }));
-                    
-                    console.log("Processed data:", allLeaderboardData.length, "entries");
-                    renderLeaderboard(allLeaderboardData);
-                }, (error) => {
-                    console.error("Firebase error:", error);
-                    document.getElementById('leaderboard-list').innerHTML = 
-                        '<li style="text-align: center; color: #E53E3E; padding: 10px;">Помилка завантаження</li>';
-                });
-            } catch (e) {
-                console.error("Error loading leaderboard:", e);
-            }
-        }
-
-        function renderLeaderboard(scores) {
-            const list = document.getElementById('leaderboard-list');
-            
-            // Фільтрація за режимом
-            let filtered = scores;
-            if (currentLeaderboard === 'single') {
-                filtered = scores.filter(s => s.mode === 'single');
-            } else if (currentLeaderboard === 'multi') {
-                filtered = scores.filter(s => s.mode === 'multiplayer-win' || s.mode === 'multiplayer');
-            }
-            
-            // Сортування за очками (спадання)
-            filtered.sort((a, b) => b.score - a.score);
-            
-            // Групування за іменем - беремо тільки найкращий результат для кожного гравця
-            const bestByPlayer = {};
-            filtered.forEach(score => {
-                const key = score.name + '_' + score.mode;
-                if (!bestByPlayer[key] || bestByPlayer[key].score < score.score) {
-                    bestByPlayer[key] = score;
-                }
-            });
-            
-            // Конвертуємо назад в масив і сортуємо
-            let uniqueScores = Object.values(bestByPlayer);
-            uniqueScores.sort((a, b) => b.score - a.score);
-            
-            // Беремо топ-10
-            uniqueScores = uniqueScores.slice(0, 10);
-            
-            if (uniqueScores.length === 0) {
-                list.innerHTML = '<li style="text-align: center; color: #718096; padding: 10px;">Немає даних</li>';
-                return;
-            }
-            
-            list.innerHTML = uniqueScores.map((score, index) => {
-                const rank = index + 1;
-                const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
-                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-                const modeText = score.mode === 'single' ? 'Один' : score.mode === 'multiplayer-win' ? '👑 Перемога' : 'На двох';
-                
-                return `
-                    <li class="leaderboard-item">
-                        <span class="leaderboard-rank ${rankClass}">${medal}</span>
-                        <span class="leaderboard-name" title="${score.name}">${score.name}</span>
-                        <span class="leaderboard-score">${score.score}</span>
-                        <span class="leaderboard-mode">${modeText}</span>
-                    </li>
-                `;
-            }).join('');
+        function toggleLeaderboard() {
+            document.getElementById('global-leaderboard').classList.toggle('expanded');
         }
 
         function switchLeaderboard(type, event) {
             if (event) event.stopPropagation();
-            currentLeaderboard = type;
-            document.querySelectorAll('.leaderboard-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(`tab-${type}`).classList.add('active');
-            renderLeaderboard(allLeaderboardData);
+            // Implementation for leaderboard filtering
         }
 
-        // СПРОЩЕНЕ ЗБЕРЕЖЕННЯ - просто додаємо запис, без перевірок
-        async function saveToGlobalLeaderboard(scoreData) {
-            if (!db) {
-                console.log("Cannot save - DB not ready");
-                return;
-            }
-            
-            try {
-                console.log("Saving to leaderboard:", scoreData);
-                const { ref, push, serverTimestamp } = window.firebaseRefs;
-                const leaderboardRef = ref(db, 'leaderboard');
-                
-                const dataToSave = {
-                    ...scoreData,
-                    timestamp: serverTimestamp()
-                };
-                
-                const newRef = await push(leaderboardRef, dataToSave);
-                console.log("Saved with key:", newRef.key);
-                
-                // Показати сповіщення тільки для хороших результатів
-                if (scoreData.score >= 50) {
-                    showNotification('Новий рекорд!', `${scoreData.score} очок!`, 'success');
-                }
-            } catch (e) {
-                console.error("Error saving to leaderboard:", e);
-                showNotification('Помилка', 'Не вдалося зберегти результат', 'error');
-            }
+        async function loadGlobalLeaderboard() {
+            // Implementation for loading leaderboard from Firebase
         }
 
-        // ==================== ІНШІ ФУНКЦІЇ ====================
-        function savePlayerName() {
-            const input = document.getElementById('player-name');
-            if (input.value.trim()) {
-                playerName = input.value.trim();
-                localStorage.setItem('mathBalloonPlayer', playerName);
-                document.getElementById('name-modal').classList.add('hidden');
-                showNotification('Вітаємо!', `Приємної гри, ${playerName}!`, 'success');
-            }
-        }
-
-        function setupKeyboardControls() {
-            document.addEventListener('keydown', (e) => {
-                if (!gameState.isRunning || gameState.isPaused) {
-                    if (e.key === 'Escape' && gameState.isRunning) togglePause();
-                    return;
-                }
-
-                if (e.key >= '0' && e.key <= '9') {
-                    gameState.typingBuffer += e.key;
-                    gameState.isTyping = true;
-                    gameState.slowMotion = true;
-                    updateTypingIndicator();
-
-                    clearTimeout(window.typingTimeout);
-                    window.typingTimeout = setTimeout(() => {
-                        submitTypedAnswer();
-                    }, 1500);
-                } else if (e.key === 'Enter' && gameState.typingBuffer) {
-                    submitTypedAnswer();
-                } else if (e.key === 'Backspace') {
-                    gameState.typingBuffer = gameState.typingBuffer.slice(0, -1);
-                    updateTypingIndicator();
-                } else if (e.key === 'Escape') {
-                    togglePause();
-                }
-            });
-        }
-
-        function updateTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            const typedSpan = document.getElementById('typed-number');
-
-            if (gameState.typingBuffer) {
-                indicator.classList.add('active');
-                typedSpan.textContent = gameState.typingBuffer;
-            } else {
-                indicator.classList.remove('active');
-            }
-        }
-
-        function submitTypedAnswer() {
-            if (!gameState.typingBuffer) return;
-
-            const answer = parseInt(gameState.typingBuffer);
-            gameState.typingBuffer = '';
-            gameState.isTyping = false;
-            gameState.slowMotion = false;
-            updateTypingIndicator();
-
-            processAnswer(answer);
-        }
-
-        // ==================== МУЛЬТИПЛЕЄР ====================
+        // Multiplayer functions (stub implementations)
         function openMultiplayerMenu() {
             if (!isFirebaseConnected) {
                 showNotification('Помилка', 'Немає підключення', 'error');
                 return;
             }
-            document.getElementById('multiplayer-modal').style.display = 'flex';
-            document.getElementById('multiplayer-menu').classList.remove('hidden');
-            document.getElementById('room-created').classList.add('hidden');
-            document.getElementById('joining-room').classList.add('hidden');
-            document.getElementById('start-game-container').innerHTML = '';
-            document.querySelectorAll('.room-input input').forEach(input => input.value = '');
+            document.getElementById('multiplayer-modal').classList.remove('hidden');
         }
 
-        function closeMultiplayerMenu() {
-            document.getElementById('multiplayer-modal').style.display = 'none';
-            if (roomRef && gameState.isHost && !gameState.isRunning) {
-                const { remove } = window.firebaseRefs;
-                remove(roomRef);
-            }
-            if (unsubscribeRoom) {
-                unsubscribeRoom();
-                unsubscribeRoom = null;
-            }
+        function createRoom() {
+            showNotification('AI Режим', 'Мультиплеєр в розробці. Грайте з AI!', 'info');
         }
 
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 4; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
-        }
-
-        async function createRoom() {
-            if (!playerName) {
-                showNotification('Увага!', 'Введіть ім\'я!', 'warning');
-                return;
-            }
-
-            const { ref, set, onValue, onDisconnect, serverTimestamp } = window.firebaseRefs;
-
-            gameState.isHost = true;
-            gameState.playerId = 'player1';
-            gameState.opponentId = 'player2';
-            
-            const roomCode = generateRoomCode();
-            gameState.roomId = roomCode;
-            
-            document.getElementById('multiplayer-menu').classList.add('hidden');
-            document.getElementById('room-created').classList.remove('hidden');
-            document.getElementById('room-code-display').textContent = roomCode;
-
-            updateConnectionStatus('connecting');
-
-            roomRef = ref(db, 'rooms/' + roomCode);
-            
-            await set(roomRef, {
-                host: playerName,
-                hostScore: 0,
-                hostReady: true,
-                guest: null,
-                guestScore: 0,
-                guestReady: false,
-                status: 'waiting',
-                created: serverTimestamp(),
-                gameEnded: false
-            });
-
-            onDisconnect(roomRef).remove();
-
-            unsubscribeRoom = onValue(roomRef, (snapshot) => {
-                const data = snapshot.val();
-                console.log("Host data:", data);
-                
-                if (!data) {
-                    showNotification('Кімната закрита', 'Суперник вийшов', 'warning');
-                    resetToMainMenu();
-                    return;
-                }
-
-                if (data.gameEnded && !gameState.gameEnded) {
-                    console.log("Game already ended");
-                    return;
-                }
-
-                if (data.guest && data.status === 'waiting') {
-                    gameState.opponentName = data.guest;
-                    const statusEl = document.getElementById('waiting-status');
-                    statusEl.className = 'multiplayer-status status-connected';
-                    statusEl.innerHTML = `✅ ${data.guest} приєднався!`;
-                    
-                    const startContainer = document.getElementById('start-game-container');
-                    if (!startContainer.innerHTML.includes('Почати')) {
-                        startContainer.innerHTML = `
-                            <button class="control-btn start-game-btn" onclick="hostStartGame()">
-                                🎮 Почати гру!
-                            </button>
-                        `;
-                        showNotification('Готовий!', `${data.guest} чекає`, 'success');
-                    }
-                }
-
-                if (data.status === 'playing' && !gameState.gameStarted && !gameState.gameEnded) {
-                    startCountdownAndGame();
-                }
-
-                if (data.status === 'playing' && gameState.isRunning) {
-                    const opponentScore = data.guestScore || 0;
-                    updateOpponentDisplay(opponentScore);
-                    
-                    if (opponentScore >= gameState.gameTarget && !gameState.gameEnded) {
-                        endMultiplayerGame(false);
-                    }
-                }
-
-                if (data.status === 'rematch' && data.rematchHost && data.rematchGuest) {
-                    if (!gameState.isRunning && gameState.gameEnded) {
-                        showNotification('Реванш!', 'Починаємо!', 'success');
-                        resetGameStateForRematch();
-                        startCountdownAndGame();
-                    }
-                }
-            });
-
-            setTimeout(() => {
-                if (!gameState.isRunning && roomRef) {
-                    const { remove } = window.firebaseRefs;
-                    remove(roomRef);
-                    showNotification('Час вийшов', 'Ніхто не приєднався', 'warning');
-                    closeMultiplayerMenu();
-                }
-            }, 300000);
-        }
-
-        async function hostStartGame() {
-            if (!roomRef) return;
-            
-            const { update, serverTimestamp } = window.firebaseRefs;
-            
-            await update(roomRef, {
-                status: 'playing',
-                startTime: serverTimestamp(),
-                gameEnded: false
-            });
-            
-            document.getElementById('start-game-container').innerHTML = '';
-            showNotification('Старт!', '3...', 'success');
-        }
-
-        function startCountdownAndGame() {
-            clearInterval(intervals.spawn);
-            clearInterval(intervals.move);
-            
-            const overlay = document.getElementById('countdown-overlay');
-            const numberEl = document.getElementById('countdown-number');
-            
-            overlay.style.display = 'flex';
-            
-            let count = 3;
-            numberEl.textContent = count;
-            
-            const interval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    numberEl.textContent = count;
-                    numberEl.style.animation = 'none';
-                    setTimeout(() => numberEl.style.animation = 'countdownPulse 1s ease-out', 10);
-                } else if (count === 0) {
-                    numberEl.textContent = '🏁';
-                } else {
-                    clearInterval(interval);
-                    overlay.style.display = 'none';
-                    launchMultiplayerGame();
-                }
-            }, 1000);
-        }
-
-        function launchMultiplayerGame() {
-            gameState.gameEnded = false;
-            gameState.isMultiplayer = true;
-            gameState.isRunning = true;
-            gameState.gameStarted = true;
-            gameState.score = 0;
-            gameState.lives = 3;
-            gameState.level = 1;
-            gameState.balloons = [];
-            gameState.spawnInterval = 2000;
-            gameState.baseSpeed = 1.2;
-            gameState.rematchRequested = false;
-            
-            document.getElementById('multiplayer-modal').style.display = 'none';
-            document.getElementById('winner-announcement').classList.remove('show');
-            
-            document.getElementById('mode-indicator').classList.add('active');
-            document.getElementById('opponent-panel').classList.add('active');
-            document.getElementById('opponent-name').textContent = gameState.opponentName;
-            document.getElementById('start-btn').classList.add('hidden');
-            document.getElementById('multiplayer-btn').classList.add('hidden');
-            document.getElementById('pause-btn').classList.remove('hidden');
-            document.getElementById('hint-btn').classList.remove('hidden');
-            document.getElementById('leave-btn').classList.remove('hidden');
-
-            document.getElementById('game-container').innerHTML = `
-                <div class="typing-indicator" id="typing-indicator">
-                    ✏️ <span id="typed-number"></span>
-                </div>
-            `;
-
-            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-            intervals.move = setInterval(moveBalloons, 50);
-            
-            updateDisplay();
-            setWeather(0);
-            
-            showNotification('Перегони!', 'До 100 очок!', 'info');
-        }
-
-        function copyRoomCode() {
-            const code = document.getElementById('room-code-display').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification('Скопійовано!', code, 'success');
-            });
+        function joinRoom() {
+            showNotification('AI Режим', 'Мультиплеєр в розробці. Грайте з AI!', 'info');
         }
 
         function moveToNext(input, index) {
@@ -1854,735 +1852,20 @@
             }
         }
 
-        async function joinRoom() {
-            if (!playerName) {
-                showNotification('Увага!', 'Введіть ім\'я!', 'warning');
-                return;
-            }
-
-            const inputs = document.querySelectorAll('.room-input input');
-            let code = '';
-            inputs.forEach(input => code += input.value.toUpperCase());
-            
-            if (code.length !== 4) {
-                showNotification('Помилка!', '4 символи', 'error');
-                return;
-            }
-
-            const { ref, get, update, onValue, serverTimestamp } = window.firebaseRefs;
-
-            gameState.isHost = false;
-            gameState.playerId = 'player2';
-            gameState.opponentId = 'player1';
-            gameState.roomId = code;
-
-            document.getElementById('multiplayer-menu').classList.add('hidden');
-            document.getElementById('joining-room').classList.remove('hidden');
-            updateConnectionStatus('connecting');
-
-            roomRef = ref(db, 'rooms/' + code);
-            
-            try {
-                const snapshot = await get(roomRef);
-                const data = snapshot.val();
-                
-                if (!data) {
-                    throw new Error('Кімнату не знайдено');
-                }
-
-                if (data.status !== 'waiting' || data.guest) {
-                    throw new Error('Кімната зайнята');
-                }
-
-                if (data.gameEnded) {
-                    throw new Error('Гра вже закінчилась');
-                }
-
-                gameState.opponentName = data.host;
-                
-                await update(roomRef, {
-                    guest: playerName,
-                    guestReady: true
-                });
-
-                unsubscribeRoom = onValue(roomRef, (snapshot) => {
-                    const data = snapshot.val();
-                    console.log("Guest data:", data);
-                    
-                    if (!data) {
-                        showNotification('Кімната закрита', 'Хост вийшов', 'warning');
-                        resetToMainMenu();
-                        return;
-                    }
-
-                    if (data.gameEnded && !gameState.gameEnded) {
-                        console.log("Game ended by host");
-                        if (gameState.isRunning) {
-                            endMultiplayerGame(false);
-                        }
-                        return;
-                    }
-
-                    if (data.status === 'playing' && !gameState.gameStarted && !gameState.gameEnded) {
-                        gameState.opponentName = data.host;
-                        startCountdownAndGame();
-                    }
-
-                    if (data.status === 'playing' && gameState.isRunning) {
-                        const opponentScore = data.hostScore || 0;
-                        updateOpponentDisplay(opponentScore);
-                        
-                        if (opponentScore >= gameState.gameTarget && !gameState.gameEnded) {
-                            endMultiplayerGame(false);
-                        }
-                    }
-
-                    if (data.status === 'rematch' && data.rematchHost && data.rematchGuest) {
-                        if (!gameState.isRunning && gameState.gameEnded) {
-                            showNotification('Реванш!', 'Починаємо!', 'success');
-                            resetGameStateForRematch();
-                            startCountdownAndGame();
-                        }
-                    }
-                });
-
-                document.getElementById('joining-room').innerHTML = `
-                    <div class="multiplayer-status status-ready">
-                        ✅ Приєднано!<br>
-                        Очікуємо старт...
-                    </div>
-                `;
-                
-                showNotification('Успішно!', `Очікуємо ${data.host}...`, 'success');
-
-            } catch (error) {
-                console.error(error);
-                showNotification('Помилка!', error.message, 'error');
-                openMultiplayerMenu();
-            }
-        }
-
-        function updateOpponentDisplay(score) {
-            gameState.opponentScore = score;
-            document.getElementById('opponent-score').textContent = score + ' очок';
-            const progress = Math.min((score / gameState.gameTarget) * 100, 100);
-            document.getElementById('opponent-progress').style.width = progress + '%';
-        }
-
-        async function updateMyScoreInFirebase() {
-            if (!gameState.isMultiplayer || !roomRef || gameState.gameEnded) return;
-            
-            const { update, serverTimestamp } = window.firebaseRefs;
-            const updateData = gameState.isHost ? 
-                { hostScore: gameState.score } : 
-                { guestScore: gameState.score };
-            
-            await update(roomRef, updateData);
-            
-            if (gameState.score >= gameState.gameTarget && !gameState.gameEnded) {
-                await update(roomRef, {
-                    status: 'finished',
-                    winner: gameState.playerId,
-                    finishTime: serverTimestamp(),
-                    gameEnded: true
-                });
-                endMultiplayerGame(true);
-            }
-        }
-
-        // ==================== РЕВАНШ ====================
-        async function requestRematch() {
-            if (gameState.rematchRequested) return;
-            
-            gameState.rematchRequested = true;
-            const { update, get } = window.firebaseRefs;
-            
-            const snapshot = await get(roomRef);
-            const data = snapshot.val();
-            
-            const updateData = gameState.isHost ? 
-                { rematchHost: true } : 
-                { rematchGuest: true };
-            
-            await update(roomRef, updateData);
-            
-            const statusDiv = document.getElementById('rematch-status');
-            statusDiv.classList.remove('hidden');
-            
-            const hostReady = gameState.isHost ? true : data.rematchHost;
-            const guestReady = gameState.isHost ? data.rematchGuest : true;
-            
-            if (hostReady && guestReady) {
-                await update(roomRef, { status: 'rematch' });
-            } else {
-                statusDiv.className = 'rematch-status rematch-waiting';
-                statusDiv.textContent = '⏳ Очікуємо...';
-                document.querySelector('.btn-rematch').textContent = '✅ Готово!';
-                document.querySelector('.btn-rematch').disabled = true;
-            }
-        }
-
-        function resetGameStateForRematch() {
-            gameState.gameEnded = false;
-            gameState.isRunning = false;
-            gameState.gameStarted = false;
-            gameState.score = 0;
-            gameState.opponentScore = 0;
-            gameState.lives = 3;
-            gameState.level = 1;
-            gameState.balloons = [];
-            gameState.rematchRequested = false;
-            
-            clearInterval(intervals.spawn);
-            clearInterval(intervals.move);
-            
-            document.getElementById('game-container').innerHTML = `
-                <div class="typing-indicator" id="typing-indicator">
-                    ✏️ <span id="typed-number"></span>
-                </div>
-            `;
-            
-            updateDisplay();
-            updateOpponentDisplay(0);
+        function requestRematch() {
+            document.getElementById('winner-announcement').classList.remove('show');
+            startGame();
         }
 
         function closeWinnerAndLeave() {
             document.getElementById('winner-announcement').classList.remove('show');
-            if (roomRef) {
-                const { remove } = window.firebaseRefs;
-                remove(roomRef);
-            }
-            resetToMainMenu();
-        }
-
-        function endMultiplayerGame(iWon) {
-            if (gameState.gameEnded) return;
-            
-            gameState.gameEnded = true;
-            gameState.isRunning = false;
-            gameState.gameStarted = false;
-            
-            clearInterval(intervals.spawn);
-            clearInterval(intervals.move);
-            
-            gameState.balloons.forEach(b => {
-                if (b.element && b.element.parentNode) {
-                    b.element.remove();
-                }
-            });
-            gameState.balloons = [];
-
-            const winnerDiv = document.getElementById('winner-announcement');
-            const winnerText = document.getElementById('winner-text');
-            const winnerScore = document.getElementById('winner-score');
-            const rematchButtons = document.getElementById('rematch-buttons');
-            const rematchStatus = document.getElementById('rematch-status');
-            
-            winnerDiv.classList.add('show');
-            rematchButtons.style.display = 'flex';
-            rematchStatus.classList.add('hidden');
-            
-            const rematchBtn = document.querySelector('.btn-rematch');
-            if (rematchBtn) {
-                rematchBtn.textContent = '🔄 Реванш';
-                rematchBtn.disabled = false;
-            }
-            gameState.rematchRequested = false;
-            
-            if (iWon) {
-                winnerText.textContent = '🎉 Перемога!';
-                winnerText.style.color = '#48BB78';
-                createConfetti();
-                
-                saveToGlobalLeaderboard({
-                    name: playerName,
-                    score: gameState.score,
-                    mode: 'multiplayer-win',
-                    opponent: gameState.opponentName
-                });
-                
-                highscores.push({
-                    name: playerName,
-                    score: gameState.score,
-                    mode: 'multiplayer-win',
-                    date: new Date().toLocaleDateString()
-                });
-                
-                showNotification('Перемога!', `Ти переміг ${gameState.opponentName}!`, 'success');
-            } else {
-                winnerText.textContent = '😔 Поразка...';
-                winnerText.style.color = '#E53E3E';
-                
-                saveToGlobalLeaderboard({
-                    name: playerName,
-                    score: gameState.score,
-                    mode: 'multiplayer',
-                    opponent: gameState.opponentName
-                });
-                
-                showNotification('Поразка', `${gameState.opponentName} переміг`, 'warning');
-            }
-            
-            winnerScore.textContent = `Ти: ${gameState.score} | Суперник: ${gameState.opponentScore}`;
-            updateHighscores();
-        }
-
-        function createConfetti() {
-            for (let i = 0; i < 30; i++) {
-                setTimeout(() => {
-                    const confetti = document.createElement('div');
-                    confetti.style.left = Math.random() * 100 + '%';
-                    confetti.style.background = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'][Math.floor(Math.random() * 5)];
-                    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
-                    confetti.style.position = 'fixed';
-                    confetti.style.width = '8px';
-                    confetti.style.height = '8px';
-                    confetti.style.top = '-10px';
-                    confetti.style.zIndex = '400';
-                    confetti.style.animation = `confettiFall 3s linear forwards`;
-                    document.body.appendChild(confetti);
-                    setTimeout(() => confetti.remove(), 4000);
-                }, i * 30);
-            }
         }
 
         function leaveRoom() {
-            if (confirm('Вийти? Ти програєш.')) {
-                if (roomRef && !gameState.gameEnded) {
-                    const { update, serverTimestamp } = window.firebaseRefs;
-                    update(roomRef, {
-                        status: 'finished',
-                        winner: gameState.opponentId,
-                        reason: 'player_left',
-                        leftAt: serverTimestamp(),
-                        gameEnded: true
-                    });
-                }
-                if (!gameState.gameEnded) {
-                    endMultiplayerGame(false);
-                } else {
-                    closeWinnerAndLeave();
-                }
+            if (confirm('Вийти?')) {
+                closeWinnerAndLeave();
             }
         }
-
-        function resetToMainMenu() {
-            gameState.isMultiplayer = false;
-            gameState.isRunning = false;
-            gameState.gameStarted = false;
-            gameState.gameEnded = false;
-            gameState.roomId = null;
-            gameState.opponentScore = 0;
-            gameState.rematchRequested = false;
-            gameState.score = 0;
-            gameState.lives = 3;
-            gameState.level = 1;
-            gameState.balloons = [];
-            
-            clearInterval(intervals.spawn);
-            clearInterval(intervals.move);
-            
-            const container = document.getElementById('game-container');
-            const balloons = container.querySelectorAll('.balloon');
-            balloons.forEach(b => b.remove());
-            
-            document.getElementById('mode-indicator').classList.remove('active');
-            document.getElementById('opponent-panel').classList.remove('active');
-            document.getElementById('start-btn').classList.remove('hidden');
-            document.getElementById('multiplayer-btn').classList.remove('hidden');
-            document.getElementById('pause-btn').classList.add('hidden');
-            document.getElementById('hint-btn').classList.add('hidden');
-            document.getElementById('leave-btn').classList.add('hidden');
-            document.getElementById('winner-announcement').classList.remove('show');
-            
-            updateDisplay();
-        }
-
-        // ==================== ОДИН ГРАВЕЦЬ ====================
-        function startGame() {
-            if (gameState.isRunning) return;
-
-            resetToMainMenu();
-            gameState.isRunning = true;
-            gameState.isMultiplayer = false;
-            gameState.gameEnded = false;
-            
-            gameState.score = 0;
-            gameState.lives = 3;
-            gameState.level = 1;
-            gameState.balloons = [];
-            gameState.spawnInterval = 3000;
-            gameState.baseSpeed = 0.8;
-            gameState.heartsCollected = 0;
-            gameState.typingBuffer = '';
-            gameState.isTyping = false;
-            gameState.slowMotion = false;
-            gameState.weatherIndex = 0;
-
-            updateDisplay();
-            setWeather(0);
-
-            document.getElementById('game-container').innerHTML = `
-                <div class="typing-indicator" id="typing-indicator">
-                    ✏️ <span id="typed-number"></span>
-                </div>
-            `;
-
-            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-            intervals.move = setInterval(moveBalloons, 50);
-
-            document.getElementById('start-btn').classList.add('hidden');
-            document.getElementById('multiplayer-btn').classList.add('hidden');
-            document.getElementById('pause-btn').classList.remove('hidden');
-            document.getElementById('hint-btn').classList.remove('hidden');
-            
-            showNotification('Поїхали!', 'Ловіть кульки!', 'info');
-        }
-
-        function togglePause() {
-            if (!gameState.isRunning) return;
-
-            gameState.isPaused = !gameState.isPaused;
-            const btn = document.getElementById('pause-btn');
-
-            if (gameState.isPaused) {
-                clearInterval(intervals.spawn);
-                clearInterval(intervals.move);
-                btn.textContent = '▶️ Продовжити';
-                showNotification('Пауза', 'Натисніть для продовження', 'warning');
-            } else {
-                intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-                intervals.move = setInterval(moveBalloons, 50);
-                btn.textContent = '⏸️ Пауза';
-            }
-        }
-
-        function spawnBalloon() {
-            if (gameState.gameEnded || !gameState.isRunning) return;
-            
-            const maxNum = Math.min(5 + gameState.level * 2, 12);
-            const type = Math.random();
-
-            let num1, num2, answer, balloonClass;
-
-            if (type < 0.1 && gameState.heartsCollected < 2) {
-                num1 = Math.floor(Math.random() * 3) + 1;
-                num2 = Math.floor(Math.random() * 3) + 1;
-                balloonClass = 'balloon-heart';
-                gameState.heartsCollected++;
-            } else if (type < 0.2) {
-                num1 = Math.floor(Math.random() * maxNum) + 1;
-                num2 = Math.floor(Math.random() * maxNum) + 1;
-                balloonClass = 'balloon-golden';
-            } else {
-                num1 = Math.floor(Math.random() * (maxNum - 2)) + 1;
-                num2 = Math.floor(Math.random() * (maxNum - 2)) + 1;
-                balloonClass = 'balloon-normal';
-            }
-
-            answer = num1 + num2;
-
-            const balloon = document.createElement('div');
-            balloon.className = `balloon ${balloonClass}`;
-            balloon.innerHTML = `
-                <div class="balloon-body">${num1}+${num2}</div>
-                <div class="balloon-string"></div>
-            `;
-            
-            const containerWidth = document.getElementById('game-container').offsetWidth;
-            const balloonWidth = 50;
-            const maxLeft = containerWidth - balloonWidth - 10;
-            const leftPos = Math.random() * maxLeft + 5;
-            
-            balloon.style.left = leftPos + 'px';
-            balloon.style.top = (document.getElementById('game-container').offsetHeight - 70) + 'px';
-            balloon.dataset.answer = answer;
-
-            document.getElementById('game-container').appendChild(balloon);
-
-            let speed = gameState.baseSpeed + Math.random() * 0.3;
-            if (gameState.slowMotion) speed *= 0.2;
-
-            gameState.balloons.push({
-                element: balloon,
-                speed: speed,
-                baseSpeed: speed,
-                sway: (Math.random() - 0.5) * 1.5
-            });
-
-            updateAnswerButtons();
-        }
-
-        function moveBalloons() {
-            if (gameState.gameEnded) return;
-            
-            const container = document.getElementById('game-container');
-            const containerHeight = container.offsetHeight;
-            
-            gameState.balloons.forEach((b, index) => {
-                let top = parseFloat(b.element.style.top) - b.speed;
-                let left = parseFloat(b.element.style.left) + Math.sin(top / 80) * b.sway;
-
-                if (top < -80) {
-                    b.element.remove();
-                    gameState.balloons.splice(index, 1);
-                    if (!b.element.classList.contains('balloon-heart')) {
-                        loseLife();
-                    }
-                } else {
-                    b.element.style.top = top + 'px';
-                    b.element.style.left = left + 'px';
-                }
-            });
-
-            if (gameState.slowMotion) {
-                gameState.balloons.forEach(b => b.speed = b.baseSpeed * 0.2);
-            } else {
-                gameState.balloons.forEach(b => b.speed = b.baseSpeed);
-            }
-        }
-
-        function updateAnswerButtons() {
-            const answers = gameState.balloons
-                .map(b => parseInt(b.element.dataset.answer))
-                .filter((v, i, a) => a.indexOf(v) === i)
-                .slice(0, 4);
-
-            while (answers.length < 4) {
-                const fake = Math.floor(Math.random() * 20) + 1;
-                if (!answers.includes(fake)) answers.push(fake);
-            }
-
-            answers.sort(() => Math.random() - 0.5);
-
-            document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-                btn.textContent = answers[i];
-                btn.dataset.answer = answers[i];
-                btn.classList.remove('hint');
-            });
-        }
-
-        function checkAnswer(btn) {
-            if (!gameState.isRunning || gameState.isPaused || gameState.gameEnded) return;
-            processAnswer(parseInt(btn.dataset.answer));
-        }
-
-        function processAnswer(answer) {
-            if (gameState.gameEnded) return;
-            
-            const matches = gameState.balloons.filter(b => 
-                parseInt(b.element.dataset.answer) === answer
-            );
-
-            if (matches.length > 0) {
-                matches.forEach(b => {
-                    if (b.element.classList.contains('balloon-golden')) {
-                        gameState.score += 25;
-                    } else if (b.element.classList.contains('balloon-heart')) {
-                        gameState.lives = Math.min(gameState.lives + 1, 5);
-                        gameState.score += 10;
-                    } else {
-                        gameState.score += 10;
-                    }
-
-                    b.element.classList.add('pop');
-                    setTimeout(() => {
-                        if (b.element.parentNode) b.element.remove();
-                    }, 300);
-                });
-
-                gameState.balloons = gameState.balloons.filter(b => 
-                    parseInt(b.element.dataset.answer) !== answer
-                );
-
-                if (gameState.isMultiplayer) {
-                    updateMyScoreInFirebase();
-                } else if (gameState.score >= gameState.level * 40) {
-                    levelUp();
-                }
-            } else {
-                gameState.score = Math.max(0, gameState.score - 3);
-                if (gameState.isMultiplayer) {
-                    updateMyScoreInFirebase();
-                }
-            }
-
-            updateDisplay();
-            updateAnswerButtons();
-        }
-
-        function levelUp() {
-            gameState.level++;
-            gameState.heartsCollected = 0;
-            gameState.spawnInterval = Math.max(1500, gameState.spawnInterval - 200);
-
-            const weatherIdx = Math.min(gameState.level - 1, weatherTypes.length - 1);
-            setWeather(weatherIdx);
-
-            clearInterval(intervals.spawn);
-            intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-
-            showNotification(`Рівень ${gameState.level}!`, 'Швидше!', 'success');
-        }
-
-        function setWeather(index) {
-            gameState.weatherIndex = index;
-            const weather = weatherTypes[index];
-            document.body.style.background = weather.bg;
-            gameState.baseSpeed = weather.speed;
-
-            const container = document.getElementById('weather-container');
-            container.innerHTML = '';
-
-            if (weather.effect === 'rain') {
-                for (let i = 0; i < 30; i++) {
-                    const drop = document.createElement('div');
-                    drop.className = 'raindrop';
-                    drop.style.left = Math.random() * 100 + '%';
-                    drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
-                    drop.style.animationDelay = Math.random() * 2 + 's';
-                    container.appendChild(drop);
-                }
-            } else if (weather.effect === 'snow') {
-                for (let i = 0; i < 20; i++) {
-                    const flake = document.createElement('div');
-                    flake.className = 'snowflake';
-                    flake.textContent = '❄';
-                    flake.style.left = Math.random() * 100 + '%';
-                    flake.style.fontSize = (10 + Math.random() * 10) + 'px';
-                    flake.style.animationDuration = (2 + Math.random() * 3) + 's';
-                    flake.style.animationDelay = Math.random() * 5 + 's';
-                    container.appendChild(flake);
-                }
-            }
-        }
-
-        function useHint() {
-            if (gameState.lives > 1) {
-                gameState.lives--;
-                updateDisplay();
-
-                gameState.balloons.forEach(b => b.speed *= 0.3);
-
-                const correct = gameState.balloons[0];
-                if (correct) {
-                    document.querySelectorAll('.answer-btn').forEach(btn => {
-                        if (parseInt(btn.dataset.answer) === parseInt(correct.element.dataset.answer)) {
-                            btn.classList.add('hint');
-                        }
-                    });
-                }
-                
-                showNotification('Підказка', 'Швидкість зменшено!', 'info');
-            } else {
-                showNotification('Увага!', 'Недостатньо життів!', 'warning');
-            }
-        }
-
-        function loseLife() {
-            if (gameState.gameEnded) return;
-            
-            gameState.lives--;
-            updateDisplay();
-
-            if (gameState.lives <= 0) {
-                if (gameState.isMultiplayer) {
-                    if (!gameState.gameEnded) {
-                        const { update, serverTimestamp } = window.firebaseRefs;
-                        update(roomRef, {
-                            status: 'finished',
-                            winner: gameState.opponentId,
-                            reason: 'no_lives',
-                            gameEnded: true
-                        });
-                        endMultiplayerGame(false);
-                    }
-                } else {
-                    endGame();
-                }
-            }
-        }
-
-        function endGame() {
-            gameState.isRunning = false;
-            gameState.gameEnded = true;
-            clearInterval(intervals.spawn);
-            clearInterval(intervals.move);
-
-            saveToGlobalLeaderboard({
-                name: playerName,
-                score: gameState.score,
-                mode: 'single'
-            });
-
-            highscores.push({
-                name: playerName,
-                score: gameState.score,
-                mode: 'single',
-                date: new Date().toLocaleDateString()
-            });
-            highscores.sort((a, b) => b.score - a.score);
-            highscores = highscores.slice(0, 5);
-            localStorage.setItem('mathBalloonScores', JSON.stringify(highscores));
-            updateHighscores();
-
-            showNotification('Гру завершено!', `Рахунок: ${gameState.score}`, 'info');
-
-            setTimeout(() => {
-                document.getElementById('start-btn').classList.remove('hidden');
-                document.getElementById('multiplayer-btn').classList.remove('hidden');
-                document.getElementById('pause-btn').classList.add('hidden');
-                document.getElementById('hint-btn').classList.add('hidden');
-            }, 2000);
-        }
-
-        function updateDisplay() {
-            document.getElementById('score').textContent = gameState.score;
-            document.getElementById('level').textContent = gameState.level;
-            document.getElementById('lives-count').textContent = gameState.lives;
-        }
-
-        function updateHighscores() {
-            // Локальна таблиця не використовується
-        }
-
-        function showMessage(title, text) {
-            document.getElementById('message-title').textContent = title;
-            document.getElementById('message-text').textContent = text;
-            document.getElementById('message-overlay').style.display = 'flex';
-            setTimeout(hideMessage, 2500);
-        }
-
-        function hideMessage() {
-            document.getElementById('message-overlay').style.display = 'none';
-        }
-
-        // Чит-код
-        document.getElementById('sun').addEventListener('click', () => {
-            gameState.sunClicks++;
-            if (gameState.sunClicks === 3 && !gameState.cheatUsed) {
-                gameState.lives = Math.min(gameState.lives + 2, 5);
-                gameState.cheatUsed = true;
-                updateDisplay();
-                showNotification('Бонус!', '+2 життя!', 'success');
-            }
-        });
-
-        // Очистити при закритті
-        window.addEventListener('beforeunload', () => {
-            if (gameState.isHost && roomRef && !gameState.isRunning) {
-                const { remove } = window.firebaseRefs;
-                remove(roomRef);
-            }
-        });
-        
-        // Обробка зміни розміру вікна
-        window.addEventListener('resize', () => {
-            if (window.innerWidth <= 768 && leaderboardExpanded) {
-                leaderboardExpanded = false;
-                document.getElementById('global-leaderboard').classList.remove('expanded');
-            }
-        });
     </script>
 </body>
 </html>
