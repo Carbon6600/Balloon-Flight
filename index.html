@@ -2,27 +2,12 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Математичні Кульки - AI Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Математичні Кульки AI</title>
     
-    <!-- Firebase SDK v9 (modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { 
-            getDatabase, 
-            ref, 
-            set, 
-            onValue, 
-            update, 
-            remove, 
-            onDisconnect,
-            get,
-            serverTimestamp,
-            push,
-            query,
-            orderByChild,
-            limitToLast
-        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update, remove, onDisconnect, get, serverTimestamp, push, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbs6Tazgr5r3S6AnwJVk1WVYulBSzV32U",
@@ -34,37 +19,49 @@
             appId: "1:938956090462:web:9d150454218cd5ea8198cf"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        
-        window.firebaseDB = database;
-        window.firebaseRefs = { 
-            ref, set, onValue, update, remove, onDisconnect, 
-            get, serverTimestamp, push, query, orderByChild, limitToLast 
-        };
-        window.isFirebaseReady = true;
-        
-        console.log("Firebase ініціалізовано!");
+        try {
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            window.firebaseDB = database;
+            window.firebaseRefs = { ref, set, onValue, update, remove, onDisconnect, get, serverTimestamp, push, query, orderByChild, limitToLast };
+            window.isFirebaseReady = true;
+            console.log('Firebase initialized successfully');
+        } catch (e) {
+            console.error('Firebase init error:', e);
+            window.isFirebaseReady = false;
+        }
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Nunito', sans-serif;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
             touch-action: manipulation;
+            user-select: none;
         }
 
+        :root {
+            --primary: #667EEA;
+            --secondary: #764BA2;
+            --success: #48BB78;
+            --warning: #ED8936;
+            --danger: #E53E3E;
+        }
+
+        html, body {
+            font-family: 'Nunito', sans-serif;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #0f0f23;
+            color: white;
+        }
+
+        /* ==================== CANVAS ==================== */
         #game-canvas {
             position: fixed;
             top: 0;
@@ -74,785 +71,1387 @@
             z-index: 1;
         }
 
-        #ui-layer {
+        #visualizer-canvas {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 100px;
+            height: 40px;
+            z-index: 5;
+            opacity: 0.8;
+            border-radius: 8px;
+        }
+
+        /* ==================== MENU ==================== */
+        .main-menu {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        #ui-layer > * {
-            pointer-events: auto;
-        }
-
-        .game-wrapper {
-            position: relative;
-            z-index: 10;
+            z-index: 100;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            height: 100dvh;
-            padding: 10px;
-            overflow: hidden;
+            padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+            background: linear-gradient(180deg, rgba(15,15,35,0.9) 0%, rgba(30,20,60,0.95) 100%);
+            overflow-y: auto;
+            transition: opacity 0.3s, visibility 0.3s;
         }
 
-        h1 {
-            color: #2D3748;
-            font-size: clamp(1.2em, 4vw, 2em);
-            font-weight: 900;
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
-            margin-bottom: 5px;
+        /* КЛЮЧОВЕ ВИПРАВЛЕННЯ: ховаємо меню через opacity та visibility */
+        .main-menu.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .menu-header {
             text-align: center;
-            background: rgba(255,255,255,0.6);
-            padding: 5px 15px;
-            border-radius: 20px;
+            margin: 20px 0 15px;
         }
 
-        .status-panel {
-            display: flex;
-            gap: 10px;
+        .menu-logo {
+            font-size: 4em;
             margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 15px;
-            border-radius: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            font-weight: 700;
-            font-size: 0.9em;
-            flex-wrap: wrap;
-            justify-content: center;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));
         }
 
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
         }
 
-        .lives { color: #E53E3E; }
-        .score-display { color: #38A169; }
-        .level-display { color: #3182CE; }
-
-        #game-container {
-            position: relative;
-            width: min(95vw, 400px);
-            height: min(50vh, 400px);
-            background: rgba(255,255,255,0.1);
-            border: 3px solid rgba(255,255,255,0.8);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-
-        .typing-indicator {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 215, 0, 0.95);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 1em;
-            color: #744210;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            display: none;
-            z-index: 20;
-            white-space: nowrap;
-        }
-
-        .typing-indicator.active { display: block; }
-
-        .answers-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-            width: min(95vw, 400px);
-        }
-
-        .answer-btn {
-            width: 100%;
-            height: 50px;
-            font-size: 1.3em;
+        .menu-title {
+            font-size: 1.6em;
             font-weight: 900;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
-            transition: all 0.2s;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            background: linear-gradient(90deg, #fff, #ffd700, #ff6b6b, #fff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
         }
 
-        .answer-btn:hover, .answer-btn:active {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.6);
+        @keyframes shine {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
         }
 
-        .answer-btn.hint {
-            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
-            animation: hintPulse 1s ease-in-out infinite;
-        }
-
-        @keyframes hintPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
-            50% { box-shadow: 0 0 0 8px rgba(72, 187, 120, 0); }
-        }
-
-        .input-mode-toggle {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-            background: rgba(255,255,255,0.9);
-            padding: 5px;
-            border-radius: 20px;
-        }
-
-        .mode-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 15px;
-            font-weight: 700;
+        .menu-subtitle {
             font-size: 0.85em;
-            cursor: pointer;
-            background: transparent;
-            color: #4A5568;
-            transition: all 0.2s;
+            color: rgba(255,255,255,0.6);
+            margin-top: 5px;
         }
 
-        .mode-btn.active {
-            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-            color: white;
-        }
-
-        .text-input-area {
-            width: min(95vw, 400px);
-            margin-top: 10px;
-            display: none;
-        }
-
-        .text-input-area.active {
-            display: block;
-        }
-
-        .math-input {
-            width: 100%;
-            height: 50px;
-            font-size: 1.5em;
-            font-weight: 900;
-            text-align: center;
-            border: 3px solid #667EEA;
-            border-radius: 12px;
-            background: white;
-            color: #2D3748;
-        }
-
-        .controls {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: min(95vw, 400px);
-        }
-
-        .control-btn {
-            padding: 10px 15px;
-            font-size: 0.9em;
-            font-weight: 700;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-            flex: 1;
-            min-width: 100px;
-        }
-
-        .btn-start { background: linear-gradient(135deg, #48BB78 0%, #38A169 100%); color: white; }
-        .btn-pause { background: linear-gradient(135deg, #ED8936 0%, #DD6B20 100%); color: white; }
-        .btn-hint { background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%); color: white; }
-        .btn-multiplayer { background: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%); color: white; }
-
-        .ai-panel {
+        .sound-toggle {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.95);
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 50;
-            font-size: 0.75em;
-            max-width: 150px;
+            top: env(safe-area-inset-top, 20px);
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
         }
 
-        .ai-status {
+        .sound-toggle.muted {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .ai-status-bar {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 10px 0 15px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 25px;
+            font-size: 0.75em;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .ai-status-item {
             display: flex;
             align-items: center;
             gap: 5px;
-            margin: 3px 0;
         }
 
         .ai-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+            width: 6px;
+            height: 6px;
             background: #48BB78;
+            border-radius: 50%;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(72,187,120,0.7); }
+            50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(72,187,120,0); }
         }
 
-        .global-leaderboard {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.98);
-            padding: 10px;
-            border-radius: 15px 15px 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-            z-index: 40;
-            max-height: 35vh;
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 380px;
+            margin-bottom: 15px;
+        }
+
+        .menu-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .menu-card:hover::before, .menu-card:active::before {
+            opacity: 1;
+        }
+
+        .menu-card:active {
+            transform: scale(0.96);
+        }
+
+        .menu-card.primary {
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            border: none;
+            grid-column: span 2;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+
+        .menu-card.multiplayer {
+            background: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%);
+            border: none;
+        }
+
+        .menu-card-icon {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .menu-card-title {
+            font-weight: 700;
+            font-size: 1em;
+            margin-bottom: 3px;
+        }
+
+        .menu-card-desc {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        .settings-section {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .settings-title {
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .input-mode-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode-option {
+            flex: 1;
+            padding: 12px 8px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.75em;
+        }
+
+        .mode-option.active {
+            border-color: var(--primary);
+            background: rgba(102,126,234,0.2);
+        }
+
+        .mode-option .icon {
+            font-size: 1.4em;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .leaderboard-preview {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 15px;
+            flex: 1;
+            min-height: 120px;
+            max-height: 180px;
             overflow-y: auto;
-            transform: translateY(calc(100% - 50px));
-            transition: transform 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .global-leaderboard.expanded { transform: translateY(0); }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin: 6px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
 
-        .leaderboard-header {
+        .leaderboard-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .rank {
+            font-weight: 900;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #E2E8F0;
-            cursor: pointer;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
         }
 
-        .leaderboard-header::before {
-            content: '▲';
-            font-size: 0.8em;
-            transition: transform 0.3s;
-        }
+        .rank.gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank.silver { background: linear-gradient(135deg, #E0E0E0, #A0A0A0); color: #000; }
+        .rank.bronze { background: linear-gradient(135deg, #CD7F32, #8B4513); }
 
-        .global-leaderboard.expanded .leaderboard-header::before { transform: rotate(180deg); }
+        .player-name { flex: 1; font-weight: 600; }
+        .player-score { font-weight: 900; color: #FFD700; }
 
-        .notifications-panel {
+        /* ==================== GAME UI ==================== */
+        .game-ui {
             position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* КЛЮЧОВЕ ВИПРАВЛЕННЯ: показуємо game-ui через display та opacity */
+        .game-ui.active {
+            display: block;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .game-ui > * { pointer-events: auto; }
+
+        .top-bar {
+            position: absolute;
+            top: env(safe-area-inset-top, 0);
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 15px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stat-pill {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-pill.lives { color: #FC8181; border-color: rgba(252,129,129,0.3); }
+        .stat-pill.score { color: #68D391; border-color: rgba(104,211,145,0.3); }
+        .stat-pill.level { color: #63B3ED; border-color: rgba(99,179,237,0.3); }
+
+        .game-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1.3em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.9);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .game-area {
+            position: absolute;
             top: 80px;
+            left: 10px;
+            right: 10px;
+            bottom: 200px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 100%);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: inset 0 0 60px rgba(255,255,255,0.05), 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .typing-indicator {
+            position: absolute;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
-            max-width: 350px;
-            z-index: 60;
-            pointer-events: none;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 900;
+            color: #4a4000;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+            animation: typingBounce 0.5s ease-out;
+        }
+
+        @keyframes typingBounce {
+            0% { transform: translateX(-50%) scale(0); }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        .typing-indicator.active { display: block; }
+
+        .bottom-panel {
+            position: absolute;
+            bottom: env(safe-area-inset-bottom, 0);
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .answer-btn {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+            font-size: 1.5em;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .answer-btn:hover::after {
+            left: 100%;
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95) translateY(2px);
+            box-shadow: 0 2px 10px rgba(102,126,234,0.3);
+        }
+
+        .answer-btn.hint {
+            animation: hintPulse 1s infinite;
+            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+            box-shadow: 0 0 30px rgba(72,187,120,0.6);
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(72,187,120,0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px 10px rgba(72,187,120,0); }
+        }
+
+        .text-input-container {
+            display: none;
+            margin-bottom: 10px;
+        }
+
+        .text-input-container.active { display: block; }
+
+        .math-input {
+            width: 100%;
+            height: 70px;
+            font-size: 2.2em;
+            font-weight: 900;
+            text-align: center;
+            border: 3px solid #667EEA;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            outline: none;
+            margin-bottom: 10px;
+            box-shadow: 0 0 20px rgba(102,126,234,0.3);
+        }
+
+        .math-input::placeholder { color: rgba(255,255,255,0.4); }
+
+        .quick-math {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .quick-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 28px;
+            padding: 35px 30px;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.6) translateY(50px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 4.5em;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));
+            animation: trophyBounce 1s ease-out;
+        }
+
+        @keyframes trophyBounce {
+            0% { transform: scale(0) rotate(-20deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        .modal-title {
+            font-size: 1.6em;
+            font-weight: 900;
+            margin-bottom: 12px;
+            background: linear-gradient(90deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-text {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        /* ==================== COUNTDOWN ==================== */
+        .countdown {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 150;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+        }
+
+        .countdown.active { display: flex; }
+
+        .countdown-number {
+            font-size: 10em;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 60px rgba(255,255,255,0.5);
+            animation: countPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes countPop {
+            0% { transform: scale(0); opacity: 0; text-shadow: 0 0 0 transparent; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ==================== NOTIFICATIONS ==================== */
+        .notifications {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 10px;
+            width: 90%;
+            max-width: 320px;
+            pointer-events: none;
         }
 
         .notification {
-            background: rgba(255, 255, 255, 0.98);
-            padding: 12px 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: slideDown 0.4s ease-out, fadeOut 0.4s ease-out 4.6s forwards;
-            border-left: 4px solid #805AD5;
-            pointer-events: auto;
-            font-size: 0.9em;
+            background: rgba(255,255,255,0.95);
+            color: #1a1a2e;
+            padding: 14px 18px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            animation: notifSlide 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.95em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid #667EEA;
         }
 
-        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+        @keyframes notifSlide {
+            from { transform: translateX(-50%) translateY(-30px) scale(0.9); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+        }
 
         .notification.success { border-left-color: #48BB78; }
         .notification.error { border-left-color: #E53E3E; }
 
-        .name-modal, .multiplayer-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            backdrop-filter: blur(10px);
+        /* ==================== HIDDEN ==================== */
+        .hidden { 
+            display: none !important; 
+            opacity: 0 !important;
+            visibility: hidden !important;
         }
 
-        .name-box, .multiplayer-box {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            animation: slideUp 0.4s ease-out;
-            max-width: 90vw;
+        /* ==================== RESPONSIVE ==================== */
+        @media (min-height: 800px) {
+            .menu-header { margin: 40px 0 25px; }
+            .menu-logo { font-size: 5em; }
+            .menu-title { font-size: 2em; }
+            .game-area { bottom: 220px; }
         }
 
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .hidden { display: none !important; }
-
-        .winner-announcement {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            z-index: 300;
-            display: none;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            animation: winnerAppear 0.5s ease-out;
-            max-width: 90vw;
-            width: 350px;
-        }
-
-        @keyframes winnerAppear {
-            0% { transform: translate(-50%, -50%) scale(0); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-
-        .winner-announcement.show { display: block; }
-
-        .countdown-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 250;
-            backdrop-filter: blur(5px);
-        }
-
-        .countdown-number {
-            font-size: 8em;
-            font-weight: 900;
-            color: white;
-            animation: countdownPulse 1s ease-out;
-        }
-
-        @keyframes countdownPulse {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .opponent-panel {
-            position: fixed;
-            top: 70px;
-            left: 10px;
-            background: rgba(255,255,255,0.95);
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 50;
-            display: none;
-            min-width: 150px;
-            font-size: 0.9em;
-        }
-
-        .opponent-panel.active { display: block; }
-
-        .mode-indicator {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(159, 122, 234, 0.95);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.85em;
-            z-index: 50;
-            display: none;
-        }
-
-        .mode-indicator.active { display: block; }
-
-        .visualizer-canvas {
-            position: fixed;
-            bottom: 60px;
-            right: 10px;
-            width: 100px;
-            height: 40px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-            z-index: 45;
+        @media (max-height: 700px) {
+            .menu-logo { font-size: 3em; }
+            .menu-title { font-size: 1.4em; }
+            .menu-card { padding: 15px 10px; }
+            .game-area { bottom: 180px; top: 70px; }
         }
     </style>
 </head>
 <body>
     <canvas id="game-canvas"></canvas>
-    <canvas id="visualizer-canvas" class="visualizer-canvas"></canvas>
+    <canvas id="visualizer-canvas"></canvas>
 
-    <div id="ui-layer">
-        <div class="notifications-panel" id="notifications-panel"></div>
+    <!-- SOUND TOGGLE -->
+    <button class="sound-toggle" id="sound-toggle" onclick="toggleSound()">🔊</button>
 
-        <div class="mode-indicator" id="mode-indicator">🎮 РЕЖИМ ПЕРЕГОНІВ: До 100 очок!</div>
+    <!-- MAIN MENU -->
+    <div class="main-menu" id="main-menu">
+        <div class="menu-header">
+            <div class="menu-logo">🎈</div>
+            <div class="menu-title">Математичні Кульки</div>
+            <div class="menu-subtitle">AI Edition • v2.0</div>
+        </div>
 
-        <div class="opponent-panel" id="opponent-panel">
-            <div class="opponent-info">
-                <div class="opponent-avatar">👤</div>
-                <div>
-                    <div class="opponent-name" id="opponent-name">Суперник</div>
-                    <div class="opponent-score" id="opponent-score">0 очок</div>
+        <div class="ai-status-bar">
+            <div class="ai-status-item"><span class="ai-dot"></span>🧠 AI активний</div>
+            <div class="ai-status-item" id="menu-biome">🌄 Луки</div>
+            <div class="ai-status-item" id="menu-birds">🐦 0 птахів</div>
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-card primary" onclick="startSingleGame()">
+                <div class="menu-card-icon">▶️</div>
+                <div class="menu-card-title">Грати одному</div>
+                <div class="menu-card-desc">Проти AI з адаптивною складністю</div>
+            </div>
+            <div class="menu-card multiplayer" onclick="startMultiplayer()">
+                <div class="menu-card-icon">👥</div>
+                <div class="menu-card-title">На двох</div>
+                <div class="menu-card-desc">Онлайн перегони</div>
+            </div>
+            <div class="menu-card" onclick="showSettings()">
+                <div class="menu-card-icon">⚙️</div>
+                <div class="menu-card-title">Налаштування</div>
+                <div class="menu-card-desc">Режим введення</div>
+            </div>
+            <div class="menu-card" onclick="showTutorial()">
+                <div class="menu-card-icon">📖</div>
+                <div class="menu-card-title">Як грати</div>
+                <div class="menu-card-desc">Правила та поради</div>
+            </div>
+        </div>
+
+        <div class="settings-section" id="settings-section" style="display: none;">
+            <div class="settings-title">Режим введення</div>
+            <div class="input-mode-selector">
+                <div class="mode-option active" onclick="setInputMode('buttons')" id="mode-buttons">
+                    <span class="icon">🔘</span>
+                    <span>Кнопки</span>
+                </div>
+                <div class="mode-option" onclick="setInputMode('text')" id="mode-text">
+                    <span class="icon">⌨️</span>
+                    <span>Текст</span>
+                </div>
+                <div class="mode-option" onclick="setInputMode('voice')" id="mode-voice">
+                    <span class="icon">🎤</span>
+                    <span>Голос</span>
                 </div>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="opponent-progress" style="width: 0%"></div></div>
         </div>
 
-        <div class="ai-panel" id="ai-panel">
-            <div class="ai-status"><span class="ai-dot"></span>🧠 AI активний</div>
-            <div id="ai-biome">🌄 Біом: Луки</div>
-            <div id="ai-weather">☀️ Погода: Сонячно</div>
-            <div id="ai-birds">🐦 Птахів: 12</div>
-            <div id="ai-music">🎵 Темп: 120 BPM</div>
-        </div>
-
-        <div class="game-wrapper">
-            <h1>🎈 Математичні Кульки AI 🎈</h1>
-
-            <div class="status-panel">
-                <div class="status-item lives"><span>❤️</span><span id="lives-count">3</span></div>
-                <div class="status-item score-display"><span>⭐</span><span id="score">0</span></div>
-                <div class="status-item level-display"><span>🏆</span><span>Рівень: <span id="level">1</span></span></div>
-            </div>
-
-            <div id="game-container">
-                <div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>
-            </div>
-
-            <div class="answers-container" id="buttons-container">
-                <button class="answer-btn" onclick="checkAnswer(this)"></button>
-                <button class="answer-btn" onclick="checkAnswer(this)"></button>
-                <button class="answer-btn" onclick="checkAnswer(this)"></button>
-                <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            </div>
-
-            <div class="text-input-area" id="text-input-area">
-                <input type="text" class="math-input" id="math-input" placeholder="Введи відповідь..." maxlength="3">
-            </div>
-
-            <div class="input-mode-toggle">
-                <button class="mode-btn active" onclick="setInputMode('buttons')" id="mode-buttons">🔘 Кнопки</button>
-                <button class="mode-btn" onclick="setInputMode('text')" id="mode-text">⌨️ Текст</button>
-                <button class="mode-btn" onclick="setInputMode('voice')" id="mode-voice">🎤 Голос</button>
-            </div>
-
-            <div class="controls">
-                <button class="control-btn btn-start" id="start-btn" onclick="startGame()">▶️ Один</button>
-                <button class="control-btn btn-multiplayer" id="multiplayer-btn" onclick="openMultiplayerMenu()">👥 На двох</button>
-                <button class="control-btn btn-pause hidden" id="pause-btn" onclick="togglePause()">⏸️ Пауза</button>
-                <button class="control-btn btn-hint hidden" id="hint-btn" onclick="useHint()">💡 Підказка</button>
-                <button class="control-btn btn-danger hidden" id="leave-btn" onclick="leaveRoom()">🚪 Вийти</button>
-            </div>
-        </div>
-
-        <div class="global-leaderboard" id="global-leaderboard">
-            <div class="leaderboard-header" onclick="toggleLeaderboard()"><h3>🏆 Таблиця лідерів</h3></div>
-            <div class="leaderboard-content">
-                <div class="leaderboard-tabs">
-                    <button class="leaderboard-tab active" onclick="switchLeaderboard('all', event)">Всі</button>
-                    <button class="leaderboard-tab" onclick="switchLeaderboard('single', event)">Один</button>
-                    <button class="leaderboard-tab" onclick="switchLeaderboard('multi', event)">На двох</button>
+        <div class="leaderboard-preview">
+            <div class="settings-title">🏆 Топ гравців</div>
+            <div id="leaderboard-list">
+                <div class="leaderboard-item">
+                    <span class="rank gold">1</span>
+                    <span class="player-name">AI-Майстер</span>
+                    <span class="player-score">1250</span>
                 </div>
-                <ul class="leaderboard-list" id="leaderboard-list"><li style="text-align: center; color: #718096; padding: 10px;">Завантаження...</li></ul>
+                <div class="leaderboard-item">
+                    <span class="rank silver">2</span>
+                    <span class="player-name">Математик</span>
+                    <span class="player-score">980</span>
+                </div>
+                <div class="leaderboard-item">
+                    <span class="rank bronze">3</span>
+                    <span class="player-name">Швидкий</span>
+                    <span class="player-score">850</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="name-modal" id="name-modal">
-        <div class="name-box">
-            <h2>Вітаємо! 👋</h2>
-            <p style="margin-bottom: 15px; color: #666;">Введіть своє ім'я</p>
-            <input type="text" id="player-name" placeholder="Твоє ім'я" maxlength="12">
-            <br><button onclick="savePlayerName()">🚀 Поїхали!</button>
+    <!-- GAME UI -->
+    <div class="game-ui" id="game-ui">
+        <div class="top-bar">
+            <div class="game-stats">
+                <div class="stat-pill lives"><span>❤️</span><span id="lives-display">3</span></div>
+                <div class="stat-pill score"><span>⭐</span><span id="score-display">0</span></div>
+                <div class="stat-pill level"><span>🏆</span><span id="level-display">1</span></div>
+            </div>
+            <div class="game-controls">
+                <button class="icon-btn" onclick="togglePause()" id="pause-btn">⏸️</button>
+                <button class="icon-btn" onclick="useHint()" id="hint-btn">💡</button>
+                <button class="icon-btn" onclick="exitGame()">❌</button>
+            </div>
         </div>
-    </div>
 
-    <div class="multiplayer-modal hidden" id="multiplayer-modal">
-        <div class="multiplayer-box">
-            <h2>👥 Гра на двох</h2>
-            <div id="multiplayer-menu">
-                <button class="control-btn btn-start" onclick="createRoom()" style="width: 100%; margin-bottom: 10px;">🏠 Створити кімнату</button>
-                <p style="color: #718096;">або</p>
-                <div class="room-input" id="room-input">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 0)">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 1)">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 2)">
-                    <input type="text" maxlength="1" onkeyup="moveToNext(this, 3)">
+        <div class="game-area" id="game-area">
+            <div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>
+        </div>
+
+        <div class="bottom-panel">
+            <div class="answers-grid" id="buttons-container">
+                <button class="answer-btn" onclick="checkAnswerBtn(0)">?</button>
+                <button class="answer-btn" onclick="checkAnswerBtn(1)">?</button>
+                <button class="answer-btn" onclick="checkAnswerBtn(2)">?</button>
+                <button class="answer-btn" onclick="checkAnswerBtn(3)">?</button>
+            </div>
+
+            <div class="text-input-container" id="text-input-container">
+                <input type="number" class="math-input" id="math-input" placeholder="?" oninput="handleTextInput(this.value)">
+                <div class="quick-math">
+                    <button class="quick-btn" onclick="addNumber(1)">+1</button>
+                    <button class="quick-btn" onclick="addNumber(2)">+2</button>
+                    <button class="quick-btn" onclick="addNumber(5)">+5</button>
+                    <button class="quick-btn" onclick="addNumber(10)">+10</button>
+                    <button class="quick-btn" onclick="clearInput()">🗑️</button>
                 </div>
-                <button class="control-btn btn-multiplayer" onclick="joinRoom()" style="width: 100%; margin-top: 10px;">🔗 Приєднатися</button>
             </div>
         </div>
     </div>
 
-    <div class="countdown-overlay" id="countdown-overlay">
+    <!-- MODALS -->
+    <div class="modal" id="name-modal">
+        <div class="modal-content">
+            <div class="modal-icon">👋</div>
+            <div class="modal-title">Вітаємо!</div>
+            <div class="modal-text">Введіть своє ім'я, щоб почати пригоду</div>
+            <input type="text" id="player-name" placeholder="Твоє ім'я" maxlength="12" style="width: 100%; padding: 16px; margin-bottom: 20px; border-radius: 16px; border: 2px solid rgba(102,126,234,0.5); background: rgba(0,0,0,0.3); color: white; font-size: 1.1em; text-align: center;">
+            <button class="btn btn-primary" onclick="saveName()" style="width: 100%;">🚀 Поїхали!</button>
+        </div>
+    </div>
+
+    <div class="modal" id="game-over-modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="result-icon">🏆</div>
+            <div class="modal-title" id="result-title">Гру завершено!</div>
+            <div class="modal-text" id="result-text">Рахунок: 0</div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="restartGame()">🔄 Ще раз</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">🏠 Меню</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="tutorial-modal">
+        <div class="modal-content">
+            <div class="modal-icon">📖</div>
+            <div class="modal-title">Як грати</div>
+            <div class="modal-text" style="text-align: left; font-size: 0.95em;">
+                🎈 <b>Лопай кульки</b> з правильними відповідями<br><br>
+                ⌨️ <b>Обери режим:</b> кнопки, текст або голос<br><br>
+                🧠 <b>AI адаптує</b> складність під твій рівень<br><br>
+                🐦 <b>Спостерігай</b> за живим світом навколо<br><br>
+                💡 <b>Використовуй підказки</b> коли застряг
+            </div>
+            <button class="btn btn-primary" onclick="closeTutorial()" style="width: 100%;">Зрозуміло!</button>
+        </div>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="countdown" id="countdown">
         <div class="countdown-number" id="countdown-number">3</div>
     </div>
 
-    <div class="winner-announcement" id="winner-announcement">
-        <div class="winner-trophy">🏆</div>
-        <div class="winner-text" id="winner-text">Перемога!</div>
-        <div class="winner-score" id="winner-score">Рахунок: 0</div>
-        <div class="rematch-buttons">
-            <button class="control-btn btn-rematch" onclick="requestRematch()">🔄 Реванш</button>
-            <button class="control-btn btn-secondary" onclick="closeWinnerAndLeave()">🚪 Вийти</button>
-        </div>
-    </div>
+    <!-- NOTIFICATIONS -->
+    <div class="notifications" id="notifications"></div>
 
     <script>
-        // ==================== AI SYSTEMS ====================
+        // ==================== AUDIO SYSTEM (iOS Compatible) ====================
+
+        class AudioSystem {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.sounds = {};
+                this.masterGain = null;
+                this.initialized = false;
+            }
+
+            init() {
+                if (this.initialized) return;
+                
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) {
+                    console.log('Web Audio API not supported');
+                    return;
+                }
+
+                try {
+                    this.ctx = new AudioContext();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = 0.5;
+                    this.masterGain.connect(this.ctx.destination);
+
+                    this.createPopSound();
+                    this.createExplosionSound();
+                    this.createBackgroundDrone();
+
+                    this.initialized = true;
+                    
+                    if (this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                } catch (e) {
+                    console.error('Audio init error:', e);
+                }
+            }
+
+            unlock() {
+                if (!this.ctx) this.init();
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume().then(() => {
+                        console.log('Audio unlocked');
+                    }).catch(e => console.error('Audio unlock error:', e));
+                }
+            }
+
+            createPopSound() {
+                this.sounds.pop = () => {
+                    if (!this.enabled || !this.ctx) return;
+                    try {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+                        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.15);
+                    } catch (e) {
+                        console.error('Pop sound error:', e);
+                    }
+                };
+            }
+
+            createExplosionSound() {
+                this.sounds.explode = () => {
+                    if (!this.enabled || !this.ctx) return;
+                    try {
+                        const bufferSize = this.ctx.sampleRate * 0.3;
+                        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                        }
+                        const noise = this.ctx.createBufferSource();
+                        noise.buffer = buffer;
+                        const filter = this.ctx.createBiquadFilter();
+                        filter.type = 'lowpass';
+                        filter.frequency.value = 1000;
+                        const gain = this.ctx.createGain();
+                        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                        noise.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(this.masterGain);
+                        noise.start();
+                    } catch (e) {
+                        console.error('Explosion sound error:', e);
+                    }
+                };
+            }
+
+            createBackgroundDrone() {
+                this.sounds.drone = {
+                    oscs: [],
+                    gain: null,
+                    start: () => {
+                        if (!this.ctx) return;
+                        this.stop();
+                        this.gain = this.ctx.createGain();
+                        this.gain.gain.value = 0.08;
+                        this.gain.connect(this.masterGain);
+                        [220, 277.18, 329.63].forEach((freq, i) => {
+                            const osc = this.ctx.createOscillator();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            const oscGain = this.ctx.createGain();
+                            oscGain.gain.value = 0.3;
+                            const lfo = this.ctx.createOscillator();
+                            lfo.frequency.value = 0.1 + i * 0.05;
+                            const lfoGain = this.ctx.createGain();
+                            lfoGain.gain.value = 10;
+                            lfo.connect(lfoGain);
+                            lfoGain.connect(osc.frequency);
+                            lfo.start();
+                            osc.connect(oscGain);
+                            oscGain.connect(this.gain);
+                            osc.start();
+                            this.oscs.push({ osc, lfo, lfoGain, oscGain });
+                        });
+                    },
+                    stop: () => {
+                        this.oscs.forEach(o => {
+                            try { o.osc.stop(); o.lfo.stop(); } catch(e) {}
+                        });
+                        this.oscs = [];
+                    },
+                    setIntensity: (intensity) => {
+                        if (this.gain) {
+                            this.gain.gain.setTargetAtTime(0.05 + intensity * 0.15, this.ctx.currentTime, 0.5);
+                        }
+                    }
+                };
+            }
+
+            play(name) {
+                if (!this.enabled || !this.sounds[name]) return;
+                if (typeof this.sounds[name] === 'function') {
+                    this.sounds[name]();
+                }
+            }
+
+            startMusic() {
+                if (this.sounds.drone) this.sounds.drone.start();
+            }
+
+            stopMusic() {
+                if (this.sounds.drone) this.sounds.drone.stop();
+            }
+
+            setIntensity(intensity) {
+                if (this.sounds.drone) this.sounds.drone.setIntensity(intensity);
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopMusic();
+                } else {
+                    this.startMusic();
+                }
+                return this.enabled;
+            }
+        }
+
+        // ==================== VISUAL EFFECTS ====================
+
+        class ParticleSystem {
+            constructor() {
+                this.particles = [];
+            }
+
+            createExplosion(x, y, color, isGolden = false) {
+                const count = isGolden ? 30 : 15;
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+                    const speed = 2 + Math.random() * 4;
+                    this.particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: 1,
+                        decay: 0.02 + Math.random() * 0.02,
+                        color,
+                        size: isGolden ? 4 + Math.random() * 4 : 2 + Math.random() * 3,
+                        type: isGolden ? 'sparkle' : 'circle'
+                    });
+                }
+                this.particles.push({
+                    x, y,
+                    vx: 0, vy: 0,
+                    life: 1,
+                    decay: 0.05,
+                    color: 'rgba(255,255,255,0.5)',
+                    size: 10,
+                    type: 'shockwave',
+                    maxSize: isGolden ? 100 : 60
+                });
+            }
+
+            update() {
+                this.particles = this.particles.filter(p => {
+                    if (p.type === 'shockwave') {
+                        p.size += (p.maxSize - p.size) * 0.1;
+                    } else {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.1;
+                        p.vx *= 0.98;
+                    }
+                    p.life -= p.decay;
+                    return p.life > 0;
+                });
+            }
+
+            draw(ctx) {
+                this.particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = p.life;
+                    if (p.type === 'shockwave') {
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else if (p.type === 'sparkle') {
+                        ctx.fillStyle = p.color;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = p.color;
+                        ctx.beginPath();
+                        const spikes = 4;
+                        for (let i = 0; i < spikes * 2; i++) {
+                            const r = i % 2 === 0 ? p.size : p.size * 0.4;
+                            const a = (Math.PI * i) / spikes;
+                            const x = p.x + Math.cos(a) * r;
+                            const y = p.y + Math.sin(a) * r;
+                            if (i === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    } else {
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+            }
+        }
+
+        // ==================== ENHANCED AI SYSTEMS ====================
 
         class PerlinNoise {
             constructor() {
                 this.p = new Uint8Array(512);
-                this.permutation = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
-                for (let i = 0; i < 256; i++) this.p[256 + i] = this.p[i] = this.permutation[i];
+                const perm = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+                for (let i = 0; i < 256; i++) this.p[256+i] = this.p[i] = perm[i];
             }
 
-            fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-            lerp(t, a, b) { return a + t * (b - a); }
-            grad(hash, x, y, z) {
-                const h = hash & 15;
-                const u = h < 8 ? x : y, v = h < 4 ? y : h === 12 || h === 14 ? x : z;
-                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            fade(t) { return t*t*t*(t*(t*6-15)+10); }
+            lerp(t,a,b) { return a+t*(b-a); }
+            grad(h,x,y,z) {
+                const u = h<8?x:y, v = h<4?y:h===12||h===14?x:z;
+                return ((h&1)?-u:u)+((h&2)?-v:v);
             }
 
-            noise(x, y, z) {
-                const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+            noise(x,y,z) {
+                const X = Math.floor(x)&255, Y = Math.floor(y)&255, Z = Math.floor(z)&255;
                 x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
                 const u = this.fade(x), v = this.fade(y), w = this.fade(z);
-                const A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z;
-                const B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
-
-                return this.lerp(w, this.lerp(v, this.lerp(u, this.grad(this.p[AA], x, y, z),
-                    this.grad(this.p[BA], x - 1, y, z)),
-                    this.lerp(u, this.grad(this.p[AB], x, y - 1, z),
-                    this.grad(this.p[BB], x - 1, y - 1, z))),
-                    this.lerp(v, this.lerp(u, this.grad(this.p[AA + 1], x, y, z - 1),
-                    this.grad(this.p[BA + 1], x - 1, y, z - 1)),
-                    this.lerp(u, this.grad(this.p[AB + 1], x, y - 1, z - 1),
-                    this.grad(this.p[BB + 1], x - 1, y - 1, z - 1))));
+                const A = this.p[X]+Y, AA = this.p[A]+Z, AB = this.p[A+1]+Z;
+                const B = this.p[X+1]+Y, BA = this.p[B]+Z, BB = this.p[B+1]+Z;
+                return this.lerp(w, this.lerp(v, this.lerp(u, this.grad(this.p[AA],x,y,z), this.grad(this.p[BA],x-1,y,z)),
+                    this.lerp(u, this.grad(this.p[AB],x,y-1,z), this.grad(this.p[BB],x-1,y-1,z))),
+                    this.lerp(v, this.lerp(u, this.grad(this.p[AA+1],x,y,z-1), this.grad(this.p[BA+1],x-1,y,z-1)),
+                    this.lerp(u, this.grad(this.p[AB+1],x,y-1,z-1), this.grad(this.p[BB+1],x-1,y-1,z-1))));
             }
         }
 
         class AIBiomeGenerator {
             constructor() {
                 this.perlin = new PerlinNoise();
+                this.time = 0;
+                this.currentBiome = 'meadow';
                 this.biomes = {
                     meadow: {
                         name: 'Луки', icon: '🌄',
-                        skyColors: ['#87CEEB', '#E0F6FF', '#FFE4B5'],
-                        groundColors: ['#90EE90', '#7CFC00', '#32CD32'],
-                        mountainHeight: 0.3, cloudDensity: 0.4,
-                        birdTypes: ['sparrow', 'butterfly', 'bee'], musicKey: 'C', tempo: 120
+                        skyTop: '#1a2980', skyBottom: '#26d0ce',
+                        ground: ['#56ab2f', '#a8e063'],
+                        height: 0.25,
+                        birds: ['sparrow', 'swallow', 'butterfly']
                     },
                     forest: {
                         name: 'Ліс', icon: '🌲',
-                        skyColors: ['#228B22', '#8B4513', '#87CEEB'],
-                        groundColors: ['#006400', '#228B22', '#8FBC8F'],
-                        mountainHeight: 0.6, cloudDensity: 0.7,
-                        birdTypes: ['woodpecker', 'owl', 'eagle'], musicKey: 'G', tempo: 100
+                        skyTop: '#134e5e', skyBottom: '#71b280',
+                        ground: ['#0f2027', '#203a43', '#2c5364'],
+                        height: 0.5,
+                        birds: ['woodpecker', 'owl', 'eagle', 'crow']
                     },
                     mountains: {
                         name: 'Гори', icon: '🏔️',
-                        skyColors: ['#4682B4', '#696969', '#FFFFFF'],
-                        groundColors: ['#2F4F4F', '#696969', '#A9A9A9'],
-                        mountainHeight: 0.9, cloudDensity: 0.3,
-                        birdTypes: ['eagle', 'condor', 'crow'], musicKey: 'D', tempo: 80
+                        skyTop: '#3a1c71', skyBottom: '#d76d77',
+                        ground: ['#4b6cb7', '#182848'],
+                        height: 0.85,
+                        birds: ['eagle', 'condor', 'crow']
                     },
                     sunset: {
                         name: 'Захід', icon: '🌅',
-                        skyColors: ['#FF6B6B', '#FFA500', '#9F7AEA'],
-                        groundColors: ['#8B4513', '#D2691E', '#CD853F'],
-                        mountainHeight: 0.5, cloudDensity: 0.5,
-                        birdTypes: ['swallow', 'bat', 'firefly'], musicKey: 'A', tempo: 90
+                        skyTop: '#ff512f', skyBottom: '#dd2476',
+                        ground: ['#f12711', '#f5af19'],
+                        height: 0.4,
+                        birds: ['swallow', 'bat']
                     },
                     night: {
                         name: 'Ніч', icon: '🌙',
-                        skyColors: ['#191970', '#4B0082', '#FFD700'],
-                        groundColors: ['#000080', '#4B0082', '#483D8B'],
-                        mountainHeight: 0.4, cloudDensity: 0.2,
-                        birdTypes: ['owl', 'bat', 'moth'], musicKey: 'E', tempo: 70
+                        skyTop: '#0f0c29', skyBottom: '#302b63',
+                        ground: ['#141e30', '#243b55'],
+                        height: 0.35,
+                        birds: ['owl', 'bat', 'firefly']
                     }
                 };
-                this.currentBiome = 'meadow';
-                this.time = 0;
-                this.mountainPoints = [];
-                this.generateMountains();
+                this.mountains = this.generateMountains();
+                this.stars = this.generateStars();
             }
 
             generateMountains() {
-                this.mountainPoints = [];
-                const segments = 50;
-                for (let i = 0; i <= segments; i++) {
-                    const x = i / segments;
-                    const noise = this.perlin.noise(x * 3, 0, 0);
-                    const height = 0.3 + noise * 0.4;
-                    this.mountainPoints.push({ x, y: 1 - height });
+                const points = [];
+                for (let i = 0; i <= 60; i++) {
+                    const x = i / 60;
+                    const n1 = this.perlin.noise(x * 2, 0, 0);
+                    const n2 = this.perlin.noise(x * 4, 100, 0) * 0.5;
+                    points.push({ x, y: 0.6 - (n1 + n2) * 0.35 });
                 }
+                return points;
             }
 
-            selectBiome(gameStats) {
-                const biomes = Object.keys(this.biomes);
-                if (gameStats.streak > 10) return 'sunset';
-                if (gameStats.level % 5 === 0) return 'mountains';
-                if (gameStats.errors > 5) return 'meadow';
-                if (gameStats.time > 60000) return 'night';
-                return biomes[gameStats.level % biomes.length];
+            generateStars() {
+                const stars = [];
+                for (let i = 0; i < 100; i++) {
+                    stars.push({
+                        x: Math.random(),
+                        y: Math.random() * 0.6,
+                        size: Math.random() * 2,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+                return stars;
             }
 
-            update(deltaTime, gameStats) {
-                this.time += deltaTime * 0.001;
-                const newBiome = this.selectBiome(gameStats);
+            update(dt, stats) {
+                this.time += dt * 0.001;
+                let newBiome = this.currentBiome;
+                if (stats.streak > 10) newBiome = 'sunset';
+                else if (stats.level % 5 === 0) newBiome = 'mountains';
+                else if (stats.errors > 5) newBiome = 'meadow';
+                else if (stats.time > 60000) newBiome = 'night';
+                
                 if (newBiome !== this.currentBiome) {
                     this.currentBiome = newBiome;
-                    this.generateMountains();
+                    this.mountains = this.generateMountains();
                     return true;
                 }
                 return false;
             }
 
-            draw(ctx, width, height) {
-                const biome = this.biomes[this.currentBiome];
-                
-                // Sky gradient
-                const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
-                biome.skyColors.forEach((color, i) => {
-                    skyGrad.addColorStop(i / (biome.skyColors.length - 1), color);
-                });
-                ctx.fillStyle = skyGrad;
-                ctx.fillRect(0, 0, width, height);
+            draw(ctx, w, h) {
+                const b = this.biomes[this.currentBiome];
+                const g = ctx.createLinearGradient(0, 0, 0, h);
+                g.addColorStop(0, b.skyTop);
+                g.addColorStop(1, b.skyBottom);
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, w, h);
 
-                // Sun/Moon
-                const celestialY = height * 0.15 + Math.sin(this.time * 0.1) * 20;
+                if (this.currentBiome === 'night') {
+                    ctx.save();
+                    this.stars.forEach(s => {
+                        const twinkle = Math.sin(this.time * 2 + s.twinkle) * 0.5 + 0.5;
+                        ctx.fillStyle = `rgba(255,255,255,${0.3 + twinkle * 0.7})`;
+                        ctx.beginPath();
+                        ctx.arc(s.x * w, s.y * h, s.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    ctx.restore();
+                }
+
+                const isNight = this.currentBiome === 'night';
+                const cx = w * 0.8;
+                const cy = h * 0.15 + Math.sin(this.time * 0.05) * 20;
+                const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 120);
+                glow.addColorStop(0, isNight ? 'rgba(254,252,215,0.3)' : 'rgba(255,215,0,0.4)');
+                glow.addColorStop(1, 'transparent');
+                ctx.fillStyle = glow;
+                ctx.fillRect(cx - 120, cy - 120, 240, 240);
                 ctx.beginPath();
-                ctx.arc(width * 0.85, celestialY, 40, 0, Math.PI * 2);
-                ctx.fillStyle = this.currentBiome === 'night' ? '#FEFCD7' : '#FFD700';
+                ctx.arc(cx, cy, isNight ? 35 : 40, 0, Math.PI * 2);
+                ctx.fillStyle = isNight ? '#FEFCD7' : '#FFD700';
                 ctx.shadowBlur = 50;
                 ctx.shadowColor = ctx.fillStyle;
                 ctx.fill();
                 ctx.shadowBlur = 0;
 
-                // Mountains
+                this.drawMountains(ctx, w, h, b);
+            }
+
+            drawMountains(ctx, w, h, biome) {
+                ctx.fillStyle = biome.ground[0] + '80';
                 ctx.beginPath();
-                ctx.moveTo(0, height);
-                this.mountainPoints.forEach((p, i) => {
-                    const x = p.x * width;
-                    const y = p.y * height * biome.mountainHeight + height * (1 - biome.mountainHeight);
-                    if (i === 0) ctx.lineTo(x, y);
+                ctx.moveTo(0, h);
+                for (let i = 0; i < this.mountains.length; i++) {
+                    const p = this.mountains[i];
+                    const y = p.y * h * biome.height * 0.7 + h * (1 - biome.height * 0.7);
+                    if (i === 0) ctx.lineTo(p.x * w, y);
                     else {
-                        const prev = this.mountainPoints[i - 1];
-                        const cpX = (prev.x * width + x) / 2;
-                        ctx.quadraticCurveTo(cpX, prev.y * height * biome.mountainHeight + height * (1 - biome.mountainHeight), x, y);
+                        const prev = this.mountains[i-1];
+                        const cpx = (prev.x * w + p.x * w) / 2;
+                        const cpy = (prev.y * h * biome.height * 0.7 + h * (1 - biome.height * 0.7) + y) / 2;
+                        ctx.quadraticCurveTo(cpx, cpy, p.x * w, y);
                     }
-                });
-                ctx.lineTo(width, height);
-                ctx.closePath();
-                
-                const groundGrad = ctx.createLinearGradient(0, height * 0.5, 0, height);
-                biome.groundColors.forEach((color, i) => {
-                    groundGrad.addColorStop(i / (biome.groundColors.length - 1), color);
-                });
-                ctx.fillStyle = groundGrad;
+                }
+                ctx.lineTo(w, h);
                 ctx.fill();
 
-                // Snow caps
-                if (biome.mountainHeight > 0.7) {
+                const grad = ctx.createLinearGradient(0, h * 0.4, 0, h);
+                biome.ground.forEach((c, i) => grad.addColorStop(i / (biome.ground.length - 1), c));
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(0, h);
+                this.mountains.forEach((p, i) => {
+                    const y = p.y * h * biome.height + h * (1 - biome.height);
+                    if (i === 0) ctx.lineTo(p.x * w, y);
+                    else {
+                        const prev = this.mountains[i-1];
+                        const cpx = (prev.x * w + p.x * w) / 2;
+                        const cpy = (prev.y * h * biome.height + h * (1 - biome.height) + y) / 2;
+                        ctx.quadraticCurveTo(cpx, cpy, p.x * w, y);
+                    }
+                });
+                ctx.lineTo(w, h);
+                ctx.fill();
+
+                if (biome.height > 0.7) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
                     ctx.beginPath();
-                    this.mountainPoints.forEach((p, i) => {
-                        if (p.y < 0.6) {
-                            const x = p.x * width;
-                            const y = p.y * height * biome.mountainHeight + height * (1 - biome.mountainHeight);
-                            if (i === 0 || this.mountainPoints[i-1].y >= 0.6) ctx.moveTo(x, y);
+                    this.mountains.forEach((p, i) => {
+                        if (p.y < 0.45) {
+                            const x = p.x * w;
+                            const y = p.y * h * biome.height + h * (1 - biome.height);
+                            if (i === 0 || this.mountains[i-1].y >= 0.45) ctx.moveTo(x, y);
                             else ctx.lineTo(x, y);
                         }
                     });
-                    ctx.lineTo(width, height);
-                    ctx.lineTo(0, height);
-                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.lineTo(w, h);
+                    ctx.lineTo(0, h);
                     ctx.fill();
                 }
             }
 
-            getCurrentBiome() { return this.biomes[this.currentBiome]; }
+            getCurrent() { return this.biomes[this.currentBiome]; }
         }
 
         class AICloudSystem {
             constructor() {
                 this.clouds = [];
-                this.perlin = new PerlinNoise();
-                this.windSpeed = 0.5;
-                this.windDirection = 0;
+                this.wind = 0.4;
             }
 
-            spawnCloud(width) {
+            spawn(w) {
                 const blobs = [];
-                const numBlobs = 3 + Math.floor(Math.random() * 5);
+                const numBlobs = 4 + Math.floor(Math.random() * 4);
                 for (let i = 0; i < numBlobs; i++) {
                     blobs.push({
                         x: (Math.random() - 0.5) * 100,
-                        y: (Math.random() - 0.5) * 40,
+                        y: (Math.random() - 0.5) * 30,
                         r: 25 + Math.random() * 35
                     });
                 }
-                
                 return {
-                    x: -150,
-                    y: 50 + Math.random() * 150,
-                    scale: 0.5 + Math.random() * 1,
+                    x: -200,
+                    y: 30 + Math.random() * 150,
+                    scale: 0.5 + Math.random() * 0.9,
                     opacity: 0.4 + Math.random() * 0.4,
-                    blobs: blobs,
-                    vx: this.windSpeed * (0.8 + Math.random() * 0.4),
-                    vy: Math.sin(this.windDirection) * 0.2
+                    blobs,
+                    vx: this.wind * (0.7 + Math.random() * 0.6)
                 };
             }
 
-            update(deltaTime, width, height, gameState) {
-                // React to game events
-                if (gameState.lastEvent === 'correct') {
-                    this.windSpeed = Math.min(2, this.windSpeed + 0.1);
-                } else if (gameState.lastEvent === 'wrong') {
-                    this.windSpeed = Math.max(0.2, this.windSpeed - 0.1);
+            update(dt, w, h, intensity) {
+                if (Math.random() < 0.004 * (1 + intensity)) {
+                    this.clouds.push(this.spawn(w));
                 }
-
-                // Spawn new clouds
-                if (Math.random() < 0.005 * (1 + gameState.intensity)) {
-                    this.clouds.push(this.spawnCloud(width));
-                }
-
-                // Update clouds
                 this.clouds = this.clouds.filter(c => {
-                    c.x += c.vx * deltaTime * 0.1;
-                    c.y += c.vy * deltaTime * 0.1;
-                    return c.x < width + 200;
+                    c.x += c.vx * dt * 0.1;
+                    return c.x < w + 250;
                 });
-
-                gameState.lastEvent = null;
             }
 
             draw(ctx) {
@@ -861,901 +1460,938 @@
                     ctx.globalAlpha = c.opacity;
                     ctx.translate(c.x, c.y);
                     ctx.scale(c.scale, c.scale);
-                    
-                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    c.blobs.forEach(b => {
+                        ctx.arc(b.x + 5, b.y + 5, b.r, 0, Math.PI * 2);
+                    });
+                    ctx.fill();
+                    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 80);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(1, '#e0e0e0');
+                    ctx.fillStyle = grad;
                     ctx.beginPath();
                     c.blobs.forEach((b, i) => {
                         if (i === 0) ctx.moveTo(b.x + b.r, b.y);
                         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
                     });
                     ctx.fill();
-                    
-                    // Shadow
-                    ctx.fillStyle = 'rgba(200,200,200,0.3)';
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
                     ctx.beginPath();
                     c.blobs.forEach(b => {
-                        ctx.arc(b.x + 5, b.y + 5, b.r * 0.9, 0, Math.PI * 2);
+                        ctx.arc(b.x - b.r*0.3, b.y - b.r*0.3, b.r * 0.4, 0, Math.PI * 2);
                     });
                     ctx.fill();
-                    
                     ctx.restore();
                 });
             }
         }
 
-        class AIBird {
-            constructor(type, x, y, biome) {
+        // ==================== REALISTIC BIRDS ====================
+
+        class RealisticBird {
+            constructor(type, x, y) {
                 this.type = type;
                 this.x = x;
                 this.y = y;
                 this.vx = 0;
                 this.vy = 0;
-                this.behavior = this.getBehavior(type);
-                this.wingPhase = 0;
-                this.state = 'flying';
-                this.target = null;
-                this.energy = 100;
-                this.biome = biome;
-            }
-
-            getBehavior(type) {
-                const behaviors = {
-                    sparrow: { speed: 2, flocking: true, jitter: 0.8, altitude: 'low', reaction: 'flee', size: 15 },
-                    eagle: { speed: 1.5, flocking: false, patrolRadius: 300, altitude: 'high', reaction: 'inspect', size: 25 },
-                    swallow: { speed: 4, flocking: true, acrobatic: true, altitude: 'medium', reaction: 'dodge', size: 12 },
-                    owl: { speed: 0.8, nocturnal: true, silent: true, altitude: 'tree', reaction: 'watch', size: 18 },
-                    hummingbird: { speed: 3, hover: true, nectarSeeking: true, altitude: 'variable', reaction: 'compete', size: 8 },
-                    butterfly: { speed: 1, flutter: true, altitude: 'low', reaction: 'flee', size: 10 },
-                    bee: { speed: 2.5, buzzing: true, altitude: 'variable', reaction: 'avoid', size: 6 }
-                };
-                return behaviors[type] || behaviors.sparrow;
-            }
-
-            update(deltaTime, birds, player, balloons, width, height) {
-                this.wingPhase += deltaTime * 0.01 * this.behavior.speed;
-
-                // Flocking
-                let fx = 0, fy = 0;
-                if (this.behavior.flocking) {
-                    const neighbors = birds.filter(b => b !== this && Math.hypot(b.x - this.x, b.y - this.y) < 100);
-                    if (neighbors.length > 0) {
-                        // Separation
-                        neighbors.forEach(n => {
-                            const dx = this.x - n.x;
-                            const dy = this.y - n.y;
-                            const dist = Math.hypot(dx, dy);
-                            if (dist < 30) {
-                                fx += dx / dist * 2;
-                                fy += dy / dist * 2;
-                            }
-                        });
-                        // Alignment
-                        const avgVx = neighbors.reduce((s, n) => s + n.vx, 0) / neighbors.length;
-                        const avgVy = neighbors.reduce((s, n) => s + n.vy, 0) / neighbors.length;
-                        fx += (avgVx - this.vx) * 0.1;
-                        fy += (avgVy - this.vy) * 0.1;
-                        // Cohesion
-                        const avgX = neighbors.reduce((s, n) => s + n.x, 0) / neighbors.length;
-                        const avgY = neighbors.reduce((s, n) => s + n.y, 0) / neighbors.length;
-                        fx += (avgX - this.x) * 0.01;
-                        fy += (avgY - this.y) * 0.01;
-                    }
-                }
-
-                // Personality
-                if (this.behavior.acrobatic) {
-                    fy += Math.sin(Date.now() * 0.01) * 2;
-                    if (Math.random() < 0.05) fx += (Math.random() - 0.5) * 10;
-                }
-                if (this.behavior.hover) {
-                    fy -= 0.3;
-                    fx += (Math.random() - 0.5) * 3;
-                }
-                if (this.behavior.flutter) {
-                    fx += (Math.random() - 0.5) * 4;
-                    fy += (Math.random() - 0.5) * 4;
-                }
-
-                // React to player
-                if (player) {
-                    const dx = player.x - this.x;
-                    const dy = player.y - this.y;
-                    const dist = Math.hypot(dx, dy);
-                    
-                    switch(this.behavior.reaction) {
-                        case 'flee':
-                            if (dist < 100) {
-                                fx -= dx / dist * 5;
-                                fy -= dy / dist * 5;
-                            }
-                            break;
-                        case 'inspect':
-                            if (dist < 200 && dist > 50) {
-                                fx += dy / dist * 2;
-                                fy -= dx / dist * 2;
-                            }
-                            break;
-                        case 'compete':
-                            if (balloons.length > 0) {
-                                const target = balloons[0];
-                                const tdx = target.x - this.x;
-                                const tdy = target.y - this.y;
-                                fx += tdx * 0.02;
-                                fy += tdy * 0.02;
-                            }
-                            break;
-                    }
-                }
-
-                // Apply forces
-                this.vx += fx * deltaTime * 0.001;
-                this.vy += fy * deltaTime * 0.001;
+                this.wingPhase = Math.random() * Math.PI * 2;
+                this.wingSpeed = 0.15;
+                this.facingRight = true;
                 
-                // Limit speed
-                const speed = Math.hypot(this.vx, this.vy);
-                if (speed > this.behavior.speed) {
-                    this.vx = (this.vx / speed) * this.behavior.speed;
-                    this.vy = (this.vy / speed) * this.behavior.speed;
+                this.config = {
+                    sparrow: {
+                        bodyColor: '#8B7355',
+                        wingColor: '#A0826D',
+                        bellyColor: '#E8DCC4',
+                        beakColor: '#FFA500',
+                        eyeColor: '#000',
+                        size: 14,
+                        wingSpan: 22,
+                        bodyLength: 18,
+                        speed: 1.8,
+                        flapSpeed: 0.2,
+                        behavior: 'flock'
+                    },
+                    swallow: {
+                        bodyColor: '#1E3A5F',
+                        wingColor: '#2E4A6F',
+                        bellyColor: '#C4A35A',
+                        beakColor: '#333',
+                        eyeColor: '#000',
+                        size: 12,
+                        wingSpan: 20,
+                        bodyLength: 16,
+                        speed: 3.5,
+                        flapSpeed: 0.35,
+                        behavior: 'acrobatic',
+                        forkedTail: true
+                    },
+                    eagle: {
+                        bodyColor: '#4A3728',
+                        wingColor: '#5A4738',
+                        bellyColor: '#8B7355',
+                        beakColor: '#FFD700',
+                        eyeColor: '#FFD700',
+                        size: 24,
+                        wingSpan: 45,
+                        bodyLength: 32,
+                        speed: 1.2,
+                        flapSpeed: 0.08,
+                        behavior: 'soar'
+                    },
+                    owl: {
+                        bodyColor: '#8B6914',
+                        wingColor: '#A67B2E',
+                        bellyColor: '#D4A84B',
+                        beakColor: '#FFA500',
+                        eyeColor: '#FFD700',
+                        size: 18,
+                        wingSpan: 32,
+                        bodyLength: 22,
+                        speed: 0.9,
+                        flapSpeed: 0.12,
+                        behavior: 'glide'
+                    },
+                    woodpecker: {
+                        bodyColor: '#8B0000',
+                        wingColor: '#000',
+                        bellyColor: '#FFF',
+                        beakColor: '#FFA500',
+                        eyeColor: '#000',
+                        size: 13,
+                        wingSpan: 20,
+                        bodyLength: 16,
+                        speed: 2.2,
+                        flapSpeed: 0.25,
+                        behavior: 'bounce'
+                    },
+                    crow: {
+                        bodyColor: '#2C2C2C',
+                        wingColor: '#3C3C3C',
+                        bellyColor: '#4C4C4C',
+                        beakColor: '#333',
+                        eyeColor: '#FFF',
+                        size: 16,
+                        wingSpan: 28,
+                        bodyLength: 20,
+                        speed: 1.6,
+                        flapSpeed: 0.15,
+                        behavior: 'flock'
+                    },
+                    butterfly: {
+                        bodyColor: '#FF69B4',
+                        wingColor: '#FF1493',
+                        patternColor: '#FFF',
+                        size: 10,
+                        wingSpan: 16,
+                        bodyLength: 12,
+                        speed: 0.8,
+                        flapSpeed: 0.4,
+                        behavior: 'flutter',
+                        isInsect: true
+                    },
+                    firefly: {
+                        bodyColor: '#9ACD32',
+                        glowColor: '#ADFF2F',
+                        size: 6,
+                        wingSpan: 10,
+                        bodyLength: 8,
+                        speed: 0.6,
+                        flapSpeed: 0.5,
+                        behavior: 'float',
+                        isInsect: true,
+                        glow: true
+                    }
+                }[type] || this.config.sparrow;
+            }
+
+            update(dt, birds, mouse, w, h) {
+                const cfg = this.config;
+                this.wingPhase += cfg.flapSpeed * dt * 0.1;
+                let targetVx = 0, targetVy = 0;
+
+                switch(cfg.behavior) {
+                    case 'flock':
+                        this.flockBehavior(birds, mouse);
+                        break;
+                    case 'soar':
+                        this.soarBehavior(mouse, w, h);
+                        break;
+                    case 'acrobatic':
+                        this.acrobaticBehavior(mouse);
+                        break;
+                    case 'glide':
+                        this.glideBehavior(mouse);
+                        break;
+                    case 'flutter':
+                        this.flutterBehavior();
+                        break;
+                    case 'float':
+                        this.floatBehavior();
+                        break;
+                    case 'bounce':
+                        this.bounceBehavior();
+                        break;
                 }
 
-                // Update position
-                this.x += this.vx * deltaTime * 0.1;
-                this.y += this.vy * deltaTime * 0.1;
+                this.vx += (targetVx - this.vx) * 0.05;
+                this.vy += (targetVy - this.vy) * 0.05;
+                this.x += this.vx * cfg.speed * dt * 0.1;
+                this.y += this.vy * cfg.speed * dt * 0.1;
 
-                // Wrap around
-                if (this.x < -50) this.x = width + 50;
-                if (this.x > width + 50) this.x = -50;
-                if (this.y < 0) this.y = height * 0.5;
-                if (this.y > height * 0.8) this.y = height * 0.2;
+                if (Math.abs(this.vx) > 0.1) {
+                    this.facingRight = this.vx > 0;
+                }
+
+                if (this.x < -100) this.x = w + 100;
+                if (this.x > w + 100) this.x = -100;
+                if (this.y < 0) this.y = h * 0.3;
+                if (this.y > h * 0.7) this.y = h * 0.3;
+            }
+
+            flockBehavior(birds, mouse) {
+                let sepX = 0, sepY = 0, aliX = 0, aliY = 0, cohX = 0, cohY = 0;
+                let count = 0;
+
+                birds.forEach(b => {
+                    if (b === this) return;
+                    const dx = this.x - b.x;
+                    const dy = this.y - b.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 80 && dist > 0) {
+                        sepX += dx / dist;
+                        sepY += dy / dist;
+                        aliX += b.vx;
+                        aliY += b.vy;
+                        cohX += b.x;
+                        cohY += b.y;
+                        count++;
+                    }
+                });
+
+                const mdx = this.x - mouse.x;
+                const mdy = this.y - mouse.y;
+                const mdist = Math.sqrt(mdx*mdx + mdy*mdy);
+                if (mdist < 120) {
+                    sepX += mdx / mdist * 3;
+                    sepY += mdy / mdist * 3;
+                }
+
+                if (count > 0) {
+                    aliX /= count;
+                    aliY /= count;
+                    cohX = (cohX / count - this.x) * 0.01;
+                    cohY = (cohY / count - this.y) * 0.01;
+                }
+
+                this.vx += sepX * 0.5 + aliX * 0.1 + cohX;
+                this.vy += sepY * 0.5 + aliY * 0.1 + cohY;
+                this.vx += (Math.random() - 0.5) * 0.3;
+                this.vy += (Math.random() - 0.5) * 0.3;
+            }
+
+            soarBehavior(mouse, w, h) {
+                const centerX = w * 0.5;
+                const centerY = h * 0.2;
+                const dx = centerX - this.x;
+                const dy = centerY - this.y;
+                this.vx += dx * 0.001;
+                this.vy += dy * 0.001 - 0.1;
+                this.vx += (this.y - centerY) * 0.001;
+                this.vy -= (this.x - centerX) * 0.001;
+            }
+
+            acrobaticBehavior(mouse) {
+                this.vx += (Math.random() - 0.5) * 2;
+                this.vy += Math.sin(Date.now() * 0.008) * 1.5;
+                if (Math.random() < 0.02) {
+                    this.vy += 3;
+                }
+            }
+
+            glideBehavior(mouse) {
+                this.vx += (Math.random() - 0.5) * 0.3;
+                this.vy += Math.sin(this.wingPhase * 0.5) * 0.2;
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+            }
+
+            flutterBehavior() {
+                this.vx += (Math.random() - 0.5) * 3;
+                this.vy += (Math.random() - 0.5) * 3 - 0.3;
+                if (Math.random() < 0.1) {
+                    this.vx = (Math.random() - 0.5) * 4;
+                    this.vy = (Math.random() - 0.5) * 4;
+                }
+            }
+
+            floatBehavior() {
+                this.vx += Math.sin(Date.now() * 0.003) * 0.5;
+                this.vy += Math.cos(Date.now() * 0.004) * 0.3 - 0.1;
+            }
+
+            bounceBehavior() {
+                this.vx += (Math.random() - 0.5) * 0.5;
+                this.vy = Math.abs(Math.sin(Date.now() * 0.015)) * -2;
             }
 
             draw(ctx) {
+                const cfg = this.config;
                 ctx.save();
                 ctx.translate(this.x, this.y);
-                
-                // Flip based on direction
-                if (this.vx < 0) ctx.scale(-1, 1);
-                
-                const size = this.behavior.size;
-                const wingY = Math.sin(this.wingPhase) * size * 0.3;
-                
-                // Body
-                ctx.fillStyle = this.getColor();
-                ctx.beginPath();
-                ctx.ellipse(0, 0, size, size * 0.6, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Wings
-                ctx.fillStyle = this.getWingColor();
-                ctx.beginPath();
-                ctx.moveTo(-size * 0.3, -size * 0.2);
-                ctx.quadraticCurveTo(-size * 0.8, -size * 0.8 + wingY, -size * 0.2, -size * 0.5 + wingY);
-                ctx.quadraticCurveTo(0, -size * 0.3 + wingY * 0.5, size * 0.3, -size * 0.2);
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.moveTo(-size * 0.3, size * 0.2);
-                ctx.quadraticCurveTo(-size * 0.8, size * 0.8 - wingY, -size * 0.2, size * 0.5 - wingY);
-                ctx.quadraticCurveTo(0, size * 0.3 - wingY * 0.5, size * 0.3, size * 0.2);
-                ctx.fill();
-                
-                // Eye
-                ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(size * 0.4, -size * 0.1, size * 0.2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(size * 0.5, -size * 0.1, size * 0.08, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Beak
-                ctx.fillStyle = '#FFA500';
-                ctx.beginPath();
-                ctx.moveTo(size * 0.8, 0);
-                ctx.lineTo(size * 1.2, size * 0.1);
-                ctx.lineTo(size * 0.8, size * 0.2);
-                ctx.fill();
-                
+                if (!this.facingRight) ctx.scale(-1, 1);
+                const wingY = Math.sin(this.wingPhase) * cfg.wingSpan * 0.4;
+                const wingAngle = Math.sin(this.wingPhase) * 0.5;
+                if (cfg.isInsect) {
+                    this.drawInsect(ctx, cfg, wingY);
+                } else {
+                    this.drawBird(ctx, cfg, wingY, wingAngle);
+                }
                 ctx.restore();
             }
 
-            getColor() {
-                const colors = {
-                    sparrow: '#8B4513', eagle: '#4B3621', swallow: '#1E90FF',
-                    owl: '#8B7355', hummingbird: '#00CED1', butterfly: '#FF69B4', bee: '#FFD700'
-                };
-                return colors[this.type] || '#808080';
+            drawBird(ctx, cfg, wingY, wingAngle) {
+                const s = cfg.size;
+                ctx.save();
+                ctx.rotate(-wingAngle);
+                ctx.fillStyle = cfg.wingColor;
+                ctx.beginPath();
+                ctx.moveTo(-s*0.3, -s*0.2);
+                ctx.quadraticCurveTo(-s*0.8, -s - wingY*0.5, -s*0.2, -s*0.6 - wingY);
+                ctx.quadraticCurveTo(s*0.1, -s*0.4, s*0.2, -s*0.2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.fillStyle = cfg.wingColor;
+                ctx.beginPath();
+                if (cfg.forkedTail) {
+                    ctx.moveTo(-s*0.8, 0);
+                    ctx.lineTo(-s*1.4, s*0.8);
+                    ctx.lineTo(-s*1.0, s*0.3);
+                    ctx.lineTo(-s*0.9, s*0.6);
+                    ctx.lineTo(-s*0.6, s*0.2);
+                } else {
+                    ctx.moveTo(-s*0.6, 0);
+                    ctx.lineTo(-s*1.2, s*0.4);
+                    ctx.lineTo(-s*0.8, s*0.1);
+                }
+                ctx.fill();
+
+                const bodyGrad = ctx.createLinearGradient(0, -s*0.5, 0, s*0.5);
+                bodyGrad.addColorStop(0, cfg.bodyColor);
+                bodyGrad.addColorStop(0.5, cfg.bellyColor);
+                bodyGrad.addColorStop(1, cfg.bodyColor);
+                ctx.fillStyle = bodyGrad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, s, s*0.65, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.fillStyle = cfg.bodyColor;
+                ctx.beginPath();
+                ctx.arc(s*0.7, -s*0.1, s*0.5, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.fillStyle = cfg.eyeColor;
+                ctx.beginPath();
+                ctx.arc(s*0.85, -s*0.15, s*0.18, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(s*0.9, -s*0.2, s*0.06, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.fillStyle = cfg.beakColor;
+                ctx.beginPath();
+                ctx.moveTo(s*1.15, -s*0.05);
+                ctx.lineTo(s*1.4, s*0.05);
+                ctx.lineTo(s*1.15, s*0.15);
+                ctx.fill();
+
+                ctx.save();
+                ctx.rotate(wingAngle);
+                ctx.fillStyle = cfg.wingColor;
+                ctx.beginPath();
+                ctx.moveTo(s*0.1, -s*0.3);
+                ctx.quadraticCurveTo(-s*0.3, -s*1.2 - wingY, s*0.4, -s*0.8 - wingY);
+                ctx.quadraticCurveTo(s*0.5, -s*0.5, s*0.3, -s*0.2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-s*0.1, -s*0.6 - wingY * (0.3 + i*0.2));
+                    ctx.lineTo(s*0.2, -s*0.4 - wingY * (0.3 + i*0.2));
+                    ctx.stroke();
+                }
+                ctx.restore();
             }
 
-            getWingColor() {
-                const colors = {
-                    sparrow: '#A0522D', eagle: '#654321', swallow: '#87CEEB',
-                    owl: '#A0826D', hummingbird: '#40E0D0', butterfly: '#FF1493', bee: '#FFA500'
-                };
-                return colors[this.type] || '#A0A0A0';
+            drawInsect(ctx, cfg, wingY) {
+                const s = cfg.size;
+                if (cfg.glow) {
+                    const glowIntensity = (Math.sin(Date.now() * 0.01) + 1) * 0.5;
+                    const glow = ctx.createRadialGradient(0, s*0.2, 0, 0, s*0.2, s*2);
+                    glow.addColorStop(0, `rgba(173,255,47,${0.8 * glowIntensity})`);
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(0, s*0.2, s*2, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.save();
+                ctx.scale(1, Math.abs(Math.sin(this.wingPhase)));
+                ctx.beginPath();
+                ctx.ellipse(-s*0.5, 0, s*0.8, s*0.4, -0.3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(s*0.5, 0, s*0.8, s*0.4, 0.3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+                ctx.fillStyle = cfg.bodyColor;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, s*0.3, s*0.6, 0, 0, Math.PI*2);
+                ctx.fill();
+                if (cfg.patternColor) {
+                    ctx.fillStyle = cfg.patternColor;
+                    ctx.beginPath();
+                    ctx.arc(0, -s*0.2, s*0.15, 0, Math.PI*2);
+                    ctx.fill();
+                }
             }
         }
 
         class AIEcosystem {
             constructor() {
                 this.birds = [];
-                this.timeOfDay = 12;
-                this.lastSpawn = 0;
             }
 
-            populate(biome, width, height) {
+            populate(biome, w, h) {
                 this.birds = [];
-                const count = 8 + Math.floor(Math.random() * 8);
-                const types = biome.birdTypes;
-                
+                const count = 5 + Math.floor(Math.random() * 6);
                 for (let i = 0; i < count; i++) {
-                    const type = types[Math.floor(Math.random() * types.length)];
-                    this.birds.push(new AIBird(
+                    const type = biome.birds[Math.floor(Math.random() * biome.birds.length)];
+                    this.birds.push(new RealisticBird(
                         type,
-                        Math.random() * width,
-                        50 + Math.random() * height * 0.4,
-                        biome
+                        Math.random() * w,
+                        40 + Math.random() * h * 0.35
                     ));
                 }
             }
 
-            update(deltaTime, width, height, player, balloons) {
-                this.timeOfDay = (this.timeOfDay + deltaTime * 0.0001) % 24;
-                
-                this.birds.forEach(bird => {
-                    bird.update(deltaTime, this.birds, player, balloons, width, height);
-                });
-
-                // Spawn migration occasionally
-                if (Math.random() < 0.0005) {
-                    this.spawnMigration(width, height);
-                }
-            }
-
-            spawnMigration(width, height) {
-                const flockSize = 10 + Math.floor(Math.random() * 15);
-                const y = 80 + Math.random() * 100;
-                for (let i = 0; i < flockSize; i++) {
-                    const bird = new AIBird('swallow', -50 - i * 20, y + (i % 2) * 15, { birdTypes: ['swallow'] });
-                    bird.vx = 3;
-                    this.birds.push(bird);
-                }
+            update(dt, w, h, mouse) {
+                this.birds.forEach(b => b.update(dt, this.birds, mouse, w, h));
             }
 
             draw(ctx) {
-                this.birds.forEach(bird => bird.draw(ctx));
+                [...this.birds].sort((a, b) => a.y - b.y).forEach(b => b.draw(ctx));
             }
 
-            getBirdCount() { return this.birds.length; }
+            count() { return this.birds.length; }
         }
 
-        class AIMusicGenerator {
-            constructor() {
-                this.audioCtx = null;
-                this.currentBiome = null;
-                this.bpm = 120;
-                this.scale = [];
-                this.nextNoteTime = 0;
-                this.isPlaying = false;
-                this.intensity = 0;
-                this.analyser = null;
-            }
-
-            init() {
-                if (!this.audioCtx) {
-                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    this.analyser = this.audioCtx.createAnalyser();
-                    this.analyser.fftSize = 64;
-                }
-            }
-
-            setBiome(biome) {
-                this.currentBiome = biome;
-                this.bpm = biome.tempo;
-                this.scale = this.generateScale(biome.musicKey, biome.name === 'Ніч' ? 'minor' : 'major');
-            }
-
-            generateScale(root, mode) {
-                const baseFreq = 261.63; // C4
-                const ratios = mode === 'major' ? [1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8] : [1, 9/8, 6/5, 4/3, 3/2, 8/5, 9/5];
-                return ratios.map(r => baseFreq * r);
-            }
-
-            update(gameState, currentTime) {
-                if (!this.isPlaying || !this.audioCtx) return;
-
-                // Adapt to game state
-                const targetIntensity = Math.min(1, gameState.balloons.length * 0.1 + (gameState.lives === 1 ? 0.3 : 0));
-                this.intensity += (targetIntensity - this.intensity) * 0.05;
-                this.bpm = this.currentBiome.tempo + this.intensity * 40;
-
-                // Schedule notes
-                const secondsPerBeat = 60 / this.bpm;
-                while (this.nextNoteTime < currentTime + 0.1) {
-                    this.playNote(this.nextNoteTime);
-                    this.nextNoteTime += secondsPerBeat * (0.5 + Math.random() * 0.5);
-                }
-            }
-
-            playNote(time) {
-                const osc = this.audioCtx.createOscillator();
-                const gain = this.audioCtx.createGain();
-                
-                // Select note based on intensity
-                const noteIndex = this.intensity > 0.5 ? 
-                    Math.floor(Math.random() * this.scale.length) : 
-                    Math.floor(Math.random() * 4);
-                const freq = this.scale[noteIndex] * (1 + Math.floor(Math.random() * 2));
-                
-                osc.frequency.value = freq;
-                osc.type = this.intensity > 0.7 ? 'sawtooth' : 'sine';
-                
-                const duration = 0.1 + (1 - this.intensity) * 0.3;
-                gain.gain.setValueAtTime(0.1, time);
-                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-                
-                osc.connect(gain);
-                gain.connect(this.analyser);
-                this.analyser.connect(this.audioCtx.destination);
-                
-                osc.start(time);
-                osc.stop(time + duration);
-            }
-
-            start() {
-                this.init();
-                this.isPlaying = true;
-                this.nextNoteTime = this.audioCtx.currentTime;
-            }
-
-            stop() {
-                this.isPlaying = false;
-            }
-
-            getVisualizerData() {
-                if (!this.analyser) return new Uint8Array(0);
-                const data = new Uint8Array(this.analyser.frequencyBinCount);
-                this.analyser.getByteFrequencyData(data);
-                return data;
-            }
-        }
-
-        class AIProblemGenerator {
-            constructor() {
-                this.playerModel = {
-                    strengths: new Set(),
-                    weaknesses: new Set(),
-                    reactionTime: 2000,
-                    accuracy: 0.8
-                };
-                this.difficultyHistory = [];
-            }
-
-            generateProblem(level, gameStats) {
-                // Analyze player performance
-                this.updatePlayerModel(gameStats);
-                
-                // Select problem type based on weaknesses
-                let type = 'addition';
-                if (level > 3 && this.playerModel.weaknesses.has('subtraction')) type = 'subtraction';
-                if (level > 6 && this.playerModel.weaknesses.has('multiplication')) type = 'multiplication';
-                if (level > 9 && Math.random() < 0.3) type = 'mixed';
-                
-                // Generate based on type
-                switch(type) {
-                    case 'addition':
-                        return this.generateAddition(level);
-                    case 'subtraction':
-                        return this.generateSubtraction(level);
-                    case 'multiplication':
-                        return this.generateMultiplication(level);
-                    case 'mixed':
-                        return this.generateMixed(level);
-                    default:
-                        return this.generateAddition(level);
-                }
-            }
-
-            generateAddition(level) {
-                const max = Math.min(10 + level * 2, 50);
-                const a = Math.floor(Math.random() * max) + 1;
-                const b = Math.floor(Math.random() * max) + 1;
-                return { text: `${a}+${b}`, answer: a + b, type: 'normal' };
-            }
-
-            generateSubtraction(level) {
-                const max = Math.min(10 + level * 2, 50);
-                const a = Math.floor(Math.random() * max) + 5;
-                const b = Math.floor(Math.random() * a) + 1;
-                return { text: `${a}-${b}`, answer: a - b, type: 'normal' };
-            }
-
-            generateMultiplication(level) {
-                const max = Math.min(3 + Math.floor(level / 2), 12);
-                const a = Math.floor(Math.random() * max) + 2;
-                const b = Math.floor(Math.random() * max) + 2;
-                return { text: `${a}×${b}`, answer: a * b, type: 'golden' };
-            }
-
-            generateMixed(level) {
-                const types = ['addition', 'subtraction', 'multiplication'];
-                const type = types[Math.floor(Math.random() * types.length)];
-                return this[type](level);
-            }
-
-            updatePlayerModel(stats) {
-                // Track accuracy by operation type
-                if (stats.lastProblem) {
-                    if (stats.lastCorrect) {
-                        this.playerModel.strengths.add(stats.lastProblem.type);
-                    } else {
-                        this.playerModel.weaknesses.add(stats.lastProblem.type);
-                    }
-                }
-                this.playerModel.reactionTime = stats.avgReactionTime || 2000;
-                this.playerModel.accuracy = stats.accuracy || 0.8;
-            }
-
-            generateDistractors(correctAnswer, level) {
-                const distractors = new Set();
-                while (distractors.size < 3) {
-                    const offset = Math.floor(Math.random() * 10) - 5;
-                    const val = correctAnswer + offset;
-                    if (val > 0 && val !== correctAnswer) distractors.add(val);
-                }
-                return [...distractors, correctAnswer].sort(() => Math.random() - 0.5);
-            }
-        }
-
-        // ==================== GAME ENGINE ====================
+        // ==================== GAME CLASS ====================
 
         class Game {
             constructor() {
                 this.canvas = document.getElementById('game-canvas');
                 this.ctx = this.canvas.getContext('2d');
-                this.visualizerCanvas = document.getElementById('visualizer-canvas');
-                this.vCtx = this.visualizerCanvas.getContext('2d');
+                this.vCanvas = document.getElementById('visualizer-canvas');
+                this.vCtx = this.vCanvas.getContext('2d');
+                
+                this.audio = new AudioSystem();
+                this.particles = new ParticleSystem();
                 
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
 
-                // AI Systems
-                this.biomeGen = new AIBiomeGenerator();
-                this.cloudSys = new AICloudSystem();
-                this.ecosystem = new AIEcosystem();
-                this.musicGen = new AIMusicGenerator();
-                this.problemGen = new AIProblemGenerator();
+                this.biome = new AIBiomeGenerator();
+                this.clouds = new AICloudSystem();
+                this.eco = new AIEcosystem();
 
-                // Game state
-                this.gameState = {
-                    isRunning: false,
-                    isPaused: false,
-                    score: 0,
-                    lives: 3,
+                this.state = {
+                    running: false, 
+                    paused: false,
+                    score: 0, 
+                    lives: 3, 
                     level: 1,
-                    balloons: [],
-                    birds: [],
-                    spawnInterval: 3000,
+                    balloons: [], 
                     lastSpawn: 0,
-                    intensity: 0,
-                    lastEvent: null,
+                    intensity: 0, 
                     inputMode: 'buttons',
-                    streak: 0,
-                    errors: 0,
-                    avgReactionTime: 2000,
-                    problemStartTime: 0
+                    streak: 0, 
+                    errors: 0
                 };
 
-                this.playerName = localStorage.getItem('mathBalloonPlayer') || '';
+                this.mouse = { x: 0, y: 0 };
                 this.setupInput();
-                
-                if (!this.playerName) {
-                    document.getElementById('name-modal').classList.remove('hidden');
-                }
 
                 this.lastTime = 0;
                 this.loop = this.loop.bind(this);
                 requestAnimationFrame(this.loop);
+
+                this.previewMode = true;
+                this.eco.populate(this.biome.getCurrent(), this.canvas.width, this.canvas.height);
             }
 
             resize() {
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight;
-                this.visualizerCanvas.width = 100;
-                this.visualizerCanvas.height = 40;
+                this.vCanvas.width = 100;
+                this.vCanvas.height = 40;
             }
 
             setupInput() {
-                // Mouse tracking for bird AI
-                this.mouse = { x: 0, y: 0 };
-                document.addEventListener('mousemove', (e) => {
-                    this.mouse.x = e.clientX;
-                    this.mouse.y = e.clientY;
-                });
-
-                // Touch support
-                document.addEventListener('touchmove', (e) => {
-                    this.mouse.x = e.touches[0].clientX;
-                    this.mouse.y = e.touches[0].clientY;
-                });
-
-                // Text input
-                const textInput = document.getElementById('math-input');
-                textInput.addEventListener('input', (e) => {
-                    const val = parseInt(e.target.value);
-                    if (!isNaN(val) && val > 9) {
-                        this.checkTextAnswer(val);
-                        e.target.value = '';
-                    }
-                });
-
-                textInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        const val = parseInt(e.target.value);
-                        if (!isNaN(val)) {
-                            this.checkTextAnswer(val);
-                            e.target.value = '';
-                        }
-                    }
-                });
-
-                // Voice input
-                if ('webkitSpeechRecognition' in window) {
-                    this.recognition = new webkitSpeechRecognition();
-                    this.recognition.lang = 'uk-UA';
-                    this.recognition.continuous = true;
-                    this.recognition.onresult = (e) => {
-                        const transcript = e.results[e.results.length - 1][0].transcript;
-                        const num = this.parseUkrainianNumber(transcript);
-                        if (num !== null) {
-                            this.checkTextAnswer(num);
-                        }
-                    };
-                }
-            }
-
-            parseUkrainianNumber(text) {
-                const numbers = {
-                    'нуль': 0, 'один': 1, 'два': 2, 'три': 3, 'чотири': 4,
-                    'п\'ять': 5, 'шість': 6, 'сім': 7, 'вісім': 8, 'дев\'ять': 9,
-                    'десять': 10, 'одинадцять': 11, 'дванадцять': 12
+                const updateMouse = (x, y) => {
+                    this.mouse.x = x;
+                    this.mouse.y = y;
                 };
-                const clean = text.toLowerCase().trim();
-                return numbers[clean] || parseInt(clean);
+                
+                document.addEventListener('mousemove', e => updateMouse(e.clientX, e.clientY));
+                document.addEventListener('touchmove', e => {
+                    if (e.touches[0]) updateMouse(e.touches[0].clientX, e.touches[0].clientY);
+                });
+                document.addEventListener('touchstart', e => {
+                    if (e.touches[0]) {
+                        updateMouse(e.touches[0].clientX, e.touches[0].clientY);
+                        this.audio.unlock();
+                    }
+                }, { once: true });
+
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    try {
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        this.recog = new SpeechRecognition();
+                        this.recog.lang = 'uk-UA';
+                        this.recog.continuous = true;
+                        this.recog.interimResults = false;
+                        this.recog.onresult = e => {
+                            const t = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
+                            const nums = { 'нуль':0,'один':1,'два':2,'три':3,'чотири':4,'п\'ять':5,'шість':6,'сім':7,'вісім':8,'дев\'ять':9,'десять':10 };
+                            const n = nums[t] || parseInt(t);
+                            if (!isNaN(n)) this.checkAnswer(n);
+                        };
+                        this.recog.onerror = e => console.log('Speech error:', e.error);
+                    } catch (e) {
+                        console.error('Speech recognition setup error:', e);
+                    }
+                }
+
+                document.addEventListener('click', () => this.audio.unlock(), { once: true });
             }
 
             start() {
-                this.gameState.isRunning = true;
-                this.gameState.score = 0;
-                this.gameState.lives = 3;
-                this.gameState.level = 1;
-                this.gameState.balloons = [];
-                this.gameState.streak = 0;
-                this.gameState.errors = 0;
+                console.log('Starting game...');
                 
-                const biome = this.biomeGen.getCurrentBiome();
-                this.ecosystem.populate(biome, this.canvas.width, this.canvas.height);
-                this.musicGen.setBiome(biome);
-                this.musicGen.start();
+                // КЛЮЧОВЕ ВИПРАВЛЕННЯ: Спочатку ховаємо меню і показуємо гру
+                const mainMenu = document.getElementById('main-menu');
+                const gameUI = document.getElementById('game-ui');
                 
-                this.updateUI();
-                document.getElementById('start-btn').classList.add('hidden');
-                document.getElementById('multiplayer-btn').classList.add('hidden');
-                document.getElementById('pause-btn').classList.remove('hidden');
-                document.getElementById('hint-btn').classList.remove('hidden');
-            }
-
-            loop(timestamp) {
-                const deltaTime = timestamp - this.lastTime;
-                this.lastTime = timestamp;
-
-                if (this.gameState.isRunning && !this.gameState.isPaused) {
-                    this.update(deltaTime, timestamp);
+                if (mainMenu) {
+                    mainMenu.classList.add('hidden');
+                    console.log('Menu hidden');
+                }
+                
+                if (gameUI) {
+                    gameUI.classList.add('active');
+                    console.log('Game UI shown');
                 }
 
+                // Скидаємо стан гри
+                this.previewMode = false;
+                this.state.running = false;
+                this.state.paused = false;
+                this.state.score = 0;
+                this.state.lives = 3;
+                this.state.level = 1;
+                this.state.balloons = [];
+                this.state.streak = 0;
+                this.state.errors = 0;
+                this.state.lastSpawn = 0;
+                this.state.intensity = 0;
+
+                // Ініціалізуємо аудіо
+                this.audio.init();
+                this.audio.startMusic();
+
+                // Налаштовуємо екосистему
+                const b = this.biome.getCurrent();
+                this.eco.populate(b, this.canvas.width, this.canvas.height);
+
+                // Показуємо відлік і запускаємо гру
+                this.showCountdown(() => {
+                    console.log('Countdown finished, game starting');
+                    this.state.running = true;
+                    this.state.lastSpawn = performance.now();
+                    this.updateUI();
+                });
+            }
+
+            showCountdown(cb) {
+                const el = document.getElementById('countdown');
+                const num = document.getElementById('countdown-number');
+                if (!el || !num) {
+                    if (cb) cb();
+                    return;
+                }
+                
+                el.classList.add('active');
+                let c = 3;
+                
+                const showNum = () => {
+                    num.textContent = c > 0 ? c : '🏁';
+                    num.style.animation = 'none';
+                    void num.offsetWidth;
+                    num.style.animation = 'countPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    
+                    if (c >= 0) {
+                        c--;
+                        setTimeout(showNum, 800);
+                    } else {
+                        el.classList.remove('active');
+                        if (cb) cb();
+                    }
+                };
+                showNum();
+            }
+
+            loop(t) {
+                const dt = t - this.lastTime;
+                this.lastTime = t;
+
                 this.draw();
-                this.drawVisualizer();
+                this.particles.update();
+                this.particles.draw(this.ctx);
+                
+                if (this.state.running && !this.state.paused) {
+                    this.update(dt, t);
+                }
+                
+                if (!this.previewMode) {
+                    this.drawVisualizer();
+                }
+
                 requestAnimationFrame(this.loop);
             }
 
-            update(deltaTime, timestamp) {
-                // Update AI systems
-                const biomeChanged = this.biomeGen.update(deltaTime, {
-                    level: this.gameState.level,
-                    streak: this.gameState.streak,
-                    errors: this.gameState.errors,
-                    time: timestamp
+            update(dt, t) {
+                const changed = this.biome.update(dt, {
+                    level: this.state.level,
+                    streak: this.state.streak,
+                    errors: this.state.errors,
+                    time: t
                 });
 
-                if (biomeChanged) {
-                    const biome = this.biomeGen.getCurrentBiome();
-                    this.ecosystem.populate(biome, this.canvas.width, this.canvas.height);
-                    this.musicGen.setBiome(biome);
-                    this.updateAIPanel();
+                if (changed) {
+                    const b = this.biome.getCurrent();
+                    this.eco.populate(b, this.canvas.width, this.canvas.height);
                 }
 
-                this.cloudSys.update(deltaTime, this.canvas.width, this.canvas.height, this.gameState);
-                this.ecosystem.update(deltaTime, this.canvas.width, this.canvas.height, this.mouse, this.gameState.balloons);
-                this.musicGen.update(this.gameState, this.musicGen.audioCtx ? this.musicGen.audioCtx.currentTime : 0);
+                this.clouds.update(dt, this.canvas.width, this.canvas.height, this.state.intensity);
+                this.eco.update(dt, this.canvas.width, this.canvas.height, this.mouse);
+                this.audio.setIntensity(this.state.intensity);
 
-                // Spawn balloons
-                if (timestamp - this.gameState.lastSpawn > this.gameState.spawnInterval) {
-                    this.spawnBalloon();
-                    this.gameState.lastSpawn = timestamp;
-                }
-
-                // Update balloons
-                const container = document.getElementById('game-container');
-                const rect = container.getBoundingClientRect();
+                const area = document.getElementById('game-area');
+                if (!area) return;
                 
-                this.gameState.balloons = this.gameState.balloons.filter(b => {
-                    b.y -= b.speed * deltaTime * 0.1;
+                const rect = area.getBoundingClientRect();
+                const spawnRate = Math.max(1200, 2500 - this.state.level * 150);
+                
+                if (t - this.state.lastSpawn > spawnRate) {
+                    this.spawnBalloon(rect);
+                    this.state.lastSpawn = t;
+                }
+
+                this.state.balloons = this.state.balloons.filter(b => {
+                    b.y -= b.speed * dt * 0.1;
+                    b.x += Math.sin(b.y * 0.008 + b.sway) * 0.4;
+                    b.wobble = (b.wobble || 0) + dt * 0.005;
                     
-                    // Sway motion
-                    b.x += Math.sin(b.y * 0.01 + b.swayOffset) * 0.5;
-                    
-                    // Check bounds
-                    if (b.y < rect.top - 50) {
+                    if (b.y < rect.top - 60) {
                         this.loseLife();
                         return false;
                     }
                     return true;
                 });
 
-                this.updateAIPanel();
+                this.state.intensity = Math.min(1, this.state.balloons.length * 0.12 + (this.state.lives === 1 ? 0.35 : 0));
+                this.updateUI();
             }
 
-            spawnBalloon() {
-                const container = document.getElementById('game-container');
-                const rect = container.getBoundingClientRect();
+            spawnBalloon(rect) {
+                const max = Math.min(5 + this.state.level * 2, 25);
+                const ops = ['+']; 
+                if (this.state.level > 2) ops.push('-');
+                if (this.state.level > 5) ops.push('*');
                 
-                const problem = this.problemGen.generateProblem(this.gameState.level, this.gameState);
-                this.gameState.problemStartTime = Date.now();
+                const op = ops[Math.floor(Math.random() * ops.length)];
+                let a, b, ans;
                 
-                const balloon = {
-                    x: rect.left + 30 + Math.random() * (rect.width - 60),
-                    y: rect.bottom - 50,
-                    text: problem.text,
-                    answer: problem.answer,
-                    type: problem.type,
-                    speed: 0.5 + this.gameState.level * 0.1 + Math.random() * 0.3,
-                    swayOffset: Math.random() * Math.PI * 2,
-                    width: 50,
-                    height: 60
-                };
-
-                this.gameState.balloons.push(balloon);
-                this.updateAnswerButtons();
-            }
-
-            updateAnswerButtons() {
-                if (this.gameState.inputMode !== 'buttons') return;
-                
-                const answers = this.gameState.balloons
-                    .map(b => b.answer)
-                    .filter((v, i, a) => a.indexOf(v) === i)
-                    .slice(0, 4);
-
-                while (answers.length < 4) {
-                    const fake = Math.floor(Math.random() * 20) + 1;
-                    if (!answers.includes(fake)) answers.push(fake);
+                switch(op) {
+                    case '+': a = Math.floor(Math.random()*max)+1; b = Math.floor(Math.random()*max)+1; ans = a+b; break;
+                    case '-': a = Math.floor(Math.random()*max)+5; b = Math.floor(Math.random()*a)+1; ans = a-b; break;
+                    case '*': a = Math.floor(Math.random()*Math.min(max,10))+2; b = Math.floor(Math.random()*Math.min(max,10))+2; ans = a*b; break;
                 }
 
-                answers.sort(() => Math.random() - 0.5);
+                const isGolden = Math.random() < 0.12;
+                
+                this.state.balloons.push({
+                    x: rect.left + 50 + Math.random()*(rect.width-100),
+                    y: rect.bottom - 70,
+                    text: `${a}${op}${b}`,
+                    answer: ans,
+                    isGolden,
+                    speed: 0.35 + this.state.level*0.07 + Math.random()*0.15,
+                    sway: Math.random()*Math.PI*2,
+                    wobble: 0,
+                    r: 28,
+                    stringSway: Math.random()*Math.PI*2
+                });
 
-                document.querySelectorAll('.answer-btn').forEach((btn, i) => {
-                    btn.textContent = answers[i] || '';
+                this.updateAnswers();
+            }
+
+            updateAnswers() {
+                if (this.state.inputMode !== 'buttons') return;
+                
+                const answers = this.state.balloons.map(b => b.answer).filter((v,i,a) => a.indexOf(v)===i).slice(0,4);
+                while (answers.length < 4) {
+                    const f = Math.floor(Math.random()*25)+1;
+                    if (!answers.includes(f)) answers.push(f);
+                }
+                answers.sort(() => Math.random()-0.5);
+
+                document.querySelectorAll('.answer-btn').forEach((btn,i) => {
+                    btn.textContent = answers[i] || '?';
                     btn.dataset.answer = answers[i] || '';
                     btn.classList.remove('hint');
                 });
             }
 
-            checkAnswer(btn) {
-                if (!this.gameState.isRunning || this.gameState.isPaused) return;
-                const answer = parseInt(btn.dataset.answer);
-                this.processAnswer(answer);
-            }
+            checkAnswer(val) {
+                if (!this.state.running || this.state.paused) return;
 
-            checkTextAnswer(answer) {
-                if (!this.gameState.isRunning || this.gameState.isPaused) return;
-                this.processAnswer(answer);
-            }
-
-            processAnswer(answer) {
-                const reactionTime = Date.now() - this.gameState.problemStartTime;
-                this.gameState.avgReactionTime = this.gameState.avgReactionTime * 0.9 + reactionTime * 0.1;
-
-                const matches = this.gameState.balloons.filter(b => b.answer === answer);
-
+                const matches = this.state.balloons.filter(b => b.answer === val);
+                
                 if (matches.length > 0) {
                     matches.forEach(b => {
-                        if (b.type === 'golden') this.gameState.score += 25;
-                        else this.gameState.score += 10;
+                        const color = b.isGolden ? '#FFD700' : '#667EEA';
+                        this.particles.createExplosion(b.x, b.y, color, b.isGolden);
+                        this.audio.play(b.isGolden ? 'explode' : 'pop');
+                        this.state.score += b.isGolden ? 25 : 10;
                     });
                     
-                    this.gameState.balloons = this.gameState.balloons.filter(b => b.answer !== answer);
-                    this.gameState.streak++;
-                    this.gameState.lastEvent = 'correct';
+                    this.state.balloons = this.state.balloons.filter(b => b.answer !== val);
+                    this.state.streak++;
                     
-                    if (this.gameState.streak % 5 === 0) {
-                        this.gameState.level++;
-                        this.gameState.spawnInterval = Math.max(1500, this.gameState.spawnInterval - 200);
+                    if (this.state.streak % 5 === 0) {
+                        this.state.level++;
+                        showNotif(`🎉 Рівень ${this.state.level}!`, 'success');
                     }
                 } else {
-                    this.gameState.score = Math.max(0, this.gameState.score - 3);
-                    this.gameState.streak = 0;
-                    this.gameState.errors++;
-                    this.gameState.lastEvent = 'wrong';
+                    this.state.score = Math.max(0, this.state.score - 3);
+                    this.state.streak = 0;
+                    this.state.errors++;
                 }
 
-                this.updateAnswerButtons();
+                const input = document.getElementById('math-input');
+                if (input) input.value = '';
+                this.updateAnswers();
                 this.updateUI();
             }
 
             loseLife() {
-                this.gameState.lives--;
-                this.gameState.streak = 0;
+                this.state.lives--;
+                this.state.streak = 0;
                 this.updateUI();
-                
-                if (this.gameState.lives <= 0) {
-                    this.endGame();
+                if (this.state.lives <= 0) {
+                    this.gameOver();
                 }
             }
 
-            endGame() {
-                this.gameState.isRunning = false;
-                this.musicGen.stop();
-                document.getElementById('start-btn').classList.remove('hidden');
-                document.getElementById('multiplayer-btn').classList.remove('hidden');
-                document.getElementById('pause-btn').classList.add('hidden');
-                document.getElementById('hint-btn').classList.add('hidden');
+            gameOver() {
+                this.state.running = false;
+                this.audio.stopMusic();
+
+                const score = this.state.score;
+                const icon = score > 800 ? '🏆' : score > 400 ? '⭐' : score > 200 ? '👍' : '💪';
+                const title = score > 800 ? 'Неймовірно!' : score > 400 ? 'Чудово!' : score > 200 ? 'Молодець!' : 'Непогано!';
+                
+                document.getElementById('result-icon').textContent = icon;
+                document.getElementById('result-title').textContent = title;
+                document.getElementById('result-text').textContent = `Рахунок: ${score} | Рівень: ${this.state.level}`;
+                document.getElementById('game-over-modal').classList.add('active');
             }
 
             draw() {
-                const ctx = this.ctx;
-                const w = this.canvas.width;
-                const h = this.canvas.height;
+                const ctx = this.ctx, w = this.canvas.width, h = this.canvas.height;
+                ctx.clearRect(0,0,w,h);
 
-                // Clear
-                ctx.clearRect(0, 0, w, h);
+                this.biome.draw(ctx,w,h);
+                this.clouds.draw(ctx);
+                this.eco.draw(ctx);
 
-                // AI-generated background
-                this.biomeGen.draw(ctx, w, h);
-                this.cloudSys.draw(ctx);
-                this.ecosystem.draw(ctx);
-
-                // Draw balloons
-                const container = document.getElementById('game-container');
-                const rect = container.getBoundingClientRect();
-                
-                this.gameState.balloons.forEach(b => {
-                    // Only draw if in game area
-                    if (b.y > rect.top - 100 && b.y < rect.bottom + 50) {
-                        this.drawBalloon(ctx, b);
-                    }
-                });
+                if (!this.previewMode) {
+                    const area = document.getElementById('game-area');
+                    if (!area) return;
+                    const rect = area.getBoundingClientRect();
+                    
+                    this.state.balloons.forEach(b => {
+                        if (b.y > rect.top-80 && b.y < rect.bottom+60) {
+                            this.drawBalloon(ctx, b);
+                        }
+                    });
+                }
             }
 
             drawBalloon(ctx, b) {
                 ctx.save();
                 ctx.translate(b.x, b.y);
+                ctx.rotate(Math.sin(b.wobble) * 0.1);
+                const r = b.r;
                 
-                // Balloon body
-                const grad = ctx.createRadialGradient(-10, -15, 0, 0, 0, 35);
-                if (b.type === 'golden') {
-                    grad.addColorStop(0, '#FFD700');
-                    grad.addColorStop(1, '#FFA500');
+                const stringSway = Math.sin(b.wobble * 2 + b.stringSway) * 5;
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, r);
+                ctx.quadraticCurveTo(stringSway, r + 15, stringSway * 0.5, r + 30);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(5, 5, r, r*1.15, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                const grad = ctx.createRadialGradient(-r*0.3, -r*0.4, 0, 0, 0, r);
+                if (b.isGolden) {
+                    grad.addColorStop(0, '#FFF8DC');
+                    grad.addColorStop(0.3, '#FFD700');
+                    grad.addColorStop(1, '#FF8C00');
                     ctx.shadowColor = '#FFD700';
                     ctx.shadowBlur = 20;
                 } else {
-                    grad.addColorStop(0, '#667EEA');
-                    grad.addColorStop(1, '#764BA2');
+                    grad.addColorStop(0, '#A8C0FF');
+                    grad.addColorStop(0.3, '#667EEA');
+                    grad.addColorStop(1, '#4A5568');
+                    ctx.shadowColor = '#667EEA';
+                    ctx.shadowBlur = 15;
                 }
                 
                 ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, 25, 30, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, r, r*1.15, 0, 0, Math.PI*2);
                 ctx.fill();
                 ctx.shadowBlur = 0;
-                
-                // Highlight
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
                 ctx.beginPath();
-                ctx.ellipse(-8, -12, 8, 10, -0.3, 0, Math.PI * 2);
+                ctx.ellipse(-r*0.35, -r*0.4, r*0.25, r*0.35, -0.4, 0, Math.PI*2);
                 ctx.fill();
-                
-                // String
-                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-                ctx.lineWidth = 2;
+
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
                 ctx.beginPath();
-                ctx.moveTo(0, 28);
-                ctx.quadraticCurveTo(3, 35, 0, 45);
-                ctx.stroke();
-                
-                // Text
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 16px Nunito';
+                ctx.arc(-r*0.2, -r*0.5, r*0.08, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.fillStyle = b.isGolden ? '#FF8C00' : '#4A5568';
+                ctx.beginPath();
+                ctx.moveTo(-3, r-2);
+                ctx.lineTo(3, r-2);
+                ctx.lineTo(0, r+3);
+                ctx.fill();
+
+                ctx.fillStyle = '#FFF';
+                ctx.font = 'bold 15px Nunito';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(b.text, 0, 2);
-                
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 4;
+                ctx.fillText(b.text, 0, 1);
+                ctx.shadowBlur = 0;
                 ctx.restore();
             }
 
             drawVisualizer() {
                 const ctx = this.vCtx;
-                const data = this.musicGen.getVisualizerData();
-                
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                ctx.fillRect(0, 0, 100, 40);
-                
-                if (data.length === 0) return;
-                
-                const barWidth = 100 / data.length;
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0,0,100,40);
+                const time = Date.now() * 0.005;
                 ctx.fillStyle = '#48BB78';
-                
-                for (let i = 0; i < data.length; i++) {
-                    const height = (data[i] / 255) * 40;
-                    ctx.fillRect(i * barWidth, 40 - height, barWidth - 1, height);
+                for (let i = 0; i < 5; i++) {
+                    const h = 10 + Math.sin(time + i) * 10 + this.state.intensity * 15;
+                    ctx.fillRect(10 + i*18, 40 - h, 12, h);
                 }
             }
 
             updateUI() {
-                document.getElementById('score').textContent = this.gameState.score;
-                document.getElementById('level').textContent = this.gameState.level;
-                document.getElementById('lives-count').textContent = this.gameState.lives;
-            }
-
-            updateAIPanel() {
-                const biome = this.biomeGen.getCurrentBiome();
-                document.getElementById('ai-biome').textContent = `${biome.icon} Біом: ${biome.name}`;
-                document.getElementById('ai-birds').textContent = `🐦 Птахів: ${this.ecosystem.getBirdCount()}`;
-                document.getElementById('ai-music').textContent = `🎵 Темп: ${Math.round(this.musicGen.bpm)} BPM`;
+                const scoreEl = document.getElementById('score-display');
+                const livesEl = document.getElementById('lives-display');
+                const levelEl = document.getElementById('level-display');
+                
+                if (scoreEl) scoreEl.textContent = this.state.score;
+                if (livesEl) livesEl.textContent = this.state.lives;
+                if (levelEl) levelEl.textContent = this.state.level;
+                
+                const b = this.biome.getCurrent();
+                const biomeEl = document.getElementById('menu-biome');
+                if (biomeEl) biomeEl.textContent = `${b.icon} ${b.name}`;
             }
 
             setInputMode(mode) {
-                this.gameState.inputMode = mode;
+                this.state.inputMode = mode;
+                document.querySelectorAll('.mode-option').forEach(m => m.classList.remove('active'));
+                const modeEl = document.getElementById(`mode-${mode}`);
+                if (modeEl) modeEl.classList.add('active');
                 
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(`mode-${mode}`).classList.add('active');
+                const buttonsContainer = document.getElementById('buttons-container');
+                const textContainer = document.getElementById('text-input-container');
                 
-                document.getElementById('buttons-container').classList.toggle('hidden', mode !== 'buttons');
-                document.getElementById('text-input-area').classList.toggle('active', mode === 'text' || mode === 'voice');
+                if (buttonsContainer) buttonsContainer.classList.toggle('hidden', mode !== 'buttons');
+                if (textContainer) textContainer.classList.toggle('active', mode === 'text' || mode === 'voice');
                 
-                if (mode === 'voice' && this.recognition) {
-                    this.recognition.start();
-                    showNotification('Голос', 'Слухаю...', 'info');
-                } else if (this.recognition) {
-                    this.recognition.stop();
+                if (mode === 'voice' && this.recog) {
+                    try {
+                        this.recog.start();
+                        showNotif('🎤 Слухаю...');
+                    } catch (e) {
+                        console.error('Voice start error:', e);
+                        showNotif('❌ Мікрофон недоступний', 'error');
+                    }
+                } else if (this.recog) {
+                    try {
+                        this.recog.stop();
+                    } catch (e) {}
                 }
             }
 
             togglePause() {
-                this.gameState.isPaused = !this.gameState.isPaused;
-                const btn = document.getElementById('pause-btn');
-                btn.textContent = this.gameState.isPaused ? '▶️ Продовжити' : '⏸️ Пауза';
+                this.state.paused = !this.state.paused;
+                const pauseBtn = document.getElementById('pause-btn');
+                if (pauseBtn) pauseBtn.textContent = this.state.paused ? '▶️' : '⏸️';
+                if (this.state.paused) {
+                    this.audio.stopMusic();
+                } else {
+                    this.audio.startMusic();
+                }
             }
 
             useHint() {
-                if (this.gameState.lives > 1) {
-                    this.gameState.lives--;
-                    this.updateUI();
-                    
-                    // Slow down balloons
-                    this.gameState.balloons.forEach(b => b.speed *= 0.3);
-                    
-                    // Highlight correct button
-                    if (this.gameState.balloons.length > 0) {
-                        const correct = this.gameState.balloons[0].answer;
+                if (this.state.lives > 1) {
+                    this.state.lives--;
+                    this.state.balloons.forEach(b => b.speed *= 0.25);
+                    if (this.state.balloons.length > 0) {
+                        const ans = this.state.balloons[0].answer;
                         document.querySelectorAll('.answer-btn').forEach(btn => {
-                            if (parseInt(btn.dataset.answer) === correct) {
-                                btn.classList.add('hint');
-                            }
+                            if (parseInt(btn.dataset.answer) === ans) btn.classList.add('hint');
                         });
                     }
-                    
-                    showNotification('Підказка', 'Швидкість зменшено!', 'info');
+                    showNotif('💡 Підказка активна!');
+                    this.updateUI();
+                } else {
+                    showNotif('❌ Недостатньо життів!', 'error');
                 }
             }
         }
@@ -1763,108 +2399,175 @@
         // ==================== GLOBAL FUNCTIONS ====================
 
         let game;
-        let db, roomRef, unsubscribeRoom;
-        let isFirebaseConnected = false;
 
         window.onload = () => {
+            console.log('Window loaded, initializing game...');
             game = new Game();
             
-            setTimeout(() => {
-                if (window.isFirebaseReady && window.firebaseDB) {
-                    db = window.firebaseDB;
-                    isFirebaseConnected = true;
-                    loadGlobalLeaderboard();
+            const saved = localStorage.getItem('mathBalloonPlayer');
+            if (!saved) {
+                const nameModal = document.getElementById('name-modal');
+                if (nameModal) nameModal.classList.add('active');
+            }
+
+            setInterval(() => {
+                if (game && game.eco) {
+                    const birdsEl = document.getElementById('menu-birds');
+                    if (birdsEl) birdsEl.textContent = `🐦 ${game.eco.count()} птахів`;
                 }
             }, 1000);
         };
 
-        function startGame() {
+        function toggleSound() {
+            if (!game) return;
+            const enabled = game.audio.toggle();
+            const soundToggle = document.getElementById('sound-toggle');
+            if (soundToggle) {
+                soundToggle.textContent = enabled ? '🔊' : '🔇';
+                soundToggle.classList.toggle('muted', !enabled);
+            }
+        }
+
+        function startSingleGame() {
+            console.log('startSingleGame called');
+            if (!game) {
+                console.error('Game not initialized!');
+                return;
+            }
             game.start();
         }
 
-        function togglePause() {
-            game.togglePause();
+        function startMultiplayer() {
+            showNotif('👥 Мультиплеєр в розробці!');
         }
 
-        function useHint() {
-            game.useHint();
-        }
-
-        function checkAnswer(btn) {
-            game.checkAnswer(btn);
-        }
-
-        function setInputMode(mode) {
-            game.setInputMode(mode);
-        }
-
-        function savePlayerName() {
-            const input = document.getElementById('player-name');
-            if (input.value.trim()) {
-                localStorage.setItem('mathBalloonPlayer', input.value.trim());
-                document.getElementById('name-modal').classList.add('hidden');
-                showNotification('Вітаємо!', `Приємної гри, ${input.value.trim()}!`, 'success');
+        function showSettings() {
+            const settingsSection = document.getElementById('settings-section');
+            if (settingsSection) {
+                settingsSection.style.display = settingsSection.style.display === 'none' ? 'block' : 'none';
             }
         }
 
-        function showNotification(title, text, type = 'info') {
-            const panel = document.getElementById('notifications-panel');
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `<div class="notification-title">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${title}</div><div class="notification-text">${text}</div>`;
-            panel.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
+        function showTutorial() {
+            const tutorialModal = document.getElementById('tutorial-modal');
+            if (tutorialModal) tutorialModal.classList.add('active');
         }
 
-        function toggleLeaderboard() {
-            document.getElementById('global-leaderboard').classList.toggle('expanded');
+        function closeTutorial() {
+            const tutorialModal = document.getElementById('tutorial-modal');
+            if (tutorialModal) tutorialModal.classList.remove('active');
         }
 
-        function switchLeaderboard(type, event) {
-            if (event) event.stopPropagation();
-            // Implementation for leaderboard filtering
-        }
-
-        async function loadGlobalLeaderboard() {
-            // Implementation for loading leaderboard from Firebase
-        }
-
-        // Multiplayer functions (stub implementations)
-        function openMultiplayerMenu() {
-            if (!isFirebaseConnected) {
-                showNotification('Помилка', 'Немає підключення', 'error');
-                return;
-            }
-            document.getElementById('multiplayer-modal').classList.remove('hidden');
-        }
-
-        function createRoom() {
-            showNotification('AI Режим', 'Мультиплеєр в розробці. Грайте з AI!', 'info');
-        }
-
-        function joinRoom() {
-            showNotification('AI Режим', 'Мультиплеєр в розробці. Грайте з AI!', 'info');
-        }
-
-        function moveToNext(input, index) {
-            if (input.value && index < 3) {
-                document.querySelectorAll('.room-input input')[index + 1].focus();
+        function saveName() {
+            const playerName = document.getElementById('player-name');
+            if (!playerName) return;
+            
+            const v = playerName.value.trim();
+            if (v) {
+                localStorage.setItem('mathBalloonPlayer', v);
+                const nameModal = document.getElementById('name-modal');
+                if (nameModal) nameModal.classList.remove('active');
+                showNotif(`Вітаємо, ${v}!`);
             }
         }
 
-        function requestRematch() {
-            document.getElementById('winner-announcement').classList.remove('show');
-            startGame();
+        function setInputMode(m) { 
+            if (game) game.setInputMode(m); 
+        }
+        
+        function setDifficulty(v) { 
+            console.log('Difficulty:', v);
         }
 
-        function closeWinnerAndLeave() {
-            document.getElementById('winner-announcement').classList.remove('show');
-        }
-
-        function leaveRoom() {
-            if (confirm('Вийти?')) {
-                closeWinnerAndLeave();
+        function checkAnswerBtn(index) {
+            console.log('checkAnswerBtn called:', index);
+            if (!game) return;
+            const btn = document.querySelectorAll('.answer-btn')[index];
+            if (btn && btn.dataset.answer) {
+                game.checkAnswer(parseInt(btn.dataset.answer));
             }
+        }
+
+        function handleTextInput(v) {
+            if (!game) return;
+            if (v.length > 0) {
+                const num = parseInt(v);
+                if (!isNaN(num) && num > 9) {
+                    game.checkAnswer(num);
+                    const input = document.getElementById('math-input');
+                    if (input) input.value = '';
+                }
+            }
+        }
+
+        function addNumber(n) {
+            const inp = document.getElementById('math-input');
+            if (!inp) return;
+            const current = parseInt(inp.value || 0);
+            inp.value = (current + n).toString();
+            handleTextInput(inp.value);
+        }
+
+        function clearInput() {
+            const input = document.getElementById('math-input');
+            if (input) input.value = '';
+        }
+
+        function togglePause() { 
+            if (game) game.togglePause(); 
+        }
+        
+        function useHint() { 
+            if (game) game.useHint(); 
+        }
+
+        function exitGame() {
+            if (!game) return;
+            if (confirm('Вийти в меню?')) {
+                game.state.running = false;
+                game.audio.stopMusic();
+                
+                const gameUI = document.getElementById('game-ui');
+                const mainMenu = document.getElementById('main-menu');
+                
+                if (gameUI) gameUI.classList.remove('active');
+                if (mainMenu) mainMenu.classList.remove('hidden');
+                
+                game.previewMode = true;
+            }
+        }
+
+        function restartGame() {
+            const gameOverModal = document.getElementById('game-over-modal');
+            if (gameOverModal) gameOverModal.classList.remove('active');
+            if (game) game.start();
+        }
+
+        function backToMenu() {
+            const gameOverModal = document.getElementById('game-over-modal');
+            const gameUI = document.getElementById('game-ui');
+            const mainMenu = document.getElementById('main-menu');
+            
+            if (gameOverModal) gameOverModal.classList.remove('active');
+            if (gameUI) gameUI.classList.remove('active');
+            if (mainMenu) mainMenu.classList.remove('hidden');
+            
+            if (game) {
+                game.previewMode = true;
+                game.state.running = false;
+                game.audio.stopMusic();
+            }
+        }
+
+        function showNotif(text, type = 'info') {
+            const notifications = document.getElementById('notifications');
+            if (!notifications) return;
+            
+            const n = document.createElement('div');
+            n.className = `notification ${type}`;
+            n.textContent = text;
+            notifications.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
         }
     </script>
 </body>
