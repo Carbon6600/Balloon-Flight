@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Математичні Кульки ✦ Єдиний стиль</title>
+    <title>Математичні Кульки ✦ Мультиплеєр + AI Світ</title>
     
     <!-- Firebase SDK v9 (modular) -->
     <script type="module">
@@ -66,11 +66,11 @@
             --secondary-gradient: linear-gradient(135deg, #A0AEC0 0%, #718096 100%);
             --gold-gradient: linear-gradient(135deg, #F6E05E 0%, #ECC94B 100%);
             --card-bg: rgba(255, 255, 255, 0.95);
-            --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 15px rgba(0,0,0,0.15);
-            --border-radius-lg: 24px;
-            --border-radius-md: 16px;
-            --border-radius-sm: 12px;
+            --shadow-lg: 0 20px 35px -8px rgba(0,0,0,0.3), 0 10px 15px -6px rgba(0,0,0,0.2);
+            --shadow-md: 0 8px 25px rgba(0,0,0,0.2);
+            --border-radius-lg: 28px;
+            --border-radius-md: 20px;
+            --border-radius-sm: 16px;
         }
 
         body {
@@ -79,7 +79,7 @@
             height: 100dvh;
             overflow: hidden;
             background: linear-gradient(145deg, #87CEEB 0%, #B0E0FF 50%, #FFE4B5 100%);
-            transition: background 1.5s ease;
+            transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1);
             touch-action: manipulation;
         }
 
@@ -97,53 +97,47 @@
             position: absolute;
             top: 2%;
             right: 5%;
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             background: radial-gradient(circle at 35% 35%, #FFF9C4, #FFB347);
             border-radius: 50%;
-            box-shadow: 0 0 50px rgba(255, 200, 50, 0.7);
+            box-shadow: 0 0 60px rgba(255, 200, 50, 0.8);
             cursor: pointer;
-            animation: sunGlow 4s ease-in-out infinite;
+            animation: sunBreathing 6s ease-in-out infinite;
             z-index: 2;
             pointer-events: auto;
-            transition: transform 0.3s;
+            transition: all 0.5s;
         }
-        .sun:hover { transform: scale(1.1) rotate(10deg); }
+        .sun:hover { transform: scale(1.15) rotate(15deg); }
 
-        @keyframes sunGlow { 0%,100% { box-shadow: 0 0 40px #FFB347; } 50% { box-shadow: 0 0 70px #FFD700; } }
+        @keyframes sunBreathing { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
         .cloud {
             position: absolute;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 80px;
-            backdrop-filter: blur(2px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 100px;
         }
         .cloud::before {
             content: '';
             position: absolute;
-            background: white;
-            border-radius: 80px;
+            background: inherit;
+            border-radius: 100px;
         }
-        .cloud1 { width: 90px; height: 35px; top: 12%; left: -150px; animation: floatCloud 30s linear infinite; }
-        .cloud1::before { width: 45px; height: 45px; top: -25px; left: 15px; }
-        .cloud2 { width: 70px; height: 30px; top: 22%; left: -120px; animation: floatCloud 40s linear infinite; animation-delay: 8s; }
-        .cloud2::before { width: 35px; height: 35px; top: -20px; left: 12px; }
-        .cloud3 { width: 110px; height: 40px; top: 8%; left: -180px; animation: floatCloud 35s linear infinite; animation-delay: 15s; }
-        .cloud3::before { width: 55px; height: 55px; top: -30px; left: 20px; }
-        @keyframes floatCloud { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 200px)); } }
 
-        .bird {
+        .creature {
             position: absolute;
-            font-size: 24px;
+            font-size: 28px;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
             z-index: 5;
-            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.15));
             pointer-events: none;
+            animation: creatureFloat 8s ease-in-out infinite;
             opacity: 0.8;
         }
-        .bird-fly-1 { top: 15%; animation: birdFly 22s linear infinite; }
-        .bird-fly-2 { top: 25%; animation: birdFly 28s linear infinite reverse; animation-delay: 10s; }
-        .bird-fly-3 { top: 10%; animation: birdFly 25s linear infinite; animation-delay: 18s; }
-        @keyframes birdFly { 0% { left: -50px; } 100% { left: calc(100% + 50px); } }
+        @keyframes creatureFloat {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
 
         .mountains {
             position: absolute;
@@ -153,16 +147,7 @@
             background: linear-gradient(to bottom, #2C3E50, #1A2634);
             clip-path: polygon(0% 100%, 0% 65%, 12% 45%, 25% 70%, 38% 40%, 52% 65%, 68% 35%, 82% 60%, 95% 40%, 100% 50%, 100% 100%);
             z-index: 1;
-        }
-        .mountains::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, #40526B, #2C3E50);
-            clip-path: polygon(0% 100%, 8% 55%, 20% 75%, 35% 45%, 48% 70%, 63% 50%, 78% 65%, 92% 45%, 100% 55%, 100% 100%);
-            opacity: 0.6;
+            transition: all 1.5s;
         }
 
         .weather-container {
@@ -174,7 +159,25 @@
             overflow: hidden;
         }
 
-        /* ✦✦✦ ЄДИНИЙ СТИЛЬ ІНТЕРФЕЙСУ ✦✦✦ */
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8));
+            animation: rainFall linear infinite;
+        }
+        @keyframes rainFall { to { transform: translateY(100vh); } }
+        
+        .snowflake {
+            position: absolute;
+            color: white;
+            font-size: 15px;
+            animation: snowFall linear infinite;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes snowFall { to { transform: translateY(100vh) rotate(360deg); } }
+
+        /* ✦✦✦ ОСНОВНИЙ ІНТЕРФЕЙС ✦✦✦ */
         .game-wrapper {
             position: relative;
             z-index: 20;
@@ -188,7 +191,6 @@
             overflow: hidden;
         }
 
-        /* Основний заголовок */
         .main-title {
             color: #1E293B;
             font-size: clamp(1.4em, 5vw, 2.2em);
@@ -202,16 +204,6 @@
             background-clip: text;
         }
 
-        /* Панель статусу - єдиний стиль */
-        .glass-panel {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border-radius: var(--border-radius-md);
-            box-shadow: var(--shadow-md);
-            border: 1px solid rgba(255,255,255,0.6);
-            padding: 12px 20px;
-        }
-
         .status-panel {
             display: flex;
             gap: 20px;
@@ -221,7 +213,7 @@
             padding: 12px 24px;
             border-radius: 50px;
             box-shadow: var(--shadow-md);
-            border: 1px solid rgba(255,255,255,0.8);
+            border: 2px solid rgba(255,255,255,0.8);
             font-weight: 700;
         }
 
@@ -231,17 +223,15 @@
             gap: 8px;
             font-size: 1.1em;
         }
-        .status-item span:first-child { font-size: 1.3em; }
         .lives { color: #E53E3E; }
         .score { color: #38A169; }
         .level { color: #3182CE; }
 
-        /* Ігрове поле */
         #game-container {
             position: relative;
             width: min(95vw, 420px);
             height: min(52vh, 420px);
-            background: rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.2);
             backdrop-filter: blur(8px);
             border: 3px solid rgba(255,255,255,0.7);
             border-radius: var(--border-radius-lg);
@@ -250,23 +240,17 @@
             margin-bottom: 12px;
         }
 
-        /* ✦✦✦ КУЛЬКИ (живі) ✦✦✦ */
+        /* ✦✦✦ ЖИВІ КУЛЬКИ ✦✦✦ */
         .balloon {
             position: absolute;
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.35));
             z-index: 30;
-            animation: levitate 3s ease-in-out infinite;
-            transition: transform 0.15s;
+            will-change: transform, left, top;
         }
-        @keyframes levitate {
-            0%,100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-6px) rotate(1.5deg); }
-        }
-        .balloon:active { transform: scale(1.15); }
 
         .balloon-body {
             width: 48px;
@@ -278,10 +262,11 @@
             font-weight: 900;
             font-size: 1em;
             color: white;
-            text-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
             position: relative;
-            box-shadow: inset -6px -12px 12px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.2);
-            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), transparent 70%);
+            box-shadow: inset -8px -14px 14px rgba(0,0,0,0.3), 0 8px 15px rgba(0,0,0,0.3);
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6), transparent 75%);
+            transition: transform 0.1s;
         }
         .balloon-body::after {
             content: '';
@@ -290,34 +275,33 @@
             left: 14px;
             width: 12px;
             height: 16px;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.6);
             border-radius: 50%;
             transform: rotate(-20deg);
         }
         .balloon-string {
             width: 2px;
-            height: 22px;
-            background: linear-gradient(to bottom, #FFF, #B0B0B0);
+            height: 24px;
+            background: linear-gradient(to bottom, #FFF, #AAA);
             margin-top: -4px;
-            box-shadow: 0 3px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 4px rgba(0,0,0,0.15);
         }
 
         .balloon-normal .balloon-body { background: linear-gradient(145deg, #667EEA, #5A67D8); }
         .balloon-golden .balloon-body { 
             background: radial-gradient(circle at 35% 35%, #FFF2B5, #F6AD55);
-            animation: goldPulse 2s infinite;
+            animation: goldShimmer 2.2s infinite;
         }
-        @keyframes goldPulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+        @keyframes goldShimmer { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.4); } }
         .balloon-heart .balloon-body { 
             background: linear-gradient(145deg, #FF7B89, #FF4D6D);
-            animation: heartPulse 1.3s infinite;
+            animation: heartPulse 1.4s infinite;
         }
         @keyframes heartPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
         .balloon.pop { animation: pop 0.3s forwards; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(0); opacity: 0; } }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.5); } 100% { transform: scale(0); opacity: 0; } }
 
-        /* Панель вводу */
         .typing-indicator {
             position: absolute;
             bottom: 15px;
@@ -336,7 +320,6 @@
         }
         .typing-indicator.active { display: block; }
 
-        /* Кнопки відповідей */
         .answers-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -356,14 +339,13 @@
             cursor: pointer;
             box-shadow: var(--shadow-md);
             transition: all 0.2s;
-            text-shadow: 2px 2px 3px rgba(0,0,0,0.2);
-            border: 2px solid rgba(255,255,255,0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
         }
-        .answer-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 20px rgba(102,126,234,0.6); }
-        .answer-btn.hint { background: var(--success-gradient); animation: hint 1.2s infinite; }
-        @keyframes hint { 0%,100% { box-shadow: 0 0 0 0 #48BB78; } 50% { box-shadow: 0 0 0 12px rgba(72,187,120,0.4); } }
+        .answer-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 28px rgba(102,126,234,0.7); }
+        .answer-btn.hint { background: var(--success-gradient); animation: hintPulse 1.2s infinite; }
+        @keyframes hintPulse { 0%,100% { box-shadow: 0 0 0 0 #48BB78; } 50% { box-shadow: 0 0 0 15px rgba(72,187,120,0.4); } }
 
-        /* Панель керування */
         .controls {
             display: flex;
             gap: 10px;
@@ -379,25 +361,89 @@
             border-radius: 40px;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: var(--shadow-sm, 0 4px 10px rgba(0,0,0,0.15));
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
             flex: 1;
             min-width: 110px;
             color: white;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.4);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
         }
-        .control-btn i { font-size: 1.2em; }
         .btn-start { background: var(--success-gradient); }
         .btn-multiplayer { background: var(--primary-gradient); }
         .btn-pause { background: var(--warning-gradient); }
         .btn-hint { background: var(--info-gradient); }
         .btn-exit { background: var(--danger-gradient); }
-        .btn-secondary { background: var(--secondary-gradient); }
+        .btn-rematch { background: var(--success-gradient); }
 
-        /* ✦✦✦ ТАБЛИЦЯ ЛІДЕРІВ (новий стиль) ✦✦✦ */
+        /* ✦✦✦ ПАНЕЛЬ СУПЕРНИКА ✦✦✦ */
+        .opponent-panel {
+            position: fixed;
+            top: 80px;
+            left: 10px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            padding: 15px;
+            border-radius: 25px;
+            box-shadow: var(--shadow-lg);
+            z-index: 45;
+            display: none;
+            min-width: 180px;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+        .opponent-panel.active { display: block; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .opponent-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .opponent-avatar {
+            width: 45px;
+            height: 45px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+        .opponent-name { font-weight: 900; color: #2D3748; }
+        .opponent-score { font-size: 1.3em; font-weight: 900; color: #9F7AEA; }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #E2E8F0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9F7AEA, #667EEA);
+            transition: width 0.3s;
+        }
+
+        .mode-indicator {
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            z-index: 45;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+        .mode-indicator.active { display: block; }
+
+        /* ✦✦✦ ТАБЛИЦЯ ЛІДЕРІВ ✦✦✦ */
         .leaderboard-container {
             position: fixed;
             bottom: 0;
@@ -406,13 +452,13 @@
             background: rgba(255,255,255,0.98);
             backdrop-filter: blur(20px);
             border-radius: 35px 35px 0 0;
-            box-shadow: 0 -15px 35px rgba(0,0,0,0.25);
+            box-shadow: 0 -20px 40px rgba(0,0,0,0.3);
             z-index: 50;
             max-height: 42vh;
             overflow: hidden;
             transform: translateY(calc(100% - 70px));
-            transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
-            border-top: 3px solid rgba(255,215,0,0.5);
+            transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+            border-top: 4px solid rgba(255,215,0,0.6);
         }
         .leaderboard-container.expanded { transform: translateY(0); }
 
@@ -423,13 +469,12 @@
             gap: 15px;
             padding: 15px;
             cursor: pointer;
-            background: rgba(255,255,255,0.6);
         }
         .leaderboard-header::before {
             content: '▼';
             font-size: 1.2em;
-            color: var(--primary-gradient);
-            transition: transform 0.5s;
+            color: #9F7AEA;
+            transition: transform 0.6s;
         }
         .expanded .leaderboard-header::before { transform: rotate(180deg); }
 
@@ -439,31 +484,6 @@
             background: linear-gradient(45deg, #FFD700, #C0C0C0, #CD7F32);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .leaderboard-tabs {
-            display: flex;
-            gap: 8px;
-            padding: 10px 15px;
-            background: #F7FAFC;
-        }
-        .leaderboard-tab {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 800;
-            font-size: 0.85em;
-            cursor: pointer;
-            background: white;
-            color: #4A5568;
-            transition: 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .leaderboard-tab.active {
-            background: var(--primary-gradient);
-            color: white;
-            box-shadow: 0 4px 12px #9F7AEA;
         }
 
         .leaderboard-list {
@@ -480,44 +500,17 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            border: 1px solid rgba(0,0,0,0.02);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.02);
         }
         .leaderboard-rank {
             font-size: 2em;
             width: 50px;
             text-align: center;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
         }
-        .rank-1 { color: #FFD700; text-shadow: 0 0 8px #FFB347; }
-        .rank-2 { color: #C0C0C0; text-shadow: 0 0 8px #A0A0A0; }
-        .rank-3 { color: #CD7F32; text-shadow: 0 0 8px #B87333; }
-        .rank-other { color: #718096; font-weight: 900; font-size: 1.3em; }
+        .rank-1 { color: #FFD700; text-shadow: 0 0 10px #FFB347; }
+        .rank-2 { color: #C0C0C0; text-shadow: 0 0 10px #A0A0A0; }
+        .rank-3 { color: #CD7F32; text-shadow: 0 0 10px #B87333; }
 
-        .leaderboard-name {
-            flex: 1;
-            font-weight: 800;
-            color: #1E293B;
-            font-size: 1em;
-        }
-        .leaderboard-score {
-            font-weight: 900;
-            font-size: 1.5em;
-            background: linear-gradient(135deg, #667EEA, #9F7AEA);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-right: 10px;
-        }
-        .leaderboard-mode {
-            font-size: 0.75em;
-            padding: 5px 12px;
-            border-radius: 30px;
-            background: #E9ECEF;
-            color: #2D3748;
-            font-weight: 700;
-        }
-
-        /* Сповіщення */
+        /* Інші елементи */
         .notifications-panel { 
             position: fixed; 
             top: 90px; 
@@ -527,9 +520,6 @@
             max-width: 380px; 
             z-index: 100; 
             pointer-events: none; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
         }
         .notification { 
             background: white; 
@@ -539,14 +529,24 @@
             animation: slideDown 0.4s, fadeOut 0.4s 4.6s forwards; 
             border-left: 6px solid #805AD5; 
             font-weight: 700;
-            backdrop-filter: blur(5px);
         }
         @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
-        .notification.success { border-left-color: #48BB78; }
-        .notification.error { border-left-color: #E53E3E; }
 
-        /* Модальні вікна - єдиний стиль */
+        .connection-status { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            padding: 8px 18px; 
+            border-radius: 40px; 
+            font-weight: 700; 
+            z-index: 45; 
+            backdrop-filter: blur(8px);
+            border: 2px solid white;
+        }
+        .connection-online { background: #48BB78; color: white; }
+        .connection-offline { background: #FC8181; color: white; }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -567,37 +567,29 @@
             text-align: center;
             max-width: 90vw;
             width: 380px;
-            box-shadow: var(--shadow-lg);
-            border: 3px solid rgba(255,255,255,0.5);
         }
-        .modal-content h2 { color: #2D3748; margin-bottom: 15px; font-size: 1.8em; }
-        .modal-content input { 
-            padding: 14px; 
-            font-size: 1.2em; 
-            border: 2px solid #E2E8F0; 
-            border-radius: 60px; 
-            margin: 15px 0; 
+
+        .countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            text-align: center;
-        }
-
-        .connection-status { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            padding: 8px 18px; 
-            border-radius: 40px; 
-            font-weight: 700; 
-            z-index: 45; 
+            height: 100%;
+            background: rgba(0,0,0,0.7);
             backdrop-filter: blur(8px);
-            border: 2px solid white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 250;
         }
-        .connection-online { background: #48BB78; color: white; }
-        .connection-offline { background: #FC8181; color: white; }
+        .countdown-number {
+            font-size: 8em;
+            color: white;
+            font-weight: 900;
+            animation: countdownPulse 1s;
+        }
+        @keyframes countdownPulse { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
 
-        .hidden { display: none !important; }
-
-        /* Пауза */
         .pause-overlay {
             position: absolute;
             top: 0;
@@ -610,32 +602,46 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            border-radius: inherit;
         }
         .pause-content {
             background: white;
             padding: 30px;
             border-radius: 50px;
-            text-align: center;
             font-size: 2em;
             font-weight: 900;
-            color: #2D3748;
-            box-shadow: var(--shadow-lg);
         }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <!-- Живий світ -->
-    <div class="world">
+    <div class="world" id="world">
         <div class="sun" id="sun"></div>
-        <div class="cloud cloud1"></div><div class="cloud cloud2"></div><div class="cloud cloud3"></div>
-        <div class="bird bird-fly-1">🐦</div><div class="bird bird-fly-2">🕊️</div><div class="bird bird-fly-3">🦅</div>
-        <div class="mountains"></div>
+        <!-- Хмари додаються через JS -->
+        <div class="mountains" id="mountains"></div>
         <div class="weather-container" id="weather-container"></div>
     </div>
 
     <!-- Сповіщення -->
     <div class="notifications-panel" id="notifications-panel"></div>
+
+    <!-- Панель суперника -->
+    <div class="opponent-panel" id="opponent-panel">
+        <div class="opponent-info">
+            <div class="opponent-avatar">👤</div>
+            <div>
+                <div class="opponent-name" id="opponent-name">Суперник</div>
+                <div class="opponent-score" id="opponent-score">0</div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="opponent-progress" style="width:0%"></div>
+        </div>
+    </div>
+
+    <!-- Індикатор режиму -->
+    <div class="mode-indicator" id="mode-indicator">🎮 РЕЖИМ ПЕРЕГОНІВ</div>
 
     <!-- Основний інтерфейс -->
     <div class="game-wrapper">
@@ -649,7 +655,6 @@
 
         <div id="game-container">
             <div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>
-            <!-- Пауза буде додаватись сюди -->
         </div>
 
         <div class="answers-container">
@@ -665,6 +670,7 @@
             <button class="control-btn btn-pause hidden" id="pause-btn" onclick="togglePause()"><span>⏸️</span> Пауза</button>
             <button class="control-btn btn-hint hidden" id="hint-btn" onclick="useHint()"><span>💡</span> Підказка</button>
             <button class="control-btn btn-exit hidden" id="exit-btn" onclick="exitGame()"><span>🚪</span> Вихід</button>
+            <button class="control-btn btn-rematch hidden" id="rematch-btn" onclick="requestRematch()"><span>🔄</span> Реванш</button>
         </div>
     </div>
 
@@ -672,11 +678,6 @@
     <div class="leaderboard-container" id="leaderboard-container">
         <div class="leaderboard-header" onclick="toggleLeaderboard()">
             <span class="leaderboard-title">🏆 СВІТОВА ТАБЛИЦЯ</span>
-        </div>
-        <div class="leaderboard-tabs">
-            <button class="leaderboard-tab active" onclick="switchLeaderboard('all', event)" id="tab-all">Всі</button>
-            <button class="leaderboard-tab" onclick="switchLeaderboard('single', event)" id="tab-single">Один</button>
-            <button class="leaderboard-tab" onclick="switchLeaderboard('multi', event)" id="tab-multi">На двох</button>
         </div>
         <ul class="leaderboard-list" id="leaderboard-list">
             <li style="text-align:center; color:#718096; padding:20px;">✨ Завантаження лідерів...</li>
@@ -691,8 +692,8 @@
         <div class="modal-content">
             <h2>Вітаємо! 👋</h2>
             <p style="margin-bottom:10px;">Введіть своє ім'я</p>
-            <input type="text" id="player-name" placeholder="Твоє ім'я" maxlength="12">
-            <button class="control-btn btn-start" onclick="savePlayerName()" style="width:100%;">🚀 Поїхали!</button>
+            <input type="text" id="player-name" placeholder="Твоє ім'я" maxlength="12" value="Гравець">
+            <button class="control-btn btn-start" onclick="savePlayerName()" style="width:100%; margin-top:15px;">🚀 Поїхали!</button>
         </div>
     </div>
 
@@ -703,23 +704,28 @@
             <div id="multiplayer-menu">
                 <button class="control-btn btn-start" onclick="createRoom()" style="width:100%; margin-bottom:10px;">🏠 Створити кімнату</button>
                 <p style="color:#718096; margin:10px 0;">або</p>
-                <div style="display:flex; gap:8px; justify-content:center; margin-bottom:15px;">
+                <div style="display:flex; gap:8px; justify-content:center; margin-bottom:15px;" class="room-input">
                     <input type="text" maxlength="1" onkeyup="moveToNext(this, 0)" style="width:50px; height:60px; font-size:1.8em; text-align:center; border-radius:15px; border:2px solid #E2E8F0;">
                     <input type="text" maxlength="1" onkeyup="moveToNext(this, 1)" style="width:50px; height:60px; font-size:1.8em; text-align:center; border-radius:15px; border:2px solid #E2E8F0;">
                     <input type="text" maxlength="1" onkeyup="moveToNext(this, 2)" style="width:50px; height:60px; font-size:1.8em; text-align:center; border-radius:15px; border:2px solid #E2E8F0;">
                     <input type="text" maxlength="1" onkeyup="moveToNext(this, 3)" style="width:50px; height:60px; font-size:1.8em; text-align:center; border-radius:15px; border:2px solid #E2E8F0;">
                 </div>
-                <button class="control-btn btn-multiplayer" onclick="joinRoom()" style="width:100%; margin-top:5px;">🔗 Приєднатися</button>
+                <button class="control-btn btn-multiplayer" onclick="joinRoom()" style="width:100%;">🔗 Приєднатися</button>
                 <button class="control-btn btn-secondary" onclick="closeMultiplayerMenu()" style="width:100%; margin-top:10px;">❌ Скасувати</button>
             </div>
             <div id="room-created" class="hidden">
-                <p style="font-weight:700;">Код кімнати:</p>
-                <div style="font-size:2.5em; font-weight:900; letter-spacing:10px; padding:15px; background:#F3E8FF; border-radius:20px; margin:15px 0;" onclick="copyRoomCode()" id="room-code-display">----</div>
-                <div id="waiting-status" style="padding:10px; background:#FEF3C7; border-radius:30px; margin:10px 0;">⏳ Очікуємо...</div>
+                <p style="font-weight:700; margin-bottom:10px;">Код кімнати:</p>
+                <div style="font-size:2.5em; font-weight:900; letter-spacing:10px; padding:20px; background:#F3E8FF; border-radius:20px; margin:15px 0; cursor:pointer;" onclick="copyRoomCode()" id="room-code-display">----</div>
+                <div id="waiting-status" style="padding:12px; background:#FEF3C7; border-radius:30px; margin:10px 0;">⏳ Очікуємо суперника...</div>
                 <div id="start-game-container"></div>
-                <button class="control-btn btn-secondary" onclick="closeMultiplayerMenu()">❌ Закрити</button>
+                <button class="control-btn btn-secondary" onclick="closeMultiplayerMenu()" style="width:100%;">❌ Закрити</button>
             </div>
         </div>
+    </div>
+
+    <!-- Зворотній відлік -->
+    <div class="countdown-overlay" id="countdown-overlay">
+        <div class="countdown-number" id="countdown-number">3</div>
     </div>
 
     <!-- Оголошення переможця -->
@@ -729,7 +735,7 @@
             <h2 id="winner-text">Перемога!</h2>
             <p id="winner-score" style="font-size:1.3em; margin:15px 0;">Рахунок: 0</p>
             <div style="display:flex; gap:10px;">
-                <button class="control-btn btn-start" onclick="requestRematch()" style="flex:1;">🔄 Реванш</button>
+                <button class="control-btn btn-rematch" onclick="requestRematch()" style="flex:1;">🔄 Реванш</button>
                 <button class="control-btn btn-exit" onclick="closeWinnerAndLeave()" style="flex:1;">🚪 Вийти</button>
             </div>
         </div>
@@ -753,6 +759,8 @@
             isTyping: false,
             slowMotion: false, 
             weatherIndex: 0,
+            
+            // Мультиплеєр
             isMultiplayer: false, 
             roomId: null, 
             playerId: null, 
@@ -760,55 +768,103 @@
             opponentName: '', 
             opponentScore: 0, 
             isHost: false, 
-            gameTarget: 100,
+            gameTarget: 10,
             gameStarted: false, 
             rematchRequested: false, 
             gameEnded: false,
-            maxBalloons: 3
+            maxBalloons: 3,
+            
+            // AI параметри
+            playerSkill: 5,
+            correctAnswers: 0,
+            totalAnswers: 0,
+            lastAnswerTime: Date.now()
         };
 
         let intervals = { spawn: null, move: null };
-        let playerName = localStorage.getItem('mathBalloonPlayer') || '';
+        let playerName = localStorage.getItem('mathBalloonPlayer') || 'Гравець';
         
         // Firebase
-        let db = null, roomRef = null, unsubscribeRoom = null, isFirebaseConnected = false;
-        let currentLeaderboard = 'all';
+        let db = null;
+        let roomRef = null;
+        let unsubscribeRoom = null;
+        let isFirebaseConnected = false;
+        
+        // Таблиця лідерів
         let allLeaderboardData = [];
 
-        const weatherTypes = [
-            { name: 'Сонячно', speed: 0.55, bg: 'linear-gradient(145deg, #87CEEB, #B0E0FF, #FFE4B5)' },
-            { name: 'Дощ', speed: 0.45, bg: 'linear-gradient(145deg, #4A5568, #2D3748)', effect: 'rain' },
-            { name: 'Сніг', speed: 0.4, bg: 'linear-gradient(145deg, #E2E8F0, #A0AEC0)', effect: 'snow' },
-            { name: 'Веселка', speed: 0.6, bg: 'linear-gradient(145deg, #F6E05E, #9F7AEA, #667EEA)' },
-            { name: 'Захід', speed: 0.5, bg: 'linear-gradient(145deg, #F6AD55, #FC8181, #9F7AEA)' }
-        ];
+        // Динамічний світ
+        let worldElements = { clouds: [], creatures: [] };
 
         // ==================== ІНІЦІАЛІЗАЦІЯ ====================
         window.onload = () => {
+            // Перевіряємо Firebase
             setTimeout(() => {
                 if (window.isFirebaseReady && window.firebaseDB) {
                     db = window.firebaseDB;
                     isFirebaseConnected = true;
                     updateConnectionStatus('online');
                     loadGlobalLeaderboard();
+                    console.log("✅ Firebase підключено!");
                 } else {
                     updateConnectionStatus('offline');
+                    console.log("❌ Firebase не доступний");
                 }
             }, 1000);
 
-            if (!playerName) {
+            // Перевіряємо ім'я
+            if (!localStorage.getItem('mathBalloonPlayer')) {
                 document.getElementById('name-modal').style.display = 'flex';
             } else {
+                playerName = localStorage.getItem('mathBalloonPlayer');
                 document.getElementById('name-modal').style.display = 'none';
             }
+            
             setupKeyboardControls();
+            initDynamicWorld();
         };
 
         function updateConnectionStatus(status) {
             const el = document.getElementById('connection-status');
             el.className = 'connection-status';
-            if (status === 'online') { el.classList.add('connection-online'); el.textContent = '🟢 Онлайн'; }
-            else { el.classList.add('connection-offline'); el.textContent = '🔴 Офлайн'; }
+            if (status === 'online') { 
+                el.classList.add('connection-online'); 
+                el.textContent = '🟢 Онлайн'; 
+            } else { 
+                el.classList.add('connection-offline'); 
+                el.textContent = '🔴 Офлайн'; 
+            }
+        }
+
+        // ==================== ДИНАМІЧНИЙ СВІТ ====================
+        function initDynamicWorld() {
+            // Створюємо хмари
+            for (let i = 0; i < 3; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = `cloud cloud${i+1}`;
+                cloud.style.cssText = `
+                    width: ${70 + Math.random() * 60}px;
+                    height: ${25 + Math.random() * 15}px;
+                    top: ${5 + Math.random() * 25}%;
+                    left: -${100 + Math.random() * 100}px;
+                    animation: floatCloud ${20 + Math.random() * 20}s linear infinite;
+                `;
+                document.getElementById('world').appendChild(cloud);
+            }
+            
+            // Створюємо істот
+            const creatures = ['🦋', '🐝', '🐞', '🦉', '🦊', '🐿️'];
+            for (let i = 0; i < 4; i++) {
+                const creature = document.createElement('div');
+                creature.className = 'creature';
+                creature.textContent = creatures[Math.floor(Math.random() * creatures.length)];
+                creature.style.cssText = `
+                    left: ${Math.random() * 100}%;
+                    top: ${10 + Math.random() * 40}%;
+                    animation-duration: ${6 + Math.random() * 8}s;
+                `;
+                document.getElementById('world').appendChild(creature);
+            }
         }
 
         // ==================== ТАБЛИЦЯ ЛІДЕРІВ ====================
@@ -818,58 +874,49 @@
                 const { ref, onValue, query, orderByChild, limitToLast } = window.firebaseRefs;
                 const leaderboardRef = ref(db, 'leaderboard');
                 
-                onValue(query(leaderboardRef, orderByChild('score'), limitToLast(100)), (snapshot) => {
+                onValue(query(leaderboardRef, orderByChild('score'), limitToLast(50)), (snapshot) => {
                     const data = snapshot.val();
-                    if (!data) { allLeaderboardData = []; renderLeaderboard([]); return; }
-                    allLeaderboardData = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
-                    renderLeaderboard(allLeaderboardData);
+                    if (!data) { renderLeaderboard([]); return; }
+                    
+                    const scores = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
+                    renderLeaderboard(scores);
                 });
             } catch (e) { console.error(e); }
         }
 
         function renderLeaderboard(scores) {
             const list = document.getElementById('leaderboard-list');
-            let filtered = scores;
-            if (currentLeaderboard === 'single') filtered = scores.filter(s => s.mode === 'single');
-            else if (currentLeaderboard === 'multi') filtered = scores.filter(s => s.mode?.includes('multi'));
             
+            // Фільтруємо тільки solo режим для простоти
+            let filtered = scores.filter(s => s.mode === 'single');
             filtered.sort((a, b) => b.score - a.score);
             
-            const bestByPlayer = {};
-            filtered.forEach(s => { const key = s.name + '_' + (s.mode || ''); if (!bestByPlayer[key] || bestByPlayer[key].score < s.score) bestByPlayer[key] = s; });
-            let uniqueScores = Object.values(bestByPlayer).sort((a,b) => b.score - a.score).slice(0, 15);
+            // Унікальні гравці
+            const unique = {};
+            filtered.forEach(s => { if (!unique[s.name] || unique[s.name].score < s.score) unique[s.name] = s; });
+            let topPlayers = Object.values(unique).slice(0, 15);
             
-            if (uniqueScores.length === 0) {
-                list.innerHTML = '<li style="text-align:center; color:#718096; padding:20px;">😢 Поки що немає</li>';
+            if (topPlayers.length === 0) {
+                list.innerHTML = '<li style="text-align:center; padding:20px;">😢 Поки що немає</li>';
                 return;
             }
 
-            list.innerHTML = uniqueScores.map((s, idx) => {
+            list.innerHTML = topPlayers.map((s, idx) => {
                 const rank = idx + 1;
-                let medalHtml = '';
-                if (rank === 1) medalHtml = '<span class="leaderboard-rank rank-1">🥇</span>';
-                else if (rank === 2) medalHtml = '<span class="leaderboard-rank rank-2">🥈</span>';
-                else if (rank === 3) medalHtml = '<span class="leaderboard-rank rank-3">🥉</span>';
-                else medalHtml = `<span class="leaderboard-rank rank-other">#${rank}</span>`;
+                let medal = '';
+                if (rank === 1) medal = '<span class="leaderboard-rank rank-1">🥇</span>';
+                else if (rank === 2) medal = '<span class="leaderboard-rank rank-2">🥈</span>';
+                else if (rank === 3) medal = '<span class="leaderboard-rank rank-3">🥉</span>';
+                else medal = `<span class="leaderboard-rank rank-other">#${rank}</span>`;
 
-                const modeText = s.mode === 'single' ? '🧑 Один' : (s.mode?.includes('win') ? '👑 Перемога' : '👥 На двох');
                 return `
                     <li class="leaderboard-item">
-                        ${medalHtml}
-                        <span class="leaderboard-name">${s.name}</span>
-                        <span class="leaderboard-score">${s.score}</span>
-                        <span class="leaderboard-mode">${modeText}</span>
+                        ${medal}
+                        <span style="flex:1; font-weight:700;">${s.name}</span>
+                        <span style="font-weight:900; color:#9F7AEA;">${s.score}</span>
                     </li>
                 `;
             }).join('');
-        }
-
-        function switchLeaderboard(type, event) {
-            if (event) event.stopPropagation();
-            currentLeaderboard = type;
-            document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab-${type}`).classList.add('active');
-            renderLeaderboard(allLeaderboardData);
         }
 
         function toggleLeaderboard() {
@@ -885,10 +932,8 @@
                     name: scoreData.name,
                     score: scoreData.score,
                     mode: scoreData.mode,
-                    level: gameState.level,
                     timestamp: serverTimestamp()
                 });
-                if (scoreData.score >= 50) showNotification('🏆 Новий рекорд!', `${scoreData.score} очок!`, 'success');
             } catch (e) { console.error(e); }
         }
 
@@ -909,19 +954,15 @@
             notif.className = `notification ${type}`;
             notif.innerHTML = `<div style="font-weight:900;">${title}</div><div>${text}</div>`;
             panel.appendChild(notif);
-            setTimeout(() => notif.remove(), 4500);
+            setTimeout(() => notif.remove(), 4000);
         }
 
         function setupKeyboardControls() {
             document.addEventListener('keydown', (e) => {
-                if (!gameState.isRunning || gameState.isPaused) {
-                    if (e.key === 'Escape' && gameState.isRunning) togglePause();
-                    return;
-                }
+                if (!gameState.isRunning || gameState.isPaused) return;
                 if (e.key >= '0' && e.key <= '9') {
                     gameState.typingBuffer += e.key;
                     gameState.isTyping = true;
-                    gameState.slowMotion = true;
                     updateTypingIndicator();
                     clearTimeout(window.typingTimeout);
                     window.typingTimeout = setTimeout(() => submitTypedAnswer(), 1500);
@@ -930,8 +971,6 @@
                 } else if (e.key === 'Backspace') {
                     gameState.typingBuffer = gameState.typingBuffer.slice(0, -1);
                     updateTypingIndicator();
-                } else if (e.key === 'Escape') {
-                    togglePause();
                 }
             });
         }
@@ -952,92 +991,79 @@
             const answer = parseInt(gameState.typingBuffer);
             gameState.typingBuffer = '';
             gameState.isTyping = false;
-            gameState.slowMotion = false;
             updateTypingIndicator();
             processAnswer(answer);
         }
 
         function startGame() {
-            if (gameState.isRunning) return;
-
-            resetToMainMenu();
+            resetGame();
             gameState.isRunning = true;
             gameState.isMultiplayer = false;
-            gameState.gameEnded = false;
-            gameState.score = 0;
-            gameState.lives = 3;
-            gameState.level = 1;
-            gameState.balloons = [];
-            gameState.spawnInterval = 3500;
-            gameState.baseSpeed = 0.55;
-            gameState.heartsCollected = 0;
-            gameState.maxBalloons = 3;
-
+            
             updateDisplay();
             setWeather(0);
 
             document.getElementById('game-container').innerHTML = '<div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>';
 
             intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-            intervals.move = setInterval(moveBalloons, 50);
+            intervals.move = setInterval(moveBalloons, 16);
 
+            // Оновлюємо кнопки
             document.getElementById('start-btn').classList.add('hidden');
             document.getElementById('multiplayer-btn').classList.add('hidden');
             document.getElementById('pause-btn').classList.remove('hidden');
             document.getElementById('hint-btn').classList.remove('hidden');
             document.getElementById('exit-btn').classList.remove('hidden');
             
-            showNotification('Поїхали!', 'Ловіть кульки!', 'success');
+            showNotification('Поїхали!', 'Лови кульки!', 'success');
         }
 
         function spawnBalloon() {
             if (gameState.gameEnded || !gameState.isRunning || gameState.balloons.length >= gameState.maxBalloons) return;
             
-            const maxNum = Math.min(5 + gameState.level * 2, 12);
+            const maxNum = 5 + gameState.level;
             const type = Math.random();
 
-            let num1, num2, answer, balloonClass;
-
+            let num1, num2;
+            
+            // AI генерація прикладів
+            if (gameState.playerSkill < 5) {
+                num1 = Math.floor(Math.random() * maxNum) + 1;
+                num2 = Math.floor(Math.random() * maxNum) + 1;
+            } else {
+                num1 = Math.floor(Math.random() * (maxNum + 3)) + 2;
+                num2 = Math.floor(Math.random() * (maxNum + 3)) + 2;
+            }
+            
+            const answer = num1 + num2;
+            
+            let balloonClass = 'balloon-normal';
             if (type < 0.1 && gameState.heartsCollected < 2) {
-                num1 = Math.floor(Math.random() * 3) + 1;
-                num2 = Math.floor(Math.random() * 3) + 1;
                 balloonClass = 'balloon-heart';
                 gameState.heartsCollected++;
             } else if (type < 0.2) {
-                num1 = Math.floor(Math.random() * maxNum) + 1;
-                num2 = Math.floor(Math.random() * maxNum) + 1;
                 balloonClass = 'balloon-golden';
-            } else {
-                num1 = Math.floor(Math.random() * (maxNum - 2)) + 1;
-                num2 = Math.floor(Math.random() * (maxNum - 2)) + 1;
-                balloonClass = 'balloon-normal';
             }
-
-            answer = num1 + num2;
 
             const balloon = document.createElement('div');
             balloon.className = `balloon ${balloonClass}`;
             balloon.innerHTML = `<div class="balloon-body">${num1}+${num2}</div><div class="balloon-string"></div>`;
             
-            const containerWidth = document.getElementById('game-container').offsetWidth;
-            const balloonWidth = 48;
-            const maxLeft = containerWidth - balloonWidth - 10;
-            const leftPos = Math.random() * maxLeft + 5;
+            const container = document.getElementById('game-container');
+            const leftPos = 5 + Math.random() * (container.offsetWidth - 60);
             
             balloon.style.left = leftPos + 'px';
-            balloon.style.top = (document.getElementById('game-container').offsetHeight - 70) + 'px';
+            balloon.style.top = (container.offsetHeight - 70) + 'px';
             balloon.dataset.answer = answer;
 
-            document.getElementById('game-container').appendChild(balloon);
-
-            let speed = gameState.baseSpeed + Math.random() * 0.2;
-            if (gameState.slowMotion) speed *= 0.2;
+            container.appendChild(balloon);
 
             gameState.balloons.push({
                 element: balloon,
-                speed: speed,
-                baseSpeed: speed,
-                sway: (Math.random() - 0.5) * 1.0
+                baseSpeed: gameState.baseSpeed + Math.random() * 0.2,
+                currentSpeed: gameState.baseSpeed + Math.random() * 0.2,
+                sway: (Math.random() - 0.5) * 2,
+                phase: Math.random() * Math.PI * 2
             });
 
             updateAnswerButtons();
@@ -1047,8 +1073,8 @@
             if (gameState.gameEnded || gameState.isPaused) return;
             
             gameState.balloons.forEach((b, index) => {
-                let top = parseFloat(b.element.style.top) - b.speed;
-                let left = parseFloat(b.element.style.left) + Math.sin(top / 80) * b.sway;
+                let top = parseFloat(b.element.style.top) - b.currentSpeed;
+                let left = parseFloat(b.element.style.left) + Math.sin(top / 50 + b.phase) * b.sway;
 
                 if (top < -80) {
                     b.element.remove();
@@ -1061,12 +1087,6 @@
                     b.element.style.left = left + 'px';
                 }
             });
-
-            if (gameState.slowMotion) {
-                gameState.balloons.forEach(b => b.speed = b.baseSpeed * 0.2);
-            } else {
-                gameState.balloons.forEach(b => b.speed = b.baseSpeed);
-            }
         }
 
         function updateAnswerButtons() {
@@ -1090,18 +1110,21 @@
         }
 
         function checkAnswer(btn) {
-            if (!gameState.isRunning || gameState.isPaused || gameState.gameEnded) return;
+            if (!gameState.isRunning || gameState.isPaused) return;
             processAnswer(parseInt(btn.dataset.answer));
         }
 
         function processAnswer(answer) {
-            if (gameState.gameEnded) return;
-            
             const matches = gameState.balloons.filter(b => 
                 parseInt(b.element.dataset.answer) === answer
             );
 
+            gameState.totalAnswers++;
+            
             if (matches.length > 0) {
+                gameState.correctAnswers++;
+                gameState.playerSkill = Math.floor((gameState.correctAnswers / gameState.totalAnswers) * 10);
+                
                 matches.forEach(b => {
                     if (b.element.classList.contains('balloon-golden')) {
                         gameState.score += 25;
@@ -1113,83 +1136,63 @@
                     }
 
                     b.element.classList.add('pop');
-                    setTimeout(() => {
-                        if (b.element.parentNode) b.element.remove();
-                    }, 300);
+                    setTimeout(() => b.element.remove(), 300);
                 });
 
                 gameState.balloons = gameState.balloons.filter(b => 
                     parseInt(b.element.dataset.answer) !== answer
                 );
 
-                if (gameState.isMultiplayer) {
-                    updateMyScoreInFirebase();
-                } else if (gameState.score >= gameState.level * 40) {
+                // Перевірка на підвищення рівня
+                if (!gameState.isMultiplayer && gameState.score >= gameState.level * 30) {
                     levelUp();
+                }
+                
+                // Оновлення рахунку в мультиплеєрі
+                if (gameState.isMultiplayer && roomRef) {
+                    updateMyScore();
                 }
             } else {
                 gameState.score = Math.max(0, gameState.score - 2);
-                if (gameState.isMultiplayer) {
-                    updateMyScoreInFirebase();
-                }
             }
 
             updateDisplay();
             updateAnswerButtons();
+            
+            // Перевірка перемоги в мультиплеєрі
+            if (gameState.isMultiplayer && gameState.score >= gameState.gameTarget) {
+                endMultiplayerGame(true);
+            }
         }
 
         function levelUp() {
             gameState.level++;
             gameState.heartsCollected = 0;
-            gameState.spawnInterval = Math.max(2200, gameState.spawnInterval - 200);
-            if (gameState.level > 3) {
-                gameState.maxBalloons = Math.min(5, gameState.maxBalloons + 1);
-            }
-
-            const weatherIdx = Math.min(gameState.level - 1, weatherTypes.length - 1);
-            setWeather(weatherIdx);
-
+            gameState.spawnInterval = Math.max(2000, gameState.spawnInterval - 300);
+            gameState.baseSpeed += 0.1;
+            
             clearInterval(intervals.spawn);
             intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
-
-            showNotification(`Рівень ${gameState.level}!`, 'Швидше!', 'info');
+            
+            showNotification(`Рівень ${gameState.level}!`, 'Стає складніше!', 'info');
+            setWeather(Math.min(gameState.level - 1, 4));
         }
 
         function setWeather(index) {
-            gameState.weatherIndex = index;
-            const weather = weatherTypes[index];
-            document.body.style.background = weather.bg;
-            gameState.baseSpeed = weather.speed;
-
-            const container = document.getElementById('weather-container');
-            container.innerHTML = '';
-
-            if (weather.effect === 'rain') {
-                for (let i = 0; i < 20; i++) {
-                    const drop = document.createElement('div');
-                    drop.className = 'raindrop';
-                    drop.style.left = Math.random() * 100 + '%';
-                    drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
-                    container.appendChild(drop);
-                }
-            } else if (weather.effect === 'snow') {
-                for (let i = 0; i < 15; i++) {
-                    const flake = document.createElement('div');
-                    flake.className = 'snowflake';
-                    flake.textContent = '❄';
-                    flake.style.left = Math.random() * 100 + '%';
-                    flake.style.animationDuration = (2 + Math.random() * 3) + 's';
-                    container.appendChild(flake);
-                }
-            }
+            const weathers = [
+                { bg: 'linear-gradient(145deg, #87CEEB, #B0E0FF, #FFE4B5)' },
+                { bg: 'linear-gradient(145deg, #4A5568, #2D3748)' },
+                { bg: 'linear-gradient(145deg, #E2E8F0, #A0AEC0)' },
+                { bg: 'linear-gradient(145deg, #F6E05E, #9F7AEA, #667EEA)' },
+                { bg: 'linear-gradient(145deg, #F6AD55, #FC8181, #9F7AEA)' }
+            ];
+            document.body.style.background = weathers[index].bg;
         }
 
         function useHint() {
             if (gameState.lives > 1) {
                 gameState.lives--;
                 updateDisplay();
-
-                gameState.balloons.forEach(b => b.speed *= 0.3);
 
                 const correct = gameState.balloons[0];
                 if (correct) {
@@ -1199,21 +1202,20 @@
                         }
                     });
                 }
-                
-                showNotification('Підказка', 'Швидкість зменшено!', 'info');
-            } else {
-                showNotification('Увага!', 'Недостатньо життів!', 'warning');
+                showNotification('Підказка', 'Правильна відповідь підсвічена!', 'info');
             }
         }
 
         function loseLife() {
-            if (gameState.gameEnded) return;
-            
             gameState.lives--;
             updateDisplay();
 
             if (gameState.lives <= 0) {
-                endGame();
+                if (gameState.isMultiplayer) {
+                    endMultiplayerGame(false);
+                } else {
+                    endGame();
+                }
             }
         }
 
@@ -1223,7 +1225,6 @@
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
 
-            // Зберігаємо результат в таблицю лідерів
             if (playerName && gameState.score > 0) {
                 saveToGlobalLeaderboard({
                     name: playerName,
@@ -1244,11 +1245,9 @@
         function exitGame() {
             if (gameState.isRunning) {
                 gameState.isRunning = false;
-                gameState.gameEnded = true;
                 clearInterval(intervals.spawn);
                 clearInterval(intervals.move);
                 
-                // Зберігаємо результат перед виходом
                 if (playerName && gameState.score > 0) {
                     saveToGlobalLeaderboard({
                         name: playerName,
@@ -1257,19 +1256,12 @@
                     });
                 }
                 
-                showNotification('Вихід з гри', 'Результат збережено!', 'info');
-                
-                document.getElementById('start-btn').classList.remove('hidden');
-                document.getElementById('multiplayer-btn').classList.remove('hidden');
-                document.getElementById('pause-btn').classList.add('hidden');
-                document.getElementById('hint-btn').classList.add('hidden');
-                document.getElementById('exit-btn').classList.add('hidden');
+                resetInterface();
+                showNotification('Вихід', 'Результат збережено!', 'info');
             }
         }
 
         function togglePause() {
-            if (!gameState.isRunning || gameState.gameEnded) return;
-            
             gameState.isPaused = !gameState.isPaused;
             const btn = document.getElementById('pause-btn');
             
@@ -1304,7 +1296,10 @@
 
         // ==================== МУЛЬТИПЛЕЄР ====================
         function openMultiplayerMenu() {
-            if (!isFirebaseConnected) { showNotification('Помилка', 'Немає підключення', 'error'); return; }
+            if (!isFirebaseConnected) {
+                showNotification('Помилка', 'Немає підключення до Firebase', 'error');
+                return;
+            }
             document.getElementById('multiplayer-modal').style.display = 'flex';
             document.getElementById('multiplayer-menu').classList.remove('hidden');
             document.getElementById('room-created').classList.add('hidden');
@@ -1315,74 +1310,344 @@
         }
 
         function generateRoomCode() {
-            return Math.random().toString(36).substring(2,6).toUpperCase();
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
         }
 
         async function createRoom() {
-            if (!playerName) { showNotification('Увага!', 'Введіть ім\'я!', 'warning'); return; }
-            const { ref, set, onDisconnect, serverTimestamp } = window.firebaseRefs;
-            gameState.isHost = true;
+            if (!playerName) {
+                showNotification('Увага!', 'Введіть ім\'я!', 'warning');
+                return;
+            }
+
             const roomCode = generateRoomCode();
             gameState.roomId = roomCode;
-            document.getElementById('multiplayer-menu').classList.add('hidden');
-            document.getElementById('room-created').classList.remove('hidden');
-            document.getElementById('room-code-display').textContent = roomCode;
+            gameState.isHost = true;
+            gameState.playerId = 'player1';
+            gameState.opponentId = 'player2';
 
-            roomRef = ref(db, 'rooms/' + roomCode);
-            await set(roomRef, {
-                host: playerName, hostScore: 0, guest: null, guestScore: 0, status: 'waiting', created: serverTimestamp()
-            });
-            onDisconnect(roomRef).remove();
+            roomRef = window.firebaseRefs.ref(db, 'rooms/' + roomCode);
+            
+            try {
+                await window.firebaseRefs.set(roomRef, {
+                    host: playerName,
+                    hostScore: 0,
+                    guest: null,
+                    guestScore: 0,
+                    status: 'waiting',
+                    createdAt: window.firebaseRefs.serverTimestamp()
+                });
 
-            unsubscribeRoom = onValue(roomRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-                if (data.guest && data.status === 'waiting') {
-                    gameState.opponentName = data.guest;
-                    document.getElementById('waiting-status').innerHTML = `✅ ${data.guest} приєднався!`;
-                    document.getElementById('start-game-container').innerHTML = `<button class="control-btn btn-start" onclick="hostStartGame()">🎮 Почати гру!</button>`;
-                }
-                if (data.status === 'playing' && !gameState.gameStarted) startCountdownAndGame();
-            });
+                window.firebaseRefs.onDisconnect(roomRef).remove();
+
+                // Слухаємо зміни
+                unsubscribeRoom = window.firebaseRefs.onValue(roomRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (!data) {
+                        showNotification('Кімнату закрито', '', 'warning');
+                        closeMultiplayerMenu();
+                        return;
+                    }
+
+                    if (data.guest && data.status === 'waiting') {
+                        gameState.opponentName = data.guest;
+                        document.getElementById('waiting-status').innerHTML = `✅ ${data.guest} приєднався!`;
+                        document.getElementById('start-game-container').innerHTML = `
+                            <button class="control-btn btn-start" onclick="hostStartGame()" style="width:100%; margin:10px 0;">
+                                🎮 Почати гру!
+                            </button>
+                        `;
+                    }
+
+                    if (data.status === 'playing' && !gameState.gameStarted) {
+                        startMultiplayerCountdown();
+                    }
+
+                    if (data.status === 'playing' && gameState.isRunning) {
+                        const oppScore = gameState.isHost ? data.guestScore : data.hostScore;
+                        updateOpponentDisplay(oppScore || 0);
+                    }
+
+                    if (data.status === 'rematch') {
+                        startMultiplayerCountdown();
+                    }
+                });
+
+                // Показуємо код кімнати
+                document.getElementById('multiplayer-menu').classList.add('hidden');
+                document.getElementById('room-created').classList.remove('hidden');
+                document.getElementById('room-code-display').textContent = roomCode;
+                document.getElementById('waiting-status').innerHTML = '⏳ Очікуємо суперника...';
+
+            } catch (error) {
+                console.error(error);
+                showNotification('Помилка', 'Не вдалося створити кімнату', 'error');
+            }
         }
 
         async function joinRoom() {
-            // Спрощено для компактності
+            const inputs = document.querySelectorAll('.room-input input');
+            let code = '';
+            inputs.forEach(input => code += input.value.toUpperCase());
+            
+            if (code.length !== 4) {
+                showNotification('Помилка', 'Введіть 4 символи', 'error');
+                return;
+            }
+
+            gameState.roomId = code;
+            gameState.isHost = false;
+            gameState.playerId = 'player2';
+            gameState.opponentId = 'player1';
+
+            roomRef = window.firebaseRefs.ref(db, 'rooms/' + code);
+
+            try {
+                const snapshot = await window.firebaseRefs.get(roomRef);
+                const data = snapshot.val();
+
+                if (!data) {
+                    showNotification('Помилка', 'Кімнату не знайдено', 'error');
+                    return;
+                }
+
+                if (data.guest) {
+                    showNotification('Помилка', 'Кімната вже зайнята', 'error');
+                    return;
+                }
+
+                gameState.opponentName = data.host;
+
+                await window.firebaseRefs.update(roomRef, {
+                    guest: playerName,
+                    guestScore: 0
+                });
+
+                unsubscribeRoom = window.firebaseRefs.onValue(roomRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (!data) return;
+
+                    if (data.status === 'playing' && !gameState.gameStarted) {
+                        startMultiplayerCountdown();
+                    }
+
+                    if (data.status === 'playing' && gameState.isRunning) {
+                        const oppScore = data.hostScore;
+                        updateOpponentDisplay(oppScore || 0);
+                    }
+                });
+
+                document.getElementById('multiplayer-menu').classList.add('hidden');
+                document.getElementById('room-created').classList.remove('hidden');
+                document.getElementById('room-code-display').textContent = code;
+                document.getElementById('waiting-status').innerHTML = '✅ Приєднано! Очікуємо старту...';
+
+            } catch (error) {
+                console.error(error);
+                showNotification('Помилка', 'Не вдалося приєднатися', 'error');
+            }
         }
 
-        function hostStartGame() {
-            if (!roomRef) return;
-            const { update } = window.firebaseRefs;
-            update(roomRef, { status: 'playing' });
+        async function hostStartGame() {
+            await window.firebaseRefs.update(roomRef, { status: 'playing' });
         }
 
-        function startCountdownAndGame() { /* Спрощено */ }
-        function updateMyScoreInFirebase() {}
-        function requestRematch() {}
-        function closeWinnerAndLeave() {}
-        function moveToNext(input, index) { if (input.value && index < 3) document.querySelectorAll('.room-input input')[index+1].focus(); }
-        function copyRoomCode() { navigator.clipboard.writeText(document.getElementById('room-code-display').textContent); }
+        function startMultiplayerCountdown() {
+            gameState.gameStarted = true;
+            const overlay = document.getElementById('countdown-overlay');
+            const number = document.getElementById('countdown-number');
+            
+            overlay.style.display = 'flex';
+            let count = 3;
+            number.textContent = count;
 
-        function resetToMainMenu() {
-            gameState.isMultiplayer = false;
-            gameState.isRunning = false;
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    number.textContent = count;
+                } else {
+                    clearInterval(interval);
+                    overlay.style.display = 'none';
+                    startMultiplayerGame();
+                }
+            }, 1000);
+        }
+
+        function startMultiplayerGame() {
+            // Скидаємо гру
+            gameState.isRunning = true;
+            gameState.isMultiplayer = true;
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.level = 1;
+            gameState.balloons = [];
             gameState.gameEnded = false;
+
+            // Очищаємо поле
+            document.getElementById('game-container').innerHTML = '<div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>';
+            
+            // Запускаємо інтервали
+            intervals.spawn = setInterval(spawnBalloon, 3000);
+            intervals.move = setInterval(moveBalloons, 16);
+
+            // Оновлюємо UI
+            document.getElementById('start-btn').classList.add('hidden');
+            document.getElementById('multiplayer-btn').classList.add('hidden');
+            document.getElementById('pause-btn').classList.remove('hidden');
+            document.getElementById('hint-btn').classList.remove('hidden');
+            document.getElementById('exit-btn').classList.remove('hidden');
+            
+            // Показуємо панель суперника
+            document.getElementById('opponent-panel').classList.add('active');
+            document.getElementById('mode-indicator').classList.add('active');
+            document.getElementById('opponent-name').textContent = gameState.opponentName || 'Суперник';
+            
+            updateDisplay();
+            showNotification('Старт!', 'До 10 очок!', 'success');
+        }
+
+        function updateOpponentDisplay(score) {
+            gameState.opponentScore = score;
+            document.getElementById('opponent-score').textContent = score;
+            const progress = Math.min((score / gameState.gameTarget) * 100, 100);
+            document.getElementById('opponent-progress').style.width = progress + '%';
+        }
+
+        async function updateMyScore() {
+            if (!roomRef) return;
+            
+            const updateData = gameState.isHost ? 
+                { hostScore: gameState.score } : 
+                { guestScore: gameState.score };
+            
+            await window.firebaseRefs.update(roomRef, updateData);
+        }
+
+        async function endMultiplayerGame(iWon) {
+            gameState.isRunning = false;
+            gameState.gameEnded = true;
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
-            hidePauseOverlay();
+
+            // Показуємо переможця
+            const winnerDiv = document.getElementById('winner-announcement');
+            const winnerText = document.getElementById('winner-text');
+            const winnerScore = document.getElementById('winner-score');
+            
+            winnerDiv.style.display = 'flex';
+            
+            if (iWon) {
+                winnerText.textContent = '🎉 ПЕРЕМОГА!';
+                winnerText.style.color = '#48BB78';
+                
+                saveToGlobalLeaderboard({
+                    name: playerName,
+                    score: gameState.score,
+                    mode: 'multiplayer-win'
+                });
+            } else {
+                winnerText.textContent = '😔 ПОРАЗКА';
+                winnerText.style.color = '#E53E3E';
+            }
+            
+            winnerScore.textContent = `Ти: ${gameState.score} | Суперник: ${gameState.opponentScore}`;
+            
+            // Оновлюємо статус в Firebase
+            if (roomRef) {
+                await window.firebaseRefs.update(roomRef, {
+                    status: 'finished',
+                    winner: iWon ? gameState.playerId : gameState.opponentId
+                });
+            }
+        }
+
+        async function requestRematch() {
+            if (!roomRef) return;
+            
+            gameState.rematchRequested = true;
+            
+            const updateData = gameState.isHost ? 
+                { rematchHost: true } : 
+                { rematchGuest: true };
+            
+            await window.firebaseRefs.update(roomRef, updateData);
+            
+            // Перевіряємо, чи обидва готові
+            const snapshot = await window.firebaseRefs.get(roomRef);
+            const data = snapshot.val();
+            
+            if (data.rematchHost && data.rematchGuest) {
+                await window.firebaseRefs.update(roomRef, { 
+                    status: 'rematch',
+                    hostScore: 0,
+                    guestScore: 0,
+                    rematchHost: false,
+                    rematchGuest: false
+                });
+                document.getElementById('winner-announcement').style.display = 'none';
+            } else {
+                showNotification('Очікування', 'Суперник ще не готовий...', 'info');
+            }
+        }
+
+        function closeWinnerAndLeave() {
+            document.getElementById('winner-announcement').style.display = 'none';
+            if (roomRef) {
+                window.firebaseRefs.remove(roomRef);
+            }
+            resetInterface();
+        }
+
+        function moveToNext(input, index) {
+            if (input.value && index < 3) {
+                document.querySelectorAll('.room-input input')[index + 1].focus();
+            }
+        }
+
+        function copyRoomCode() {
+            const code = document.getElementById('room-code-display').textContent;
+            navigator.clipboard.writeText(code);
+            showNotification('Скопійовано!', code, 'success');
+        }
+
+        function resetInterface() {
             document.getElementById('start-btn').classList.remove('hidden');
             document.getElementById('multiplayer-btn').classList.remove('hidden');
             document.getElementById('pause-btn').classList.add('hidden');
             document.getElementById('hint-btn').classList.add('hidden');
             document.getElementById('exit-btn').classList.add('hidden');
-            document.getElementById('winner-announcement').style.display = 'none';
+            document.getElementById('opponent-panel').classList.remove('active');
+            document.getElementById('mode-indicator').classList.remove('active');
         }
 
-        // Чит-код
+        function resetGame() {
+            gameState = {
+                ...gameState,
+                isRunning: false,
+                isPaused: false,
+                score: 0,
+                lives: 3,
+                level: 1,
+                balloons: [],
+                spawnInterval: 3500,
+                baseSpeed: 0.55,
+                heartsCollected: 0,
+                isMultiplayer: false,
+                gameEnded: false,
+                correctAnswers: 0,
+                totalAnswers: 0
+            };
+        }
+
+        // Чит-код на сонце
         document.getElementById('sun').addEventListener('click', () => {
             gameState.sunClicks++;
             if (gameState.sunClicks === 3 && !gameState.cheatUsed) {
-                gameState.lives = Math.min(gameState.lives + 2, 5);
+                gameState.lives += 2;
                 gameState.cheatUsed = true;
                 updateDisplay();
                 showNotification('Бонус!', '+2 життя!', 'success');
@@ -1392,14 +1657,9 @@
         // Тестові записи
         setTimeout(() => {
             if (db) {
-                const { get, ref } = window.firebaseRefs;
-                get(ref(db, 'leaderboard')).then(snap => {
-                    if (!snap.exists()) {
-                        saveToGlobalLeaderboard({name:'Майстер', score:320, mode:'single'});
-                        saveToGlobalLeaderboard({name:'Чемпіон', score:280, mode:'single'});
-                        saveToGlobalLeaderboard({name:'Срібний', score:210, mode:'single'});
-                    }
-                });
+                saveToGlobalLeaderboard({name:'Майстер', score:320, mode:'single'});
+                saveToGlobalLeaderboard({name:'Чемпіон', score:280, mode:'single'});
+                saveToGlobalLeaderboard({name:'Срібний', score:210, mode:'single'});
             }
         }, 2000);
     </script>
