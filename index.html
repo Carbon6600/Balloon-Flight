@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Математичні Кульки ✦ Мобільна версія</title>
+    <title>Математичні Кульки ✦ Таблиця лідерів збоку</title>
     
     <!-- Firebase SDK v9 (modular) -->
     <script type="module">
@@ -68,6 +68,9 @@
             --danger: #FC8181;
             --danger-dark: #E53E3E;
             --bg-light: rgba(255, 255, 255, 0.95);
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
         }
 
         body {
@@ -104,16 +107,14 @@
             pointer-events: auto;
         }
 
-        @keyframes sunGlow { 0%,100% { box-shadow: 0 0 40px #FFB347; } 50% { box-shadow: 0 0 70px #FFD700; } }
-
         .cloud {
             position: absolute;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 80px;
         }
         .cloud1 { width: 90px; height: 35px; top: 12%; left: -150px; animation: floatCloud 30s linear infinite; }
-        .cloud2 { width: 70px; height: 30px; top: 22%; left: -120px; animation: floatCloud 40s linear infinite; animation-delay: 8s; }
-        .cloud3 { width: 110px; height: 40px; top: 8%; left: -180px; animation: floatCloud 35s linear infinite; animation-delay: 15s; }
+        .cloud2 { width: 70px; height: 30px; top: 22%; left: -120px; animation: floatCloud 40s linear infinite; }
+        .cloud3 { width: 110px; height: 40px; top: 8%; left: -180px; animation: floatCloud 35s linear infinite; }
         @keyframes floatCloud { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 200px)); } }
 
         .bird {
@@ -139,60 +140,219 @@
             z-index: 1;
         }
 
-        /* ✦✦✦ ОСНОВНИЙ ІНТЕРФЕЙС ✦✦✦ */
-        .game-wrapper {
+        /* ✦✦✦ ОСНОВНИЙ КОНТЕЙНЕР З ТАБЛИЦЕЮ ЗБОКУ ✦✦✦ */
+        .main-layout {
             position: relative;
             z-index: 20;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            height: 100dvh;
+            width: 100%;
+            padding: 10px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        /* Ліва частина - гра */
+        .game-section {
+            flex: 3;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            height: 100vh;
-            height: 100dvh;
-            padding: 8px;
             overflow: hidden;
+            min-width: 0;
         }
 
-        .main-title {
-            color: #1E293B;
-            font-size: clamp(1.6em, 6vw, 2.4em);
+        /* Права частина - таблиця лідерів */
+        .leaderboard-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border: 3px solid rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-width: 300px;
+            min-width: 250px;
+        }
+
+        .leaderboard-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .leaderboard-header h2 {
+            font-size: 1.5em;
             font-weight: 900;
-            text-shadow: 3px 3px 0 rgba(255,255,255,0.6);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            background: linear-gradient(145deg, #2D3748, #1A202C);
+            background: linear-gradient(45deg, var(--gold), var(--silver), var(--bronze));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .leaderboard-header p {
+            font-size: 0.9em;
+            color: #718096;
+            font-weight: 700;
+        }
+
+        .leaderboard-tabs {
+            display: flex;
+            padding: 10px;
+            gap: 5px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 0.85em;
+            cursor: pointer;
+            background: #EDF2F7;
+            color: #4A5568;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667EEA, #5A67D8);
+            color: white;
+            box-shadow: 0 4px 10px rgba(102,126,234,0.4);
+        }
+
+        .leaderboard-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            list-style: none;
+        }
+
+        .leaderboard-item {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+        }
+
+        .rank-medal {
+            font-size: 2em;
+            width: 45px;
+            text-align: center;
+        }
+
+        .rank-1 { color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .rank-2 { color: var(--silver); text-shadow: 0 0 10px rgba(192,192,192,0.3); }
+        .rank-3 { color: var(--bronze); text-shadow: 0 0 10px rgba(205,127,50,0.3); }
+        .rank-number {
+            font-weight: 900;
+            font-size: 1.2em;
+            color: #718096;
+            width: 45px;
+            text-align: center;
+        }
+
+        .player-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .player-name {
+            font-weight: 900;
+            color: #2D3748;
+            font-size: 1em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-score {
+            font-weight: 900;
+            color: #9F7AEA;
+            font-size: 1.2em;
+        }
+
+        .player-mode {
+            font-size: 0.7em;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: #EDF2F7;
+            color: #4A5568;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 3px;
+        }
+
+        .leaderboard-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 2px solid rgba(0,0,0,0.05);
+            font-size: 0.85em;
+            color: #718096;
+            font-weight: 700;
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 900;
+            z-index: 100;
+            border: 2px solid white;
+        }
+        .connection-online { background: #48BB78; color: white; }
+        .connection-offline { background: #FC8181; color: white; }
+
+        /* ✦✦✦ СТИЛІ ГРИ ✦✦✦ */
+        .main-title {
+            color: #1E293B;
+            font-size: clamp(1.4em, 4vw, 2em);
+            font-weight: 900;
+            text-shadow: 3px 3px 0 rgba(255,255,255,0.6);
+            margin-bottom: 8px;
         }
 
         .status-panel {
             display: flex;
-            gap: 25px;
+            gap: 20px;
             margin-bottom: 10px;
             background: var(--bg-light);
             backdrop-filter: blur(12px);
-            padding: 15px 30px;
-            border-radius: 60px;
+            padding: 12px 25px;
+            border-radius: 50px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             border: 2px solid rgba(255,255,255,0.8);
             font-weight: 900;
-            font-size: 1.3em;
+            font-size: 1.2em;
         }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .lives { color: #E53E3E; }
-        .score { color: #38A169; }
-        .level { color: #3182CE; }
 
         #game-container {
             position: relative;
-            width: min(98vw, 440px);
-            height: min(50vh, 440px);
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1/1;
             background: rgba(255,255,255,0.25);
             backdrop-filter: blur(8px);
             border: 4px solid rgba(255,255,255,0.7);
@@ -202,7 +362,6 @@
             margin-bottom: 10px;
         }
 
-        /* ✦✦✦ КУЛЬКИ ✦✦✦ */
         .balloon {
             position: absolute;
             display: flex;
@@ -217,7 +376,6 @@
             0%,100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-6px) rotate(1.5deg); }
         }
-        .balloon:active { transform: scale(1.2); }
 
         .balloon-body {
             width: 50px;
@@ -258,18 +416,18 @@
         .balloon.pop { animation: pop 0.3s forwards; }
         @keyframes pop { 100% { transform: scale(0); opacity: 0; } }
 
-        /* ✦✦✦ ВЕЛИКІ КНОПКИ ДЛЯ ТЕЛЕФОНУ ✦✦✦ */
         .answers-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            width: min(98vw, 440px);
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
             margin-bottom: 10px;
         }
         .answer-btn {
             width: 100%;
-            height: 70px;
-            font-size: 2em;
+            height: 65px;
+            font-size: 1.8em;
             font-weight: 900;
             border: none;
             border-radius: 35px;
@@ -278,120 +436,37 @@
             cursor: pointer;
             box-shadow: 0 8px 20px rgba(102,126,234,0.5);
             border: 3px solid rgba(255,255,255,0.5);
-            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-            transition: all 0.1s;
-            -webkit-tap-highlight-color: transparent;
         }
-        .answer-btn:active { transform: scale(0.95); background: #5A67D8; }
+        .answer-btn:active { transform: scale(0.95); }
 
-        /* ✦✦✦ ПАНЕЛЬ КЕРУВАННЯ - ВЕЛИКІ КНОПКИ ✦✦✦ */
         .controls {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
-            width: min(98vw, 440px);
+            width: 100%;
+            max-width: 500px;
         }
         .control-btn {
-            padding: 16px 12px;
-            font-size: 1.2em;
+            padding: 15px 12px;
+            font-size: 1.1em;
             font-weight: 900;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.1s;
             box-shadow: 0 6px 15px rgba(0,0,0,0.25);
             flex: 1 1 auto;
-            min-width: 120px;
+            min-width: 110px;
             color: white;
             border: 3px solid rgba(255,255,255,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            height: 65px;
-            -webkit-tap-highlight-color: transparent;
+            height: 60px;
         }
-        .control-btn:active { transform: scale(0.95); }
-
         .btn-start { background: linear-gradient(145deg, #48BB78, #38A169); }
         .btn-multiplayer { background: linear-gradient(145deg, #667EEA, #5A67D8); }
         .btn-pause { background: linear-gradient(145deg, #ED8936, #DD6B20); }
         .btn-hint { background: linear-gradient(145deg, #4299E1, #3182CE); }
         .btn-exit { background: linear-gradient(145deg, #FC8181, #E53E3E); }
-        .btn-rematch { background: linear-gradient(145deg, #48BB78, #38A169); }
 
-        /* ✦✦✦ ТАБЛИЦЯ ЛІДЕРІВ ✦✦✦ */
-        .leaderboard-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-light);
-            backdrop-filter: blur(20px);
-            border-radius: 40px 40px 0 0;
-            box-shadow: 0 -15px 30px rgba(0,0,0,0.25);
-            z-index: 50;
-            max-height: 40vh;
-            overflow: hidden;
-            transform: translateY(calc(100% - 70px));
-            transition: transform 0.5s;
-            border-top: 4px solid rgba(255,215,0,0.5);
-        }
-        .leaderboard-container.expanded { transform: translateY(0); }
-
-        .leaderboard-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            padding: 18px;
-            cursor: pointer;
-            font-size: 1.2em;
-            font-weight: 900;
-        }
-        .leaderboard-header::before {
-            content: '▼';
-            font-size: 1.2em;
-            color: #9F7AEA;
-            transition: transform 0.5s;
-        }
-        .expanded .leaderboard-header::before { transform: rotate(180deg); }
-
-        .leaderboard-title {
-            background: linear-gradient(45deg, #FFD700, #C0C0C0, #CD7F32);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .leaderboard-list {
-            list-style: none;
-            max-height: 30vh;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        .leaderboard-item {
-            padding: 15px 20px;
-            margin: 8px 0;
-            background: white;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 1.2em;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .leaderboard-rank {
-            font-size: 2em;
-            width: 50px;
-            text-align: center;
-        }
-        .rank-1 { color: #FFD700; }
-        .rank-2 { color: #C0C0C0; }
-        .rank-3 { color: #CD7F32; }
-
-        /* ✦✦✦ ІНШІ ЕЛЕМЕНТИ ✦✦✦ */
         .opponent-panel {
             position: fixed;
             top: 90px;
@@ -402,7 +477,6 @@
             z-index: 45;
             display: none;
             border: 3px solid white;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
         .opponent-panel.active { display: block; }
 
@@ -420,50 +494,6 @@
             border: 3px solid white;
         }
         .mode-indicator.active { display: block; }
-
-        .connection-status {
-            position: fixed;
-            bottom: 80px;
-            right: 10px;
-            padding: 10px 18px;
-            border-radius: 40px;
-            font-weight: 900;
-            z-index: 45;
-            border: 2px solid white;
-        }
-        .connection-online { background: #48BB78; color: white; }
-        .connection-offline { background: #FC8181; color: white; }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-        }
-        .modal-content {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 50px;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-        .modal-content input {
-            width: 100%;
-            padding: 18px;
-            font-size: 1.3em;
-            border: 3px solid #E2E8F0;
-            border-radius: 40px;
-            margin: 20px 0;
-            text-align: center;
-        }
 
         .typing-indicator {
             position: absolute;
@@ -495,44 +525,56 @@
             justify-content: center;
             z-index: 250;
         }
-        .countdown-number {
-            font-size: 8em;
-            color: white;
-            font-weight: 900;
-        }
+        .countdown-number { font-size: 8em; color: white; font-weight: 900; }
 
-        .pause-overlay {
-            position: absolute;
+        .modal-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 200;
         }
-        .pause-content {
+        .modal-content {
             background: white;
-            padding: 30px 50px;
-            border-radius: 60px;
-            font-size: 2.5em;
-            font-weight: 900;
+            padding: 40px 30px;
+            border-radius: 50px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .notifications-panel {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
         }
 
         .hidden { display: none !important; }
 
-        @media (max-width: 480px) {
-            .control-btn { min-width: 100px; height: 60px; font-size: 1.1em; }
-            .answer-btn { height: 65px; font-size: 1.8em; }
-            .status-panel { padding: 12px 20px; font-size: 1.1em; }
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .leaderboard-section {
+                max-width: 100%;
+                min-width: 100%;
+                height: 30vh;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Живий світ -->
     <div class="world">
         <div class="sun" id="sun"></div>
         <div class="cloud cloud1"></div>
@@ -544,68 +586,76 @@
         <div class="mountains"></div>
     </div>
 
-    <!-- Сповіщення (будуть додаватись динамічно) -->
-    <div id="notifications-panel" style="position:fixed; top:100px; left:50%; transform:translateX(-50%); z-index:100; width:90%; max-width:400px;"></div>
+    <div class="notifications-panel" id="notifications-panel"></div>
 
-    <!-- Панель суперника -->
     <div class="opponent-panel" id="opponent-panel">
         <div style="font-weight:900; margin-bottom:8px;" id="opponent-name">Суперник</div>
         <div style="font-size:1.5em; font-weight:900; color:#9F7AEA;" id="opponent-score">0</div>
-        <div class="progress-bar" style="height:10px; background:#E2E8F0; border-radius:10px; margin-top:8px;">
+        <div style="height:10px; background:#E2E8F0; border-radius:10px; margin-top:8px;">
             <div class="progress-fill" id="opponent-progress" style="width:0%; height:100%; background:linear-gradient(90deg,#9F7AEA,#667EEA); border-radius:10px;"></div>
         </div>
     </div>
 
-    <!-- Індикатор режиму -->
     <div class="mode-indicator" id="mode-indicator">🎮 НА ДВОХ</div>
 
-    <!-- Основний інтерфейс -->
-    <div class="game-wrapper">
-        <h1 class="main-title">🎈 МАТЕМАТИЧНІ КУЛЬКИ 🎈</h1>
+    <!-- Новий лейаут з таблицею збоку -->
+    <div class="main-layout">
+        <!-- Ліва частина - гра -->
+        <div class="game-section">
+            <h1 class="main-title">🎈 МАТЕМАТИЧНІ КУЛЬКИ 🎈</h1>
 
-        <div class="status-panel">
-            <div class="status-item lives">❤️ <span id="lives-count">3</span></div>
-            <div class="status-item score">⭐ <span id="score">0</span></div>
-            <div class="status-item level">🏆 <span id="level">1</span></div>
+            <div class="status-panel">
+                <div class="status-item lives">❤️ <span id="lives-count">3</span></div>
+                <div class="status-item score">⭐ <span id="score">0</span></div>
+                <div class="status-item level">🏆 <span id="level">1</span></div>
+            </div>
+
+            <div id="game-container">
+                <div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>
+            </div>
+
+            <div class="answers-container">
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+                <button class="answer-btn" onclick="checkAnswer(this)"></button>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn btn-start" id="start-btn" onclick="startGame()">▶️ ОДИН</button>
+                <button class="control-btn btn-multiplayer" id="multiplayer-btn" onclick="openMultiplayerMenu()">👥 НА ДВОХ</button>
+                <button class="control-btn btn-pause hidden" id="pause-btn" onclick="togglePause()">⏸️ ПАУЗА</button>
+                <button class="control-btn btn-hint hidden" id="hint-btn" onclick="useHint()">💡 ПІДКАЗКА</button>
+                <button class="control-btn btn-exit hidden" id="exit-btn" onclick="exitGame()">🚪 ВИХІД</button>
+            </div>
         </div>
 
-        <div id="game-container">
-            <div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>
-        </div>
+        <!-- Права частина - таблиця лідерів -->
+        <div class="leaderboard-section">
+            <div class="leaderboard-header">
+                <h2>🏆 СВІТОВА ТАБЛИЦЯ</h2>
+                <p>Топ гравців усіх часів</p>
+            </div>
+            
+            <div class="leaderboard-tabs">
+                <button class="tab-btn active" onclick="switchLeaderboardTab('all')" id="tab-all">Всі</button>
+                <button class="tab-btn" onclick="switchLeaderboardTab('single')" id="tab-single">Один</button>
+                <button class="tab-btn" onclick="switchLeaderboardTab('multi')" id="tab-multi">На двох</button>
+            </div>
 
-        <!-- ВЕЛИКІ КНОПКИ ВІДПОВІДЕЙ -->
-        <div class="answers-container">
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-            <button class="answer-btn" onclick="checkAnswer(this)"></button>
-        </div>
+            <ul class="leaderboard-list" id="leaderboard-list">
+                <li style="text-align:center; padding:20px; color:#718096;">✨ Завантаження...</li>
+            </ul>
 
-        <!-- ВЕЛИКІ КНОПКИ КЕРУВАННЯ -->
-        <div class="controls">
-            <button class="control-btn btn-start" id="start-btn" onclick="startGame()">▶️ ОДИН</button>
-            <button class="control-btn btn-multiplayer" id="multiplayer-btn" onclick="openMultiplayerMenu()">👥 НА ДВОХ</button>
-            <button class="control-btn btn-pause hidden" id="pause-btn" onclick="togglePause()">⏸️ ПАУЗА</button>
-            <button class="control-btn btn-hint hidden" id="hint-btn" onclick="useHint()">💡 ПІДКАЗКА</button>
-            <button class="control-btn btn-exit hidden" id="exit-btn" onclick="exitGame()">🚪 ВИХІД</button>
-            <button class="control-btn btn-rematch hidden" id="rematch-btn" onclick="requestRematch()">🔄 РЕВАНШ</button>
+            <div class="leaderboard-footer">
+                <span id="players-count">0</span> гравців у топі
+            </div>
         </div>
     </div>
 
-    <!-- ТАБЛИЦЯ ЛІДЕРІВ -->
-    <div class="leaderboard-container" id="leaderboard-container">
-        <div class="leaderboard-header" onclick="toggleLeaderboard()">
-            <span class="leaderboard-title">🏆 СВІТОВА ТАБЛИЦЯ</span>
-        </div>
-        <ul class="leaderboard-list" id="leaderboard-list">
-            <li style="text-align:center; padding:20px;">✨ Завантаження...</li>
-        </ul>
-    </div>
-
-    <!-- Статус підключення -->
     <div class="connection-status connection-offline" id="connection-status">🔴 Офлайн</div>
 
-    <!-- МОДАЛЬНІ ВІКНА -->
+    <!-- Модальні вікна -->
     <div class="modal-overlay" id="name-modal">
         <div class="modal-content">
             <h2 style="font-size:2em;">Вітаємо! 👋</h2>
@@ -615,12 +665,11 @@
         </div>
     </div>
 
-    <!-- Мультиплеєр меню -->
     <div class="modal-overlay" id="multiplayer-modal" style="display:none;">
         <div class="modal-content">
             <h2 style="font-size:2em;">👥 НА ДВОХ</h2>
             <div id="multiplayer-menu">
-                <button class="control-btn btn-start" onclick="createRoom()" style="width:100%; font-size:1.2em; padding:18px;">🏠 СТВОРИТИ</button>
+                <button class="control-btn btn-start" onclick="createRoom()" style="width:100%; font-size:1.2em; padding:18px;">🏠 СТВОРИТИ КІМНАТУ</button>
                 <p style="margin:20px 0;">— або —</p>
                 <div style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;" class="room-input">
                     <input type="text" maxlength="1" onkeyup="moveToNext(this, 0)" style="width:60px; height:70px; font-size:2.5em; text-align:center; border-radius:15px; border:3px solid #E2E8F0;">
@@ -634,18 +683,16 @@
             <div id="room-created" class="hidden">
                 <p style="font-size:1.2em;">Код кімнати:</p>
                 <div style="font-size:3.5em; font-weight:900; letter-spacing:10px; padding:20px; background:#F3E8FF; border-radius:20px; margin:15px 0; cursor:pointer;" onclick="copyRoomCode()" id="room-code-display">----</div>
-                <div id="waiting-status" style="padding:15px; background:#FEF3C7; border-radius:30px; margin:10px 0; font-size:1.1em;">⏳ Очікуємо...</div>
+                <div id="waiting-status" style="padding:15px; background:#FEF3C7; border-radius:30px; margin:10px 0; font-size:1.1em;">⏳ Очікуємо суперника...</div>
                 <div id="start-game-container"></div>
             </div>
         </div>
     </div>
 
-    <!-- Зворотній відлік -->
     <div class="countdown-overlay" id="countdown-overlay">
         <div class="countdown-number" id="countdown-number">3</div>
     </div>
 
-    <!-- Переможець -->
     <div class="modal-overlay" id="winner-announcement" style="display:none;">
         <div class="modal-content">
             <div style="font-size:5em;">🏆</div>
@@ -674,20 +721,14 @@
             cheatUsed: false, 
             typingBuffer: '', 
             isTyping: false,
-            slowMotion: false, 
-            weatherIndex: 0,
-            
-            // Мультиплеєр
             isMultiplayer: false, 
             roomId: null, 
             playerId: null, 
-            opponentId: null,
             opponentName: '', 
             opponentScore: 0, 
             isHost: false, 
             gameTarget: 10,
             gameStarted: false, 
-            rematchRequested: false, 
             gameEnded: false,
             maxBalloons: 3
         };
@@ -701,21 +742,25 @@
         let unsubscribeRoom = null;
         let isFirebaseConnected = false;
 
+        // Таблиця лідерів
+        let allScores = [];
+        let currentTab = 'all';
+
         // ==================== ІНІЦІАЛІЗАЦІЯ ====================
         window.onload = () => {
-            // Перевіряємо Firebase
             setTimeout(() => {
                 if (window.isFirebaseReady && window.firebaseDB) {
                     db = window.firebaseDB;
                     isFirebaseConnected = true;
                     updateConnectionStatus('online');
                     loadGlobalLeaderboard();
+                    console.log("✅ Firebase підключено!");
                 } else {
                     updateConnectionStatus('offline');
+                    console.log("❌ Firebase не доступний");
                 }
             }, 1000);
 
-            // Перевіряємо ім'я
             if (!localStorage.getItem('mathBalloonPlayer')) {
                 document.getElementById('name-modal').style.display = 'flex';
             } else {
@@ -743,50 +788,93 @@
                 const { ref, onValue, query, orderByChild, limitToLast } = window.firebaseRefs;
                 const leaderboardRef = ref(db, 'leaderboard');
                 
-                onValue(query(leaderboardRef, orderByChild('score'), limitToLast(50)), (snapshot) => {
+                onValue(query(leaderboardRef, orderByChild('score'), limitToLast(100)), (snapshot) => {
                     const data = snapshot.val();
-                    if (!data) return;
+                    if (!data) {
+                        allScores = [];
+                        renderLeaderboard('all');
+                        return;
+                    }
                     
-                    const scores = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
-                    renderLeaderboard(scores);
+                    allScores = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
+                    renderLeaderboard(currentTab);
+                    
+                    // Оновлюємо кількість гравців
+                    const uniquePlayers = new Set(allScores.map(s => s.name)).size;
+                    document.getElementById('players-count').textContent = uniquePlayers;
                 });
             } catch (e) { console.error(e); }
         }
 
-        function renderLeaderboard(scores) {
+        function renderLeaderboard(mode) {
             const list = document.getElementById('leaderboard-list');
             
-            // Фільтруємо solo режим
-            let filtered = scores.filter(s => s.mode === 'single');
+            // Фільтруємо за режимом
+            let filtered = allScores;
+            if (mode === 'single') {
+                filtered = allScores.filter(s => s.mode === 'single');
+            } else if (mode === 'multi') {
+                filtered = allScores.filter(s => s.mode === 'multiplayer-win' || s.mode === 'multiplayer');
+            }
+            
+            // Сортуємо за спаданням очок
             filtered.sort((a, b) => b.score - a.score);
             
-            // Унікальні гравці
-            const unique = {};
-            filtered.forEach(s => { if (!unique[s.name] || unique[s.name].score < s.score) unique[s.name] = s; });
-            let topPlayers = Object.values(unique).slice(0, 15);
+            // Групуємо за гравцем (тільки найкращий результат)
+            const bestByPlayer = {};
+            filtered.forEach(s => {
+                const key = s.name + '_' + (s.mode || '');
+                if (!bestByPlayer[key] || bestByPlayer[key].score < s.score) {
+                    bestByPlayer[key] = s;
+                }
+            });
             
-            if (topPlayers.length === 0) return;
+            let uniqueScores = Object.values(bestByPlayer).sort((a, b) => b.score - a.score).slice(0, 20);
+            
+            if (uniqueScores.length === 0) {
+                list.innerHTML = '<li style="text-align:center; padding:20px; color:#718096;">😢 Поки що немає результатів</li>';
+                return;
+            }
 
-            list.innerHTML = topPlayers.map((s, idx) => {
+            list.innerHTML = uniqueScores.map((s, idx) => {
                 const rank = idx + 1;
-                let medal = '';
-                if (rank === 1) medal = '<span class="leaderboard-rank rank-1">🥇</span>';
-                else if (rank === 2) medal = '<span class="leaderboard-rank rank-2">🥈</span>';
-                else if (rank === 3) medal = '<span class="leaderboard-rank rank-3">🥉</span>';
-                else medal = `<span style="font-weight:900; width:50px; text-align:center;">#${rank}</span>`;
+                
+                // Медаль або номер
+                let rankHtml = '';
+                if (rank === 1) rankHtml = '<span class="rank-medal rank-1">🥇</span>';
+                else if (rank === 2) rankHtml = '<span class="rank-medal rank-2">🥈</span>';
+                else if (rank === 3) rankHtml = '<span class="rank-medal rank-3">🥉</span>';
+                else rankHtml = `<span class="rank-number">#${rank}</span>`;
+
+                // Режим
+                let modeText = '';
+                if (s.mode === 'single') modeText = '🧑 Один';
+                else if (s.mode === 'multiplayer-win') modeText = '👑 Перемога';
+                else modeText = '👥 На двох';
 
                 return `
                     <li class="leaderboard-item">
-                        ${medal}
-                        <span style="flex:1; font-weight:900;">${s.name}</span>
-                        <span style="font-weight:900; color:#9F7AEA;">${s.score}</span>
+                        ${rankHtml}
+                        <div class="player-info">
+                            <span class="player-name">${s.name}</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="player-score">${s.score}</span>
+                                <span class="player-mode">${modeText}</span>
+                            </div>
+                        </div>
                     </li>
                 `;
             }).join('');
         }
 
-        function toggleLeaderboard() {
-            document.getElementById('leaderboard-container').classList.toggle('expanded');
+        function switchLeaderboardTab(tab) {
+            currentTab = tab;
+            
+            // Оновлюємо активний таб
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            renderLeaderboard(tab);
         }
 
         async function saveToGlobalLeaderboard(scoreData) {
@@ -798,8 +886,13 @@
                     name: scoreData.name,
                     score: scoreData.score,
                     mode: scoreData.mode,
+                    level: gameState.level,
                     timestamp: serverTimestamp()
                 });
+                
+                if (scoreData.score >= 50) {
+                    showNotification('🏆 Новий рекорд!', `${scoreData.score} очок!`, 'success');
+                }
             } catch (e) { console.error(e); }
         }
 
@@ -866,7 +959,6 @@
             intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
             intervals.move = setInterval(moveBalloons, 16);
 
-            // Великі кнопки
             document.getElementById('start-btn').classList.add('hidden');
             document.getElementById('multiplayer-btn').classList.add('hidden');
             document.getElementById('pause-btn').classList.remove('hidden');
@@ -1069,16 +1161,21 @@
         // ==================== МУЛЬТИПЛЕЄР ====================
         function openMultiplayerMenu() {
             if (!isFirebaseConnected) {
-                showNotification('Помилка', 'Немає підключення', 'error');
+                showNotification('Помилка', 'Немає підключення до Firebase', 'error');
                 return;
             }
             document.getElementById('multiplayer-modal').style.display = 'flex';
             document.getElementById('multiplayer-menu').classList.remove('hidden');
             document.getElementById('room-created').classList.add('hidden');
+            document.querySelectorAll('.room-input input').forEach(input => input.value = '');
         }
 
         function closeMultiplayerMenu() {
             document.getElementById('multiplayer-modal').style.display = 'none';
+            if (unsubscribeRoom) {
+                unsubscribeRoom();
+                unsubscribeRoom = null;
+            }
         }
 
         function generateRoomCode() {
@@ -1087,6 +1184,11 @@
         }
 
         async function createRoom() {
+            if (!playerName) {
+                showNotification('Увага!', 'Введіть ім\'я!', 'warning');
+                return;
+            }
+
             const roomCode = generateRoomCode();
             gameState.roomId = roomCode;
             gameState.isHost = true;
@@ -1100,14 +1202,19 @@
                     hostScore: 0,
                     guest: null,
                     guestScore: 0,
-                    status: 'waiting'
+                    status: 'waiting',
+                    createdAt: window.firebaseRefs.serverTimestamp()
                 });
 
                 window.firebaseRefs.onDisconnect(roomRef).remove();
 
                 unsubscribeRoom = window.firebaseRefs.onValue(roomRef, (snapshot) => {
                     const data = snapshot.val();
-                    if (!data) return;
+                    if (!data) {
+                        showNotification('Кімнату закрито', '', 'warning');
+                        closeMultiplayerMenu();
+                        return;
+                    }
 
                     if (data.guest && data.status === 'waiting') {
                         gameState.opponentName = data.guest;
@@ -1119,7 +1226,7 @@
                         `;
                     }
 
-                    if (data.status === 'playing' && !gameState.gameStarted) {
+                    if (data.status === 'playing' && !gameState.gameStarted && !gameState.isRunning) {
                         startMultiplayerCountdown();
                     }
                 });
@@ -1127,8 +1234,11 @@
                 document.getElementById('multiplayer-menu').classList.add('hidden');
                 document.getElementById('room-created').classList.remove('hidden');
                 document.getElementById('room-code-display').textContent = roomCode;
+                document.getElementById('waiting-status').innerHTML = '⏳ Очікуємо суперника...';
+                document.getElementById('start-game-container').innerHTML = '';
 
             } catch (error) {
+                console.error(error);
                 showNotification('Помилка', 'Не вдалося створити кімнату', 'error');
             }
         }
@@ -1153,18 +1263,33 @@
                 const snapshot = await window.firebaseRefs.get(roomRef);
                 const data = snapshot.val();
 
-                if (!data || data.guest) {
-                    showNotification('Помилка', 'Кімната недоступна', 'error');
+                if (!data) {
+                    showNotification('Помилка', 'Кімнату не знайдено', 'error');
+                    return;
+                }
+
+                if (data.guest) {
+                    showNotification('Помилка', 'Кімната вже зайнята', 'error');
+                    return;
+                }
+
+                if (data.status !== 'waiting') {
+                    showNotification('Помилка', 'Гра вже розпочалась', 'error');
                     return;
                 }
 
                 gameState.opponentName = data.host;
 
-                await window.firebaseRefs.update(roomRef, { guest: playerName, guestScore: 0 });
+                await window.firebaseRefs.update(roomRef, { 
+                    guest: playerName,
+                    guestScore: 0 
+                });
 
                 unsubscribeRoom = window.firebaseRefs.onValue(roomRef, (snapshot) => {
                     const data = snapshot.val();
-                    if (data?.status === 'playing' && !gameState.gameStarted) {
+                    if (!data) return;
+
+                    if (data.status === 'playing' && !gameState.gameStarted && !gameState.isRunning) {
                         startMultiplayerCountdown();
                     }
                 });
@@ -1172,15 +1297,24 @@
                 document.getElementById('multiplayer-menu').classList.add('hidden');
                 document.getElementById('room-created').classList.remove('hidden');
                 document.getElementById('room-code-display').textContent = code;
-                document.getElementById('waiting-status').innerHTML = '✅ Приєднано! Очікуйте...';
+                document.getElementById('waiting-status').innerHTML = '✅ Приєднано! Очікуємо старту від хоста...';
+                document.getElementById('start-game-container').innerHTML = '';
 
             } catch (error) {
+                console.error(error);
                 showNotification('Помилка', 'Не вдалося приєднатися', 'error');
             }
         }
 
         async function hostStartGame() {
-            await window.firebaseRefs.update(roomRef, { status: 'playing' });
+            if (!roomRef) return;
+            try {
+                await window.firebaseRefs.update(roomRef, { status: 'playing' });
+                startMultiplayerCountdown();
+            } catch (error) {
+                console.error(error);
+                showNotification('Помилка', 'Не вдалося почати гру', 'error');
+            }
         }
 
         function startMultiplayerCountdown() {
@@ -1196,6 +1330,8 @@
                 count--;
                 if (count > 0) {
                     number.textContent = count;
+                } else if (count === 0) {
+                    number.textContent = '🏁';
                 } else {
                     clearInterval(interval);
                     overlay.style.display = 'none';
@@ -1210,8 +1346,12 @@
             gameState.score = 0;
             gameState.lives = 3;
             gameState.balloons = [];
+            gameState.gameEnded = false;
 
             document.getElementById('game-container').innerHTML = '<div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>';
+            
+            if (intervals.spawn) clearInterval(intervals.spawn);
+            if (intervals.move) clearInterval(intervals.move);
             
             intervals.spawn = setInterval(spawnBalloon, 3000);
             intervals.move = setInterval(moveBalloons, 16);
@@ -1224,22 +1364,31 @@
             
             document.getElementById('opponent-panel').classList.add('active');
             document.getElementById('mode-indicator').classList.add('active');
-            document.getElementById('opponent-name').textContent = gameState.opponentName;
+            document.getElementById('opponent-name').textContent = gameState.opponentName || 'Суперник';
+            document.getElementById('opponent-score').textContent = '0';
+            document.getElementById('opponent-progress').style.width = '0%';
             
             updateDisplay();
             showNotification('Старт!', 'До 10 очок!', 'success');
         }
 
         async function updateMyScore() {
-            if (!roomRef) return;
-            const updateData = gameState.isHost ? 
-                { hostScore: gameState.score } : 
-                { guestScore: gameState.score };
-            await window.firebaseRefs.update(roomRef, updateData);
+            if (!roomRef || !gameState.isMultiplayer) return;
+            try {
+                const updateData = gameState.isHost ? 
+                    { hostScore: gameState.score } : 
+                    { guestScore: gameState.score };
+                await window.firebaseRefs.update(roomRef, updateData);
+            } catch (error) {
+                console.error("Error updating score:", error);
+            }
         }
 
         async function endMultiplayerGame(iWon) {
+            if (gameState.gameEnded) return;
+            
             gameState.isRunning = false;
+            gameState.gameEnded = true;
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
 
@@ -1248,39 +1397,74 @@
             const winnerScore = document.getElementById('winner-score');
             
             winnerDiv.style.display = 'flex';
-            winnerText.textContent = iWon ? '🎉 ПЕРЕМОГА!' : '😔 ПОРАЗКА';
-            winnerText.style.color = iWon ? '#48BB78' : '#E53E3E';
-            winnerScore.textContent = `Ти: ${gameState.score} | Суперник: ${gameState.opponentScore}`;
             
             if (iWon) {
-                saveToGlobalLeaderboard({ name: playerName, score: gameState.score, mode: 'multiplayer-win' });
+                winnerText.textContent = '🎉 ПЕРЕМОГА!';
+                winnerText.style.color = '#48BB78';
+                
+                saveToGlobalLeaderboard({
+                    name: playerName,
+                    score: gameState.score,
+                    mode: 'multiplayer-win'
+                });
+            } else {
+                winnerText.textContent = '😔 ПОРАЗКА';
+                winnerText.style.color = '#E53E3E';
+            }
+            
+            winnerScore.textContent = `Ти: ${gameState.score} | Суперник: ${gameState.opponentScore}`;
+            
+            if (roomRef) {
+                try {
+                    await window.firebaseRefs.update(roomRef, {
+                        status: 'finished',
+                        winner: iWon ? gameState.playerId : (gameState.isHost ? 'player2' : 'player1')
+                    });
+                } catch (error) {
+                    console.error("Error updating room status:", error);
+                }
             }
         }
 
         async function requestRematch() {
             if (!roomRef) return;
             
-            gameState.rematchRequested = true;
-            const updateData = gameState.isHost ? { rematchHost: true } : { rematchGuest: true };
-            await window.firebaseRefs.update(roomRef, updateData);
-            
-            const snapshot = await window.firebaseRefs.get(roomRef);
-            const data = snapshot.val();
-            
-            if (data.rematchHost && data.rematchGuest) {
-                await window.firebaseRefs.update(roomRef, { 
-                    status: 'rematch',
-                    hostScore: 0,
-                    guestScore: 0
-                });
-                document.getElementById('winner-announcement').style.display = 'none';
-                startMultiplayerCountdown();
+            try {
+                const updateData = gameState.isHost ? 
+                    { rematchHost: true } : 
+                    { rematchGuest: true };
+                
+                await window.firebaseRefs.update(roomRef, updateData);
+                
+                const snapshot = await window.firebaseRefs.get(roomRef);
+                const data = snapshot.val();
+                
+                if (data.rematchHost && data.rematchGuest) {
+                    await window.firebaseRefs.update(roomRef, { 
+                        status: 'playing',
+                        hostScore: 0,
+                        guestScore: 0,
+                        rematchHost: false,
+                        rematchGuest: false
+                    });
+                    document.getElementById('winner-announcement').style.display = 'none';
+                } else {
+                    showNotification('Очікування', 'Суперник ще не готовий...', 'info');
+                }
+            } catch (error) {
+                console.error("Error requesting rematch:", error);
             }
         }
 
         function closeWinnerAndLeave() {
             document.getElementById('winner-announcement').style.display = 'none';
-            if (roomRef) window.firebaseRefs.remove(roomRef);
+            if (roomRef) {
+                window.firebaseRefs.remove(roomRef);
+                if (unsubscribeRoom) {
+                    unsubscribeRoom();
+                    unsubscribeRoom = null;
+                }
+            }
             resetInterface();
         }
 
@@ -1302,9 +1486,9 @@
             document.getElementById('pause-btn').classList.add('hidden');
             document.getElementById('hint-btn').classList.add('hidden');
             document.getElementById('exit-btn').classList.add('hidden');
-            document.getElementById('rematch-btn')?.classList.add('hidden');
             document.getElementById('opponent-panel').classList.remove('active');
             document.getElementById('mode-indicator').classList.remove('active');
+            document.getElementById('pause-overlay')?.remove();
         }
 
         function resetGame() {
@@ -1335,12 +1519,14 @@
             }
         });
 
-        // Тестові записи
+        // Тестові записи для таблиці лідерів
         setTimeout(() => {
             if (db) {
                 saveToGlobalLeaderboard({ name: 'Майстер', score: 320, mode: 'single' });
                 saveToGlobalLeaderboard({ name: 'Чемпіон', score: 280, mode: 'single' });
                 saveToGlobalLeaderboard({ name: 'Срібний', score: 210, mode: 'single' });
+                saveToGlobalLeaderboard({ name: 'Золотий', score: 450, mode: 'multiplayer-win' });
+                saveToGlobalLeaderboard({ name: 'Легенда', score: 390, mode: 'single' });
             }
         }, 2000);
     </script>
