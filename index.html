@@ -1617,6 +1617,8 @@
             if (!roomRef) return;
             try {
                 await window.firebaseRefs.update(roomRef, { status: 'playing' });
+                // Закриваємо модальне вікно при старті гри
+                document.getElementById('multiplayer-modal').style.display = 'none';
                 startMultiplayerCountdown();
             } catch (error) {
                 console.error(error);
