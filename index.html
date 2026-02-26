@@ -742,6 +742,43 @@
                 padding: 12px 8px;
             }
         }
+
+        /* Додаткові стилі для статусу гри */
+        .game-status-info {
+            background: #FEF3C7;
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-weight: 700;
+            color: #92400E;
+        }
+
+        .waiting-for-opponent {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        /* Індикатор збереження */
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(72, 187, 120, 0.9);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .save-indicator.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -757,6 +794,9 @@
     </div>
 
     <div class="notifications-panel" id="notifications-panel"></div>
+    
+    <!-- Індикатор збереження -->
+    <div class="save-indicator" id="save-indicator">💾 Збережено в таблицю лідерів</div>
 
     <!-- Кнопка для відкриття таблиці на телефоні -->
     <div class="leaderboard-toggle" id="leaderboard-toggle" onclick="toggleLeaderboardMobile()">🏆</div>
@@ -768,6 +808,7 @@
         <div class="opponent-lives" id="opponent-lives">
             ❤️ <span id="opponent-lives-count">3</span>
         </div>
+        <div class="game-status-info hidden" id="opponent-status"></div>
     </div>
 
     <div class="mode-indicator" id="mode-indicator">🎮 НА ДВОХ</div>
@@ -876,8 +917,9 @@
             <div style="font-size:5em;">🏆</div>
             <h2 id="winner-text" style="font-size:2.5em;">Перемога!</h2>
             <p id="winner-score" style="font-size:1.5em; margin:15px 0;">Рахунок: 0</p>
+            <div id="winner-status" style="margin-bottom:15px; font-weight:700; color:#718096;"></div>
             <div style="display:flex; gap:10px;">
-                <button class="control-btn btn-rematch" onclick="requestRematch()" style="flex:1; font-size:1.2em;">🔄 РЕВАНШ</button>
+                <button class="control-btn btn-rematch" id="winner-rematch-btn" onclick="requestRematch()" style="flex:1; font-size:1.2em;">🔄 РЕВАНШ</button>
                 <button class="control-btn btn-exit" onclick="closeWinnerAndLeave()" style="flex:1; font-size:1.2em;">🚪 ВИХІД</button>
             </div>
         </div>
@@ -905,15 +947,19 @@
             opponentName: '', 
             opponentScore: 0, 
             opponentLives: 3,
+            opponentFinished: false,
             isHost: false, 
             gameStarted: false, 
             gameEnded: false,
             maxBalloons: 3,
             hintActive: false,
-            hintAnswer: null
+            hintAnswer: null,
+            waitingForRematch: false,
+            lastSavedScore: 0,  // Для відстеження змін
+            currentLeaderboardId: null  // ID поточного запису в таблиці лідерів
         };
 
-        let intervals = { spawn: null, move: null, physics: null };
+        let intervals = { spawn: null, move: null, physics: null, autosave: null };
         let playerName = localStorage.getItem('mathBalloonPlayer') || 'Гравець';
         
         // Firebase
@@ -1046,11 +1092,15 @@
                 else if (s.mode === 'multiplayer-win') modeText = '👑 Перемога';
                 else modeText = '👥 На двох';
 
+                // Статус (живий запис чи фінальний)
+                let statusText = '';
+                if (s.isLive) statusText = ' 🔴';
+
                 return `
                     <li class="leaderboard-item">
                         ${rankHtml}
                         <div class="player-info">
-                            <span class="player-name">${s.name}</span>
+                            <span class="player-name">${s.name}${statusText}</span>
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span class="player-score">${s.score}</span>
                                 <span class="player-mode">${modeText}</span>
@@ -1075,23 +1125,102 @@
             document.getElementById('leaderboard-section').classList.toggle('show');
         }
 
-        async function saveToGlobalLeaderboard(scoreData) {
-            if (!db) return;
+        // ==================== АВТОМАТИЧНЕ ЗБЕРЕЖЕННЯ В ТАБЛИЦЮ ЛІДЕРІВ ====================
+        
+        // Показати індикатор збереження
+        function showSaveIndicator() {
+            const indicator = document.getElementById('save-indicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Створити або оновити запис в таблиці лідерів
+        async function saveToLeaderboardRealtime() {
+            if (!db || !gameState.isRunning || gameState.score === 0) return;
+            
+            // Зберігаємо тільки якщо рахунок змінився або ще не створювали запис
+            if (gameState.score === gameState.lastSavedScore && gameState.currentLeaderboardId) return;
+            
             try {
-                const { push, ref, serverTimestamp } = window.firebaseRefs;
-                const leaderboardRef = ref(db, 'leaderboard');
-                await push(leaderboardRef, {
-                    name: scoreData.name,
-                    score: scoreData.score,
-                    mode: scoreData.mode,
+                const { ref, set, update, push, serverTimestamp } = window.firebaseRefs;
+                
+                const mode = gameState.isMultiplayer ? 'multiplayer' : 'single';
+                const data = {
+                    name: playerName,
+                    score: gameState.score,
+                    mode: mode,
                     level: gameState.level,
+                    lives: gameState.lives,
+                    isLive: true,  // Позначаємо що гра ще триває
                     timestamp: serverTimestamp()
+                };
+                
+                if (!gameState.currentLeaderboardId) {
+                    // Створюємо новий запис
+                    const leaderboardRef = ref(db, 'leaderboard');
+                    const newRef = push(leaderboardRef);
+                    gameState.currentLeaderboardId = newRef.key;
+                    await set(newRef, data);
+                } else {
+                    // Оновлюємо існуючий запис
+                    const currentRef = ref(db, 'leaderboard/' + gameState.currentLeaderboardId);
+                    await update(currentRef, data);
+                }
+                
+                gameState.lastSavedScore = gameState.score;
+                
+                // Показуємо індикатор тільки при значних змінах (кожні 20 очок)
+                if (gameState.score % 20 === 0) {
+                    showSaveIndicator();
+                }
+                
+            } catch (error) {
+                console.error("Error saving to leaderboard:", error);
+            }
+        }
+
+        // Фінальне збереження (коли гра закінчена) - позначаємо як не "live"
+        async function finalizeLeaderboardEntry() {
+            if (!db || !gameState.currentLeaderboardId) return;
+            
+            try {
+                const { update, ref } = window.firebaseRefs;
+                const currentRef = ref(db, 'leaderboard/' + gameState.currentLeaderboardId);
+                
+                const mode = gameState.isMultiplayer ? 
+                    (gameState.lives > 0 ? 'multiplayer-win' : 'multiplayer') : 
+                    'single';
+                
+                await update(currentRef, {
+                    isLive: false,  // Гра закінчена
+                    mode: mode,
+                    finalScore: gameState.score,
+                    endTime: window.firebaseRefs.serverTimestamp()
                 });
                 
-                if (scoreData.score >= 50) {
-                    showNotification('🏆 Новий рекорд!', `${scoreData.score} очок!`, 'success');
-                }
-            } catch (e) { console.error(e); }
+                showSaveIndicator();
+                
+            } catch (error) {
+                console.error("Error finalizing leaderboard entry:", error);
+            }
+        }
+
+        // Очистити поточний запис при виході/перезапуску
+        async function clearCurrentLeaderboardEntry() {
+            if (!db || !gameState.currentLeaderboardId) return;
+            
+            try {
+                const { remove, ref } = window.firebaseRefs;
+                const currentRef = ref(db, 'leaderboard/' + gameState.currentLeaderboardId);
+                await remove(currentRef);
+            } catch (error) {
+                console.error("Error clearing leaderboard entry:", error);
+            } finally {
+                gameState.currentLeaderboardId = null;
+                gameState.lastSavedScore = 0;
+            }
         }
 
         // ==================== ОСНОВНА ЛОГІКА ====================
@@ -1151,7 +1280,10 @@
             processAnswer(answer);
         }
 
-        function startGame() {
+        async function startGame() {
+            // Очищаємо попередній запис якщо є
+            await clearCurrentLeaderboardEntry();
+            
             resetGame();
             gameState.isRunning = true;
             
@@ -1160,6 +1292,9 @@
             intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
             intervals.move = setInterval(moveBalloons, 16);
             intervals.physics = setInterval(updateBalloonPhysics, 50);
+            
+            // Автозбереження кожні 5 секунд
+            intervals.autosave = setInterval(saveToLeaderboardRealtime, 5000);
 
             document.getElementById('start-btn').classList.add('hidden');
             document.getElementById('multiplayer-btn').classList.add('hidden');
@@ -1168,7 +1303,10 @@
             document.getElementById('exit-btn').classList.remove('hidden');
             document.getElementById('rematch-btn').classList.add('hidden');
             
-            showNotification('Старт!', 'Лови кульки!', 'success');
+            // Перше збереження одразу
+            saveToLeaderboardRealtime();
+            
+            showNotification('Старт!', 'Лови кульки! Результати зберігаються автоматично 💾', 'success');
         }
 
         function spawnBalloon() {
@@ -1323,6 +1461,9 @@
                     updateMyScore();
                     updateMyLives();
                 }
+                
+                // Зберігаємо в таблицю лідерів одразу при зміні рахунку
+                saveToLeaderboardRealtime();
             } else {
                 gameState.score = Math.max(0, gameState.score - 2);
             }
@@ -1388,40 +1529,137 @@
 
             if (gameState.lives <= 0) {
                 if (gameState.isMultiplayer) {
-                    endMultiplayerGame(false); // Гравець програв
+                    handlePlayerLost();
                 } else {
                     endGame();
                 }
             }
         }
 
-        function endGame() {
+        // НОВА ФУНКЦІЯ: Обробка програшу гравця в мультиплеєрі
+        async function handlePlayerLost() {
+            // Зупиняємо гру для цього гравця
             gameState.isRunning = false;
             clearInterval(intervals.spawn);
             clearInterval(intervals.move);
             clearInterval(intervals.physics);
-
-            if (playerName && gameState.score > 0) {
-                saveToGlobalLeaderboard({ name: playerName, score: gameState.score, mode: 'single' });
+            clearInterval(intervals.autosave);
+            
+            // Фіналізуємо запис в таблиці лідерів
+            await finalizeLeaderboardEntry();
+            
+            // Позначаємо що цей гравець закінчив гру
+            if (roomRef) {
+                const finishPath = gameState.isHost ? 'host/finished' : 'guest/finished';
+                const finalScorePath = gameState.isHost ? 'host/finalScore' : 'guest/finalScore';
+                
+                try {
+                    await window.firebaseRefs.update(roomRef, {
+                        [finishPath]: true,
+                        [finalScorePath]: gameState.score,
+                        status: 'finished'
+                    });
+                } catch (error) {
+                    console.error("Error marking player as finished:", error);
+                }
             }
+            
+            // Перевіряємо чи суперник теж закінчив
+            checkBothPlayersFinished();
+        }
 
-            showNotification('Гру завершено!', `Рахунок: ${gameState.score}`, 'info');
+        // НОВА ФУНКЦІЯ: Перевірка чи обидва гравці закінчили
+        function checkBothPlayersFinished() {
+            // Показуємо екран очікування суперника
+            showWaitingScreen();
+            
+            // Якщо ми знаємо що суперник вже закінчив, показуємо результат одразу
+            if (gameState.opponentFinished) {
+                showFinalResult();
+            }
+        }
+
+        // НОВА ФУНКЦІЯ: Показ екрану очікування
+        function showWaitingScreen() {
+            const winnerDiv = document.getElementById('winner-announcement');
+            const winnerText = document.getElementById('winner-text');
+            const winnerScore = document.getElementById('winner-score');
+            const winnerStatus = document.getElementById('winner-status');
+            const rematchBtn = document.getElementById('winner-rematch-btn');
+            
+            winnerDiv.style.display = 'flex';
+            winnerText.textContent = '⏳ Очікування...';
+            winnerText.style.color = '#ED8936';
+            winnerScore.textContent = `Твій рахунок: ${gameState.score}`;
+            winnerStatus.textContent = 'Чекаємо поки суперник закінчить гру...';
+            rematchBtn.style.display = 'none';
+        }
+
+        // НОВА ФУНКЦІЯ: Показ фінального результату
+        function showFinalResult() {
+            const winnerText = document.getElementById('winner-text');
+            const winnerScore = document.getElementById('winner-score');
+            const winnerStatus = document.getElementById('winner-status');
+            const rematchBtn = document.getElementById('winner-rematch-btn');
+            
+            // Визначаємо переможця
+            const myScore = gameState.score;
+            const opponentScore = gameState.opponentScore;
+            let iWon = false;
+            
+            if (myScore > opponentScore) {
+                iWon = true;
+                winnerText.textContent = '🎉 ПЕРЕМОГА!';
+                winnerText.style.color = '#48BB78';
+            } else if (myScore < opponentScore) {
+                winnerText.textContent = '😔 ПОРАЗКА';
+                winnerText.style.color = '#E53E3E';
+            } else {
+                winnerText.textContent = '🤝 НІЧИЯ';
+                winnerText.style.color = '#ED8936';
+                iWon = true; // Нічия вважається "не програшем" для збереження результату
+            }
+            
+            winnerScore.textContent = `Ти: ${myScore} | Суперник: ${opponentScore}`;
+            winnerStatus.textContent = 'Обидва гравці закінчили!';
+            rematchBtn.style.display = 'block';
+            
+            // Оновлюємо режим в таблиці лідерів для переможця
+            if (iWon && gameState.currentLeaderboardId) {
+                const { update, ref } = window.firebaseRefs;
+                update(ref(db, 'leaderboard/' + gameState.currentLeaderboardId), {
+                    mode: 'multiplayer-win'
+                });
+            }
+        }
+
+        async function endGame() {
+            gameState.isRunning = false;
+            clearInterval(intervals.spawn);
+            clearInterval(intervals.move);
+            clearInterval(intervals.physics);
+            clearInterval(intervals.autosave);
+
+            // Фіналізуємо запис в таблиці лідерів
+            await finalizeLeaderboardEntry();
+
+            showNotification('Гру завершено!', `Рахунок: ${gameState.score} збережено! 💾`, 'info');
             resetInterface();
         }
 
-        function exitGame() {
+        async function exitGame() {
             if (gameState.isRunning) {
                 gameState.isRunning = false;
                 clearInterval(intervals.spawn);
                 clearInterval(intervals.move);
                 clearInterval(intervals.physics);
+                clearInterval(intervals.autosave);
                 
-                if (playerName && gameState.score > 0) {
-                    saveToGlobalLeaderboard({ name: playerName, score: gameState.score, mode: 'single' });
-                }
+                // Фіналізуємо запис в таблиці лідерів
+                await finalizeLeaderboardEntry();
                 
                 resetInterface();
-                showNotification('Вихід', 'Результат збережено!', 'info');
+                showNotification('Вихід', 'Результат збережено! 💾', 'info');
             }
         }
 
@@ -1492,7 +1730,9 @@
                         name: playerName,
                         score: 0,
                         lives: 3,
-                        ready: true
+                        ready: true,
+                        finished: false,
+                        finalScore: 0
                     },
                     guest: null,
                     status: 'waiting',
@@ -1541,6 +1781,43 @@
                             gameState.opponentScore = opponentData.score || 0;
                             gameState.opponentLives = opponentData.lives || 3;
                             updateOpponentDisplay();
+                        }
+                    }
+                    
+                    // ОБРОБКА ЗАКІНЧЕННЯ ГРИ
+                    if (data.status === 'finished') {
+                        const opponentData = gameState.isHost ? data.guest : data.host;
+                        
+                        if (opponentData) {
+                            gameState.opponentScore = opponentData.finalScore || opponentData.score || 0;
+                            gameState.opponentFinished = opponentData.finished || false;
+                            
+                            // Якщо суперник закінчив, а ми ще граємо - зупиняємо гру
+                            if (gameState.opponentFinished && gameState.isRunning) {
+                                gameState.isRunning = false;
+                                clearInterval(intervals.spawn);
+                                clearInterval(intervals.move);
+                                clearInterval(intervals.physics);
+                                clearInterval(intervals.autosave);
+                                
+                                // Фіналізуємо наш запис
+                                finalizeLeaderboardEntry();
+                                
+                                // Позначаємо що ми теж закінчили (якщо ще не позначили)
+                                const finishPath = gameState.isHost ? 'host/finished' : 'guest/finished';
+                                const finalScorePath = gameState.isHost ? 'host/finalScore' : 'guest/finalScore';
+                                window.firebaseRefs.update(roomRef, {
+                                    [finishPath]: true,
+                                    [finalScorePath]: gameState.score
+                                });
+                                
+                                showFinalResult();
+                            }
+                            
+                            // Якщо ми вже закінчили і чекаємо суперника
+                            if (!gameState.isRunning && gameState.opponentFinished) {
+                                showFinalResult();
+                            }
                         }
                     }
                 });
@@ -1601,7 +1878,9 @@
                         name: playerName,
                         score: 0,
                         lives: 3,
-                        ready: true
+                        ready: true,
+                        finished: false,
+                        finalScore: 0
                     }
                 });
 
@@ -1623,6 +1902,41 @@
                             gameState.opponentScore = opponentData.score || 0;
                             gameState.opponentLives = opponentData.lives || 3;
                             updateOpponentDisplay();
+                        }
+                    }
+                    
+                    // ОБРОБКА ЗАКІНЧЕННЯ ГРИ
+                    if (data.status === 'finished') {
+                        const opponentData = data.host;
+                        
+                        if (opponentData) {
+                            gameState.opponentScore = opponentData.finalScore || opponentData.score || 0;
+                            gameState.opponentFinished = opponentData.finished || false;
+                            
+                            // Якщо суперник закінчив, а ми ще граємо - зупиняємо гру
+                            if (gameState.opponentFinished && gameState.isRunning) {
+                                gameState.isRunning = false;
+                                clearInterval(intervals.spawn);
+                                clearInterval(intervals.move);
+                                clearInterval(intervals.physics);
+                                clearInterval(intervals.autosave);
+                                
+                                // Фіналізуємо наш запис
+                                finalizeLeaderboardEntry();
+                                
+                                // Позначаємо що ми теж закінчили
+                                window.firebaseRefs.update(roomRef, {
+                                    'guest/finished': true,
+                                    'guest/finalScore': gameState.score
+                                });
+                                
+                                showFinalResult();
+                            }
+                            
+                            // Якщо ми вже закінчили і чекаємо суперника
+                            if (!gameState.isRunning && gameState.opponentFinished) {
+                                showFinalResult();
+                            }
                         }
                     }
                 });
@@ -1676,23 +1990,32 @@
             }, 1000);
         }
 
-        function startMultiplayerGame() {
+        async function startMultiplayerGame() {
+            // Очищаємо попередній запис якщо є
+            await clearCurrentLeaderboardEntry();
+            
             gameState.isRunning = true;
             gameState.isMultiplayer = true;
             gameState.score = 0;
             gameState.lives = 3;
             gameState.balloons = [];
             gameState.gameEnded = false;
+            gameState.opponentFinished = false;
+            gameState.waitingForRematch = false;
 
             document.getElementById('game-container').innerHTML = '<div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>';
             
             if (intervals.spawn) clearInterval(intervals.spawn);
             if (intervals.move) clearInterval(intervals.move);
             if (intervals.physics) clearInterval(intervals.physics);
+            if (intervals.autosave) clearInterval(intervals.autosave);
             
             intervals.spawn = setInterval(spawnBalloon, 3000);
             intervals.move = setInterval(moveBalloons, 16);
             intervals.physics = setInterval(updateBalloonPhysics, 50);
+            
+            // Автозбереження кожні 5 секунд
+            intervals.autosave = setInterval(saveToLeaderboardRealtime, 5000);
 
             document.getElementById('start-btn').classList.add('hidden');
             document.getElementById('multiplayer-btn').classList.add('hidden');
@@ -1704,15 +2027,31 @@
             document.getElementById('opponent-panel').classList.add('active');
             document.getElementById('mode-indicator').classList.add('active');
             
+            // Перше збереження одразу
+            saveToLeaderboardRealtime();
+            
             updateDisplay();
             updateOpponentDisplay();
-            showNotification('Старт!', 'Гра до першого програшу!', 'success');
+            showNotification('Старт!', 'Гра до останнього життя! Результати зберігаються 💾', 'success');
         }
 
         function updateOpponentDisplay() {
             document.getElementById('opponent-name').textContent = gameState.opponentName || 'Суперник';
             document.getElementById('opponent-score').textContent = gameState.opponentScore;
             document.getElementById('opponent-lives-count').textContent = gameState.opponentLives;
+            
+            // Показуємо статус суперника
+            const statusEl = document.getElementById('opponent-status');
+            if (gameState.opponentFinished) {
+                statusEl.textContent = '✅ Закінчив гру';
+                statusEl.classList.remove('hidden');
+                statusEl.classList.add('waiting-for-opponent');
+            } else if (gameState.opponentLives <= 0) {
+                statusEl.textContent = '❌ Програв';
+                statusEl.classList.remove('hidden');
+            } else {
+                statusEl.classList.add('hidden');
+            }
         }
 
         async function updateMyScore() {
@@ -1734,61 +2073,18 @@
                 await window.firebaseRefs.update(roomRef, {
                     [updatePath]: gameState.lives
                 });
-                
-                // Перевіряємо чи хтось програв
-                if (gameState.lives <= 0) {
-                    endMultiplayerGame(false);
-                }
             } catch (error) {
                 console.error("Error updating lives:", error);
             }
         }
 
-        async function endMultiplayerGame(iWon) {
-            if (gameState.gameEnded) return;
-            
-            gameState.isRunning = false;
-            gameState.gameEnded = true;
-            clearInterval(intervals.spawn);
-            clearInterval(intervals.move);
-            clearInterval(intervals.physics);
-
-            const winnerDiv = document.getElementById('winner-announcement');
-            const winnerText = document.getElementById('winner-text');
-            const winnerScore = document.getElementById('winner-score');
-            
-            winnerDiv.style.display = 'flex';
-            
-            if (iWon) {
-                winnerText.textContent = '🎉 ПЕРЕМОГА!';
-                winnerText.style.color = '#48BB78';
-                
-                saveToGlobalLeaderboard({
-                    name: playerName,
-                    score: gameState.score,
-                    mode: 'multiplayer-win'
-                });
-            } else {
-                winnerText.textContent = '😔 ПОРАЗКА';
-                winnerText.style.color = '#E53E3E';
-            }
-            
-            winnerScore.textContent = `Ти: ${gameState.score} | Суперник: ${gameState.opponentScore}`;
-            
-            if (roomRef) {
-                try {
-                    await window.firebaseRefs.update(roomRef, {
-                        status: 'finished',
-                        winner: iWon ? gameState.playerId : (gameState.isHost ? 'player2' : 'player1')
-                    });
-                } catch (error) {
-                    console.error("Error updating room status:", error);
-                }
-            }
-        }
-
         async function requestRematch() {
             if (!roomRef) return;
+            
+            // Показуємо що ми чекаємо на реванш
+            gameState.waitingForRematch = true;
+            const winnerStatus = document.getElementById('winner-status');
+            winnerStatus.textContent = '⏳ Очікуємо суперника...';
             
             try {
                 const updateData = gameState.isHost ? 
@@ -1797,32 +2093,50 @@
                 
                 await window.firebaseRefs.update(roomRef, updateData);
                 
+                // Перевіряємо чи суперник теж хоче реванш
                 const snapshot = await window.firebaseRefs.get(roomRef);
                 const data = snapshot.val();
                 
-                if (data.host?.rematch && data.guest?.rematch) {
-                    // Скидаємо гру
+                const hostRematch = data.host?.rematch || false;
+                const guestRematch = data.guest?.rematch || false;
+                
+                if (hostRematch && guestRematch) {
+                    // Очищаємо старі записи з таблиці лідерів перед новою грою
+                    await clearCurrentLeaderboardEntry();
+                    
+                    // Обидва готові - починаємо нову гру
                     await window.firebaseRefs.update(roomRef, { 
                         status: 'playing',
                         'host/score': 0,
                         'guest/score': 0,
                         'host/lives': 3,
                         'guest/lives': 3,
+                        'host/finished': false,
+                        'guest/finished': false,
+                        'host/finalScore': 0,
+                        'guest/finalScore': 0,
                         'host/rematch': false,
                         'guest/rematch': false
                     });
+                    
                     document.getElementById('winner-announcement').style.display = 'none';
                     startMultiplayerCountdown();
                 } else {
-                    showNotification('Очікування', 'Суперник ще не готовий...', 'info');
+                    // Чекаємо суперника
+                    winnerStatus.textContent = '✅ Ти готовий! Чекаємо суперника...';
                 }
             } catch (error) {
                 console.error("Error requesting rematch:", error);
+                winnerStatus.textContent = '❌ Помилка. Спробуй ще раз.';
             }
         }
 
-        function closeWinnerAndLeave() {
+        async function closeWinnerAndLeave() {
             document.getElementById('winner-announcement').style.display = 'none';
+            
+            // Фіналізуємо запис перед виходом
+            await finalizeLeaderboardEntry();
+            
             if (roomRef) {
                 window.firebaseRefs.remove(roomRef);
                 if (unsubscribeRoom) {
@@ -1845,7 +2159,7 @@
             showNotification('Скопійовано!', code, 'success');
         }
 
-        function resetInterface() {
+        async function resetInterface() {
             document.getElementById('start-btn').classList.remove('hidden');
             document.getElementById('multiplayer-btn').classList.remove('hidden');
             document.getElementById('pause-btn').classList.add('hidden');
@@ -1856,8 +2170,15 @@
             document.getElementById('mode-indicator').classList.remove('active');
             document.getElementById('pause-overlay')?.remove();
             
+            // Очищаємо запис в таблиці лідерів якщо гра не закінчена
+            if (gameState.isRunning) {
+                await clearCurrentLeaderboardEntry();
+            }
+            
             gameState.hintActive = false;
             gameState.hintAnswer = null;
+            gameState.opponentFinished = false;
+            gameState.waitingForRematch = false;
         }
 
         function resetGame() {
@@ -1875,7 +2196,11 @@
                 isMultiplayer: false,
                 gameEnded: false,
                 hintActive: false,
-                hintAnswer: null
+                hintAnswer: null,
+                opponentFinished: false,
+                waitingForRematch: false,
+                lastSavedScore: 0,
+                currentLeaderboardId: null
             };
         }
 
