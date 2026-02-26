@@ -563,6 +563,13 @@
             min-width: 160px;
         }
         .opponent-panel.active { display: block; }
+        
+        .opponent-lives {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 1.2em;
+        }
 
         .mode-indicator {
             position: fixed;
@@ -758,8 +765,8 @@
     <div class="opponent-panel" id="opponent-panel">
         <div style="font-weight:900; margin-bottom:8px;" id="opponent-name">Суперник</div>
         <div style="font-size:1.5em; font-weight:900; color:#9F7AEA;" id="opponent-score">0</div>
-        <div style="height:10px; background:#E2E8F0; border-radius:10px; margin-top:8px;">
-            <div class="progress-fill" id="opponent-progress" style="width:0%; height:100%; background:linear-gradient(90deg,#9F7AEA,#667EEA); border-radius:10px;"></div>
+        <div class="opponent-lives" id="opponent-lives">
+            ❤️ <span id="opponent-lives-count">3</span>
         </div>
     </div>
 
@@ -897,8 +904,8 @@
             playerId: null, 
             opponentName: '', 
             opponentScore: 0, 
+            opponentLives: 3,
             isHost: false, 
-            gameTarget: 10,
             gameStarted: false, 
             gameEnded: false,
             maxBalloons: 3,
@@ -1314,6 +1321,7 @@
                 
                 if (gameState.isMultiplayer && roomRef) {
                     updateMyScore();
+                    updateMyLives();
                 }
             } else {
                 gameState.score = Math.max(0, gameState.score - 2);
@@ -1325,10 +1333,6 @@
             
             updateDisplay();
             updateAnswerButtons();
-            
-            if (gameState.isMultiplayer && gameState.score >= gameState.gameTarget) {
-                endMultiplayerGame(true);
-            }
         }
 
         function levelUp() {
@@ -1347,6 +1351,11 @@
             if (gameState.lives > 1) {
                 gameState.lives--;
                 updateDisplay();
+                
+                // Оновлюємо життя в Firebase для мультиплеєра
+                if (gameState.isMultiplayer && roomRef) {
+                    updateMyLives();
+                }
                 
                 // Знаходимо правильну відповідь
                 if (gameState.balloons.length > 0) {
@@ -1372,9 +1381,14 @@
             gameState.lives--;
             updateDisplay();
 
+            // Оновлюємо життя в Firebase для мультиплеєра
+            if (gameState.isMultiplayer && roomRef) {
+                updateMyLives();
+            }
+
             if (gameState.lives <= 0) {
                 if (gameState.isMultiplayer) {
-                    endMultiplayerGame(false);
+                    endMultiplayerGame(false); // Гравець програв
                 } else {
                     endGame();
                 }
@@ -1477,12 +1491,12 @@
                     host: {
                         name: playerName,
                         score: 0,
+                        lives: 3,
                         ready: true
                     },
                     guest: null,
                     status: 'waiting',
-                    createdAt: window.firebaseRefs.serverTimestamp(),
-                    gameTarget: 10
+                    createdAt: window.firebaseRefs.serverTimestamp()
                 });
 
                 // Автовидалення при відключенні
@@ -1514,17 +1528,20 @@
 
                     // Запускаємо гру коли статус змінюється на 'playing'
                     if (data.status === 'playing' && !gameState.gameStarted && !gameState.isRunning) {
-                        // Закриваємо модальне вікно для хоста (якщо воно ще відкрите)
+                        // Закриваємо модальне вікно для хоста
                         document.getElementById('multiplayer-modal').style.display = 'none';
                         startMultiplayerCountdown();
                     }
                     
-                    // Оновлюємо рахунок суперника під час гри
+                    // Оновлюємо дані суперника під час гри
                     if (data.status === 'playing' && gameState.isRunning) {
-                        const opponentScore = gameState.isHost ? 
-                            (data.guest?.score || 0) : 
-                            (data.host?.score || 0);
-                        updateOpponentDisplay(opponentScore);
+                        const opponentData = gameState.isHost ? data.guest : data.host;
+                        if (opponentData) {
+                            gameState.opponentName = opponentData.name;
+                            gameState.opponentScore = opponentData.score || 0;
+                            gameState.opponentLives = opponentData.lives || 3;
+                            updateOpponentDisplay();
+                        }
                     }
                 });
 
@@ -1583,6 +1600,7 @@
                     guest: {
                         name: playerName,
                         score: 0,
+                        lives: 3,
                         ready: true
                     }
                 });
@@ -1599,8 +1617,13 @@
                     }
                     
                     if (data.status === 'playing' && gameState.isRunning) {
-                        const opponentScore = data.host?.score || 0;
-                        updateOpponentDisplay(opponentScore);
+                        const opponentData = data.host;
+                        if (opponentData) {
+                            gameState.opponentName = opponentData.name;
+                            gameState.opponentScore = opponentData.score || 0;
+                            gameState.opponentLives = opponentData.lives || 3;
+                            updateOpponentDisplay();
+                        }
                     }
                 });
 
@@ -1660,7 +1683,6 @@
             gameState.lives = 3;
             gameState.balloons = [];
             gameState.gameEnded = false;
-            gameState.gameTarget = 10;
 
             document.getElementById('game-container').innerHTML = '<div class="typing-indicator" id="typing-indicator">✏️ <span id="typed-number"></span></div>';
             
@@ -1681,19 +1703,16 @@
             
             document.getElementById('opponent-panel').classList.add('active');
             document.getElementById('mode-indicator').classList.add('active');
-            document.getElementById('opponent-name').textContent = gameState.opponentName || 'Суперник';
-            document.getElementById('opponent-score').textContent = '0';
-            document.getElementById('opponent-progress').style.width = '0%';
             
             updateDisplay();
-            showNotification('Старт!', `До ${gameState.gameTarget} очок!`, 'success');
+            updateOpponentDisplay();
+            showNotification('Старт!', 'Гра до першого програшу!', 'success');
         }
 
-        function updateOpponentDisplay(score) {
-            gameState.opponentScore = score;
-            document.getElementById('opponent-score').textContent = score;
-            const progress = Math.min((score / gameState.gameTarget) * 100, 100);
-            document.getElementById('opponent-progress').style.width = progress + '%';
+        function updateOpponentDisplay() {
+            document.getElementById('opponent-name').textContent = gameState.opponentName || 'Суперник';
+            document.getElementById('opponent-score').textContent = gameState.opponentScore;
+            document.getElementById('opponent-lives-count').textContent = gameState.opponentLives;
         }
 
         async function updateMyScore() {
@@ -1705,6 +1724,23 @@
                 });
             } catch (error) {
                 console.error("Error updating score:", error);
+            }
+        }
+
+        async function updateMyLives() {
+            if (!roomRef || !gameState.isMultiplayer) return;
+            try {
+                const updatePath = gameState.isHost ? 'host/lives' : 'guest/lives';
+                await window.firebaseRefs.update(roomRef, {
+                    [updatePath]: gameState.lives
+                });
+                
+                // Перевіряємо чи хтось програв
+                if (gameState.lives <= 0) {
+                    endMultiplayerGame(false);
+                }
+            } catch (error) {
+                console.error("Error updating lives:", error);
             }
         }
 
@@ -1770,6 +1806,8 @@
                         status: 'playing',
                         'host/score': 0,
                         'guest/score': 0,
+                        'host/lives': 3,
+                        'guest/lives': 3,
                         'host/rematch': false,
                         'guest/rematch': false
                     });
@@ -1848,6 +1886,12 @@
                 gameState.lives += 2;
                 gameState.cheatUsed = true;
                 updateDisplay();
+                
+                // Оновлюємо життя в Firebase для мультиплеєра
+                if (gameState.isMultiplayer && roomRef) {
+                    updateMyLives();
+                }
+                
                 showNotification('Бонус!', '+2 життя!', 'success');
                 
                 // Сонце радіє
