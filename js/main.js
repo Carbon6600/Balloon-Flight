@@ -41,35 +41,36 @@ console.log("🔥 Firebase ініціалізовано!");
 
 // ==================== ІГРОВІ ЗМІННІ ====================
 let gameState = {
-    isRunning: false, 
-    isPaused: false, 
-    score: 0, 
-    lives: 3, 
+    isRunning: false,
+    isPaused: false,
+    score: 0,
+    lives: 3,
     level: 1,
-    balloons: [], 
+    balloons: [],
     spawnInterval: 3500,
-    baseSpeed: 0.6, 
+    baseSpeed: 0.6,
     heartsCollected: 0,
-    sunClicks: 0, 
-    cheatUsed: false, 
-    typingBuffer: '', 
+    sunClicks: 0,
+    cheatUsed: false,
+    typingBuffer: '',
     isTyping: false,
-    isMultiplayer: false, 
-    roomId: null, 
-    playerId: null, 
-    opponentName: '', 
-    opponentScore: 0, 
+    isMultiplayer: false,
+    roomId: null,
+    playerId: null,
+    opponentName: '',
+    opponentScore: 0,
     opponentLives: 3,
     opponentFinished: false,
-    isHost: false, 
-    gameStarted: false, 
+    isHost: false,
+    gameStarted: false,
     gameEnded: false,
     maxBalloons: 3,
     hintActive: false,
     hintAnswer: null,
     waitingForRematch: false,
     lastSavedScore: 0,  // Для відстеження змін
-    currentLeaderboardId: null  // ID поточного запису в таблиці лідерів
+    currentLeaderboardId: null,  // ID поточного запису в таблиці лідерів
+    birds: [] // Для керування живими пташками
 };
 
 let intervals = { spawn: null, move: null, physics: null, autosave: null };
@@ -114,13 +115,16 @@ window.onload = () => {
     document.addEventListener('click', (e) => {
         const leaderboard = document.getElementById('leaderboard-section');
         const toggle = document.getElementById('leaderboard-toggle');
-        if (window.innerWidth <= 768 && 
-            leaderboard.classList.contains('show') && 
-            !leaderboard.contains(e.target) && 
+        if (window.innerWidth <= 768 &&
+            leaderboard.classList.contains('show') &&
+            !leaderboard.contains(e.target) &&
             !toggle.contains(e.target)) {
             leaderboard.classList.remove('show');
         }
     });
+
+    // Ініціалізуємо живий світ
+    initLivingWorld();
 };
 
 function updateConnectionStatus(status) {
@@ -334,6 +338,173 @@ async function clearCurrentLeaderboardEntry() {
         gameState.currentLeaderboardId = null;
         gameState.lastSavedScore = 0;
     }
+}
+
+// ==================== ЖИВИЙ СВІТ (ПТАШКИ ТА ПРИРОДА) ====================
+
+function initLivingWorld() {
+    createGrass();
+    createTrees();
+    
+    // Запускаємо цикл оновлення пташок
+    setInterval(updateBirds, 20);
+    
+    // Перші пташки
+    for(let i=0; i<3; i++) {
+        spawnBird();
+    }
+    
+    // Регулярний спавн нових пташок
+    setInterval(spawnBird, 7000);
+}
+
+function createGrass() {
+    const container = document.getElementById('grass-container');
+    if (!container) return;
+    
+    container.innerHTML = ''; // Clear existing
+    
+    const clusterCount = 80; // Increased for higher density
+    for (let i = 0; i < clusterCount; i++) {
+        const clusterX = Math.random() * 100;
+        const clusterSize = 2 + Math.random() * 5;
+        const bladesInCluster = 10 + Math.floor(Math.random() * 15); // More blades per cluster
+        
+        for (let j = 0; j < bladesInCluster; j++) {
+            const blade = document.createElement('div');
+            blade.className = 'grass-blade';
+            
+            if (clusterX < 10 || clusterX > 90) {
+                blade.classList.add('grass-foreground');
+            }
+            
+            const offsetX = (Math.random() - 0.5) * clusterSize;
+            const height = 6 + Math.random() * 12;
+            const width = 1 + Math.random() * 2; // Thinner blades
+            const delay = Math.random() * -5;
+            const rotation = (Math.random() - 0.5) * 10; // Organic tilt
+            
+            blade.style.left = (clusterX + offsetX) + '%';
+            blade.style.height = height + 'px';
+            blade.style.width = width + 'px';
+            blade.style.animationDelay = delay + 's';
+            blade.style.opacity = 0.6 + Math.random() * 0.4;
+            blade.style.transform = `rotate(${rotation}deg)`;
+            
+            container.appendChild(blade);
+        }
+    }
+}
+
+function createTrees() {
+    const container = document.getElementById('trees-container');
+    if (!container) return;
+
+    container.innerHTML = ''; // Clear existing
+    const treeCount = 5;
+    for (let i = 0; i < treeCount; i++) {
+        const tree = document.createElement('div');
+        tree.className = 'tree';
+        
+        const left = 10 + Math.random() * 80;
+        const scale = 0.7 + Math.random() * 0.5;
+        
+        tree.style.left = left + '%';
+        tree.style.transform = `scale(${scale})`;
+        
+        // 1. Shadow
+        const shadow = document.createElement('div');
+        shadow.className = 'tree-shadow';
+        tree.appendChild(shadow);
+        
+        // 2. Crown (Cloud-like layered foliage)
+        const crown = document.createElement('div');
+        crown.className = 'tree-crown';
+        
+        // Create multiple clusters for a "cloud" look
+        const clusters = [
+            { w: 60, h: 50, x: 10, y: 10, type: 'shadow' },
+            { w: 50, h: 40, x: 20, y: 0, type: 'highlight' },
+            { w: 40, h: 40, x: 0, y: 20, type: 'shadow' },
+            { w: 45, h: 35, x: 30, y: 15, type: 'highlight' },
+            { w: 30, h: 30, x: 25, y: 30, type: 'shadow' },
+        ];
+        
+        clusters.forEach(c => {
+            const cluster = document.createElement('div');
+            cluster.className = `crown-cluster ${c.type === 'highlight' ? 'cluster-highlight' : 'cluster-shadow'}`;
+            cluster.style.width = c.w + 'px';
+            cluster.style.height = c.h + 'px';
+            cluster.style.left = c.x + 'px';
+            cluster.style.top = c.y + 'px';
+            crown.appendChild(cluster);
+        });
+        
+        // 3. Trunk (Tapered)
+        const trunk = document.createElement('div');
+        trunk.className = 'tree-trunk';
+        trunk.style.height = (40 + Math.random() * 20) + 'px';
+        
+        tree.appendChild(crown);
+        tree.appendChild(trunk);
+        
+        container.appendChild(tree);
+    }
+}
+
+function spawnBird() {
+    const container = document.getElementById('birds-container');
+    if (!container) return;
+    
+    const emojis = ['🐦', '🕊️', '🦅', '🦆'];
+    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+    
+    const birdEl = document.createElement('div');
+    birdEl.className = 'bird-alive';
+    birdEl.textContent = emoji;
+    
+    const size = 18 + Math.random() * 12;
+    birdEl.style.fontSize = size + 'px';
+    
+    const startY = 5 + Math.random() * 30; // Висота від 5% до 35%
+    const speed = 0.5 + Math.random() * 1.5;
+    const amplitude = 10 + Math.random() * 30; // Амплітуда гойдання
+    const frequency = 0.02 + Math.random() * 0.03; // Частота гойдання
+    
+    birdEl.style.top = startY + '%';
+    birdEl.style.left = '-50px';
+    
+    container.appendChild(birdEl);
+    
+    gameState.birds.push({
+        element: birdEl,
+        x: -50,
+        y: startY,
+        speed: speed,
+        amplitude: amplitude,
+        frequency: frequency,
+        phase: Math.random() * Math.PI * 2
+    });
+}
+
+function updateBirds() {
+    const screenWidth = window.innerWidth;
+    
+    gameState.birds.forEach((bird, index) => {
+        bird.x += bird.speed;
+        
+        // Розрахунок живої траєкторії (синусоїда)
+        const currentY = bird.y + Math.sin(bird.x * bird.frequency + bird.phase) * (bird.amplitude / 10);
+        
+        bird.element.style.left = bird.x + 'px';
+        bird.element.style.top = currentY + '%';
+        
+        // Видаляємо пташку, коли вона вилетіла за екран
+        if (bird.x > screenWidth + 100) {
+            bird.element.remove();
+            gameState.birds.splice(index, 1);
+        }
+    });
 }
 
 // ==================== ОСНОВНА ЛОГІКА ====================
