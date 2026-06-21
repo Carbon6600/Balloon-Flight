@@ -20,113 +20,175 @@ export function initLivingWorld(gameState) {
     setInterval(() => spawnBird(gameState), 7000);
 }
 
+let grassCanvas, grassCtx;
+let grassWidth, grassHeight, grassDpr;
+let grassClumps = [];
+let currentGrassWeather = 'CLEAR';
+
+const GRASS_STYLES = {
+    'CLEAR': {
+        layers: [
+            { color: '#2D4A2D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 },
+            { color: '#3B5B32', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 },
+            { color: '#5A8A5A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 },
+        ],
+        seedChance: 0.2,
+        windStrength: 5
+    },
+    'CLOUDY': {
+        layers: [
+            { color: '#3D5A3D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 },
+            { color: '#4B6B42', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 },
+            { color: '#6A8A6A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 },
+        ],
+        seedChance: 0.4,
+        windStrength: 7
+    },
+    'RAINY': {
+        layers: [
+            { color: '#1D3A1D', heightRange: [8, 15], count: 50, scale: 0.6, opacity: 0.7 },
+            { color: '#2B4B22', heightRange: [12, 25], count: 70, scale: 0.8, opacity: 0.9 },
+            { color: '#3A5A3A', heightRange: [15, 35], count: 60, scale: 1.0, opacity: 1.0 },
+        ],
+        seedChance: 0,
+        windStrength: 10
+    },
+    'STORMY': {
+        layers: [
+            { color: '#0D2A0D', heightRange: [5, 15], count: 30, scale: 0.6, opacity: 0.7 },
+            { color: '#1B3B12', heightRange: [10, 20], count: 40, scale: 0.8, opacity: 0.9 },
+            { color: '#2A4A2A', heightRange: [15, 30], count: 40, scale: 1.0, opacity: 1.0 },
+        ],
+        seedChance: 0,
+        windStrength: 25
+    },
+    'SNOWY': {
+        layers: [
+            { color: '#A0B0A0', heightRange: [5, 10], count: 30, scale: 0.6, opacity: 0.7 },
+            { color: '#B0C0B0', heightRange: [8, 15], count: 40, scale: 0.8, opacity: 0.9 },
+            { color: '#C0D0C0', heightRange: [10, 20], count: 30, scale: 1.0, opacity: 1.0 },
+        ],
+        seedChance: 0,
+        windStrength: 3
+    },
+    'NIGHT': {
+        layers: [
+            { color: '#0D1A0D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 },
+            { color: '#1B2B12', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 },
+            { color: '#2A3A2A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 },
+        ],
+        seedChance: 0,
+        windStrength: 4
+    }
+};
+
 function init2DGrass() {
     console.log("🌿 Initializing 2D Canvas Environment...");
     const container = document.getElementById('three-grass-container');
     if (!container) return;
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    container.appendChild(canvas);
-
-    let width, height, dpr;
-    let clumps = [];
-    let mountains = [];
-
-    const baseLayers = [
-        { color: '#2D4A2D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 }, // Far
-        { color: '#3B5B32', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 }, // Mid
-        { color: '#5A8A5A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 }, // Near
-    ];
-
-    function initMountains() {
-        mountains = [];
-    }
-
-    function initGrass() {
-        clumps = [];
-        const isMobile = width < 768;
-        const densityMultiplier = isMobile ? 0.6 : 1.0;
-        const sizeScale = isMobile ? 0.7 : 1.0;
-
-        baseLayers.forEach((layer, layerIdx) => {
-            const count = Math.floor(layer.count * densityMultiplier);
-            for (let i = 0; i < count; i++) {
-                const centerX = Math.random() * width;
-                const centerY = height; // Anchor strictly to the bottom
-                const bladesCount = 3 + Math.floor(Math.random() * 5);
-                const blades = [];
-
-                for (let j = 0; j < bladesCount; j++) {
-                    blades.push({
-                        offsetX: (Math.random() - 0.5) * 10 * layer.scale * sizeScale,
-                        height: (layer.heightRange[0] + Math.random() * (layer.heightRange[1] - layer.heightRange[0])) * sizeScale,
-                        lean: (Math.random() - 0.5) * 10 * sizeScale,
-                        width: (2 + Math.random() * 2) * sizeScale,
-                        phase: Math.random() * Math.PI * 2
-                    });
-                }
-                clumps.push({ layerIdx, centerX, centerY, blades });
-            }
-        });
-    }
+    grassCanvas = document.createElement('canvas');
+    grassCanvas.style.display = 'block';
+    grassCanvas.style.width = '100%';
+    grassCanvas.style.height = '100%';
+    grassCtx = grassCanvas.getContext('2d');
+    container.appendChild(grassCanvas);
 
     const resizeCanvas = () => {
         const rect = container.getBoundingClientRect();
-        dpr = window.devicePixelRatio || 1;
-        
-        width = rect.width;
-        height = rect.height;
-        
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-        ctx.scale(dpr, dpr);
-        
-        initMountains();
+        grassDpr = window.devicePixelRatio || 1;
+        grassWidth = rect.width;
+        grassHeight = rect.height;
+        grassCanvas.width = grassWidth * grassDpr;
+        grassCanvas.height = grassHeight * grassDpr;
+        grassCtx.scale(grassDpr, grassDpr);
         initGrass();
     };
 
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
-        resizeTimeout = requestAnimationFrame(resizeCanvas);
+    const resizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(resizeCanvas);
     });
+    resizeObserver.observe(container);
 
     resizeCanvas();
+    requestAnimationFrame(animateGrass);
+}
 
-    function drawBlade(ctx, x, y, blade, time, color) {
-        const wind = Math.sin(time + x * 0.01) * 5;
-        const tipX = x + blade.lean + wind;
-        const tipY = y - blade.height;
-        const baseW = blade.width;
+function initGrass() {
+    grassClumps = [];
+    const style = GRASS_STYLES[currentGrassWeather] || GRASS_STYLES['CLEAR'];
+    const isMobile = grassWidth < 768;
+    const densityMultiplier = isMobile ? 0.6 : 1.0;
+    const sizeScale = isMobile ? 0.7 : 1.0;
 
+    style.layers.forEach((layer, layerIdx) => {
+        const count = Math.floor(layer.count * densityMultiplier);
+        for (let i = 0; i < count; i++) {
+            const centerX = Math.random() * grassWidth;
+            const centerY = grassHeight;
+            const bladesCount = 3 + Math.floor(Math.random() * 5);
+            const blades = [];
+
+            for (let j = 0; j < bladesCount; j++) {
+                blades.push({
+                    offsetX: (Math.random() - 0.5) * 10 * layer.scale * sizeScale,
+                    height: (layer.heightRange[0] + Math.random() * (layer.heightRange[1] - layer.heightRange[0])) * sizeScale,
+                    lean: (Math.random() - 0.5) * 10 * sizeScale,
+                    width: (2 + Math.random() * 2) * sizeScale,
+                    phase: Math.random() * Math.PI * 2,
+                    hasSeed: Math.random() < style.seedChance
+                });
+            }
+            grassClumps.push({ layerIdx, centerX, centerY, blades });
+        }
+    });
+}
+
+function drawBlade(ctx, x, y, blade, time, color) {
+    const style = GRASS_STYLES[currentGrassWeather] || GRASS_STYLES['CLEAR'];
+    const wind = Math.sin(time + x * 0.01) * style.windStrength;
+    const tipX = x + blade.lean + wind;
+    const tipY = y - blade.height;
+    const baseW = blade.width;
+
+    ctx.beginPath();
+    ctx.moveTo(x - baseW / 2, y);
+    ctx.quadraticCurveTo(x - baseW, y - blade.height / 2, tipX, tipY);
+    ctx.quadraticCurveTo(x + baseW, y - blade.height / 2, x + baseW / 2, y);
+    ctx.closePath();
+    ctx.fill();
+
+    if (blade.hasSeed) {
+        ctx.fillStyle = '#C5E1A5';
         ctx.beginPath();
-        ctx.moveTo(x - baseW / 2, y);
-        ctx.quadraticCurveTo(x - baseW, y - blade.height / 2, tipX, tipY);
-        ctx.quadraticCurveTo(x + baseW, y - blade.height / 2, x + baseW / 2, y);
-        ctx.closePath();
+        ctx.arc(tipX, tipY, 1.5, 0, Math.PI * 2);
         ctx.fill();
     }
+}
 
-    function animate(time) {
-        ctx.clearRect(0, 0, width, height);
-        const t = time * 0.002;
+function animateGrass(time) {
+    if (!grassCtx) return;
+    grassCtx.clearRect(0, 0, grassWidth, grassHeight);
+    const t = time * 0.002;
 
-        baseLayers.forEach((layer, layerIdx) => {
-            ctx.fillStyle = layer.color;
-            ctx.globalAlpha = layer.opacity;
-            
-            clumps.filter(c => c.layerIdx === layerIdx).forEach(clump => {
-                clump.blades.forEach(blade => {
-                    drawBlade(ctx, clump.centerX + blade.offsetX, clump.centerY, blade, t, layer.color);
-                });
+    const style = GRASS_STYLES[currentGrassWeather] || GRASS_STYLES['CLEAR'];
+    style.layers.forEach((layer, layerIdx) => {
+        grassCtx.fillStyle = layer.color;
+        grassCtx.globalAlpha = layer.opacity;
+        
+        grassClumps.filter(c => c.layerIdx === layerIdx).forEach(clump => {
+            clump.blades.forEach(blade => {
+                drawBlade(grassCtx, clump.centerX + blade.offsetX, clump.centerY, blade, t, layer.color);
             });
         });
+    });
 
-        requestAnimationFrame(animate);
-    }
+    requestAnimationFrame(animateGrass);
+}
 
-    requestAnimationFrame(animate);
+export function updateGrassWeather(weatherType) {
+    currentGrassWeather = weatherType;
+    initGrass();
 }
 
 function createTrees() {

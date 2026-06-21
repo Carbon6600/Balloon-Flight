@@ -232,6 +232,8 @@ body.weather-night .cloud::after {
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 
 .grass-container {
