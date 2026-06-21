@@ -9,18 +9,43 @@
 }
 
 .sun {
-    position: absolute;
-    top: 2%;
-    right: 5%;
-    width: 70px;
-    height: 70px;
-    background: radial-gradient(circle at 35% 35%, #FFF9C4, #FFB347);
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    width: 1.8em;
+    height: 1.8em;
+    margin-left: 15px;
+    background: radial-gradient(circle, #fff 0%, #ffeb3b 30%, #fbc02d 60%, #f57f17 100%);
     border-radius: 50%;
-    box-shadow: 0 0 50px rgba(255, 200, 50, 0.7);
+    box-shadow: 0 0 15px #fff, 0 0 30px #ffeb3b, 0 0 50px #fbc02d;
     cursor: pointer;
     animation: sunGlow 4s ease-in-out infinite;
     z-index: 2;
     pointer-events: auto;
+}
+
+.sun::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4em;
+    height: 4em;
+    translate: -50% -50%;
+    background: radial-gradient(circle, rgba(255, 235, 59, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: sunPulse 3s ease-in-out infinite;
+}
+
+@keyframes sunRotate {
+    from { rotate: 0deg; }
+    to { rotate: 360deg; }
+}
+
+@keyframes sunPulse {
+    0%, 100% { opacity: 0.5; scale: 0.9; }
+    50% { opacity: 1; scale: 1.1; }
 }
 
 /* ☁️ Живі хмари */
@@ -62,17 +87,30 @@
 /* 🐦 Живі пташки */
 .bird-alive {
     position: absolute;
-    font-size: 24px;
     z-index: 10;
     filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.1));
     pointer-events: none;
     will-change: transform;
-    animation: wingFlap 0.6s ease-in-out infinite;
 }
 
-@keyframes wingFlap {
-    0%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.7); }
+.bird-svg {
+    display: block;
+    overflow: visible;
+}
+
+.bird-wing {
+    animation: birdSideFlap 0.8s ease-in-out infinite;
+    transform-origin: 40% 50%;
+}
+
+.bird-wing.far {
+    animation-delay: 0.2s;
+    opacity: 0.6;
+}
+
+@keyframes birdSideFlap {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(-30deg) scale(0.9); }
 }
 
 /* 🌿 Жива природа */
@@ -127,7 +165,7 @@
     left: 0;
     width: 100%;
     height: 30%;
-    z-index: 10;
+    z-index: -1;
     pointer-events: none;
     overflow: hidden;
 }

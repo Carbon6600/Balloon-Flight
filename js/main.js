@@ -203,7 +203,7 @@ function renderLeaderboard(mode) {
         // Статус (живий запис чи фінальний)
         let statusText = '';
         if (isMe) {
-            statusText = ' <span class="status-online">🟢 Онлайн</span>';
+            statusText = ' <span class="status-online">🟢</span>';
         } else if (s.isLive) {
             statusText = ' 🔴';
         }

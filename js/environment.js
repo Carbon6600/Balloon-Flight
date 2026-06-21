@@ -53,7 +53,7 @@ function init2DGrass() {
             const count = Math.floor(layer.count * densityMultiplier);
             for (let i = 0; i < count; i++) {
                 const centerX = Math.random() * width;
-                const centerY = height - (Math.random() * 20);
+                const centerY = height; // Anchor strictly to the bottom
                 const bladesCount = 3 + Math.floor(Math.random() * 5);
                 const blades = [];
 
@@ -206,15 +206,36 @@ export function spawnBird(gameState) {
     const container = document.getElementById('birds-container');
     if (!container) return;
     
-    const emojis = ['🐦', '🕊️', '🦅', '🦆'];
-    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-    
     const birdEl = document.createElement('div');
     birdEl.className = 'bird-alive';
-    birdEl.textContent = emoji;
     
     const size = 18 + Math.random() * 12;
-    birdEl.style.fontSize = size + 'px';
+    birdEl.style.width = size + 'px';
+    birdEl.style.height = size + 'px';
+    
+    birdEl.innerHTML = `
+        <svg viewBox="0 0 120 60" width="100%" height="100%" class="bird-svg">
+            <!-- Legs -->
+            <path d="M30,35 L10,40" stroke="#FF4500" stroke-width="1.5" fill="none" />
+            <path d="M30,38 L10,45" stroke="#FF4500" stroke-width="1.5" fill="none" />
+            
+            <!-- Far Wing -->
+            <g class="bird-wing far">
+                <path d="M45,32 Q60,0 90,30 Z" fill="#DDD" />
+            </g>
+            
+            <!-- Body & Neck -->
+            <path class="bird-body" d="M30,35 Q50,30 65,30 Q75,30 80,20 L82,20 L82,24 Q75,35 65,35 L30,35" fill="#FFFFFF" />
+            
+            <!-- Beak -->
+            <path class="bird-beak" d="M82,22 L110,24 L82,26 Z" fill="#FF0000" />
+            
+            <!-- Near Wing -->
+            <g class="bird-wing near">
+                <path d="M45,32 Q60,-10 90,30 Z" fill="#FFFFFF" />
+            </g>
+        </svg>
+    `;
     
     const startY = 5 + Math.random() * 30; // Висота від 5% до 35%
     const speed = 0.5 + Math.random() * 1.5;
