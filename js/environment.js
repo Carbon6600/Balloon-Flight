@@ -202,45 +202,66 @@ function createTrees() {
     });
 }
 
+const BIRD_TYPES = {
+    stork: {
+        svg: `
+            <svg viewBox="0 0 120 60" width="100%" height="100%" class="bird-svg">
+                <path d="M30,35 L10,40" stroke="#FF4500" stroke-width="1.5" fill="none" />
+                <path d="M30,38 L10,45" stroke="#FF4500" stroke-width="1.5" fill="none" />
+                <g class="bird-wing far">
+                    <path d="M45,32 Q60,0 90,30 Z" fill="#DDD" />
+                </g>
+                <path class="bird-body" d="M30,35 Q50,30 65,30 Q75,30 80,20 L82,20 L82,24 Q75,35 65,35 L30,35" fill="#FFFFFF" />
+                <path class="bird-beak" d="M82,22 L110,24 L82,26 Z" fill="#FF0000" />
+                <g class="bird-wing near">
+                    <path d="M45,32 Q60,-10 90,30 Z" fill="#FFFFFF" />
+                </g>
+            </svg>
+        `,
+        speedRange: [0.5, 2.0],
+        amplitudeRange: [10, 40]
+    },
+    parrot: {
+        svg: `
+            <svg viewBox="0 0 120 60" width="100%" height="100%" class="bird-svg">
+                <path d="M30,35 L10,45 L15,50 L30,40" fill="#0000FF" />
+                <g class="bird-wing far">
+                    <path d="M45,32 Q60,0 90,30 Z" fill="#0000CC" />
+                    <path d="M60,10 L70,15 L60,20 Z" fill="#FFFF00" />
+                </g>
+                <path class="bird-body" d="M30,35 Q50,30 60,35 Q65,30 65,25 Q60,20 55,20 Q50,20 45,25 L30,35" fill="#FF0000" />
+                <path class="bird-beak" d="M65,25 Q68,25 68,30 Q65,32 63,30 Z" fill="#EEDD82" />
+                <g class="bird-wing near">
+                    <path d="M45,32 Q60,-10 90,30 Z" fill="#0000FF" />
+                    <path d="M60,-10 L70,0 L60,10 Z" fill="#FFFF00" />
+                </g>
+            </svg>
+        `,
+        speedRange: [0.8, 2.5],
+        amplitudeRange: [15, 50]
+    }
+};
+
 export function spawnBird(gameState) {
     const container = document.getElementById('birds-container');
     if (!container) return;
     
+    const types = Object.keys(BIRD_TYPES);
+    const typeKey = types[Math.floor(Math.random() * types.length)];
+    const birdType = BIRD_TYPES[typeKey];
+    
     const birdEl = document.createElement('div');
-    birdEl.className = 'bird-alive';
+    birdEl.className = `bird-alive bird-${typeKey}`;
+    birdEl.innerHTML = birdType.svg;
     
     const size = 18 + Math.random() * 12;
     birdEl.style.width = size + 'px';
     birdEl.style.height = size + 'px';
     
-    birdEl.innerHTML = `
-        <svg viewBox="0 0 120 60" width="100%" height="100%" class="bird-svg">
-            <!-- Legs -->
-            <path d="M30,35 L10,40" stroke="#FF4500" stroke-width="1.5" fill="none" />
-            <path d="M30,38 L10,45" stroke="#FF4500" stroke-width="1.5" fill="none" />
-            
-            <!-- Far Wing -->
-            <g class="bird-wing far">
-                <path d="M45,32 Q60,0 90,30 Z" fill="#DDD" />
-            </g>
-            
-            <!-- Body & Neck -->
-            <path class="bird-body" d="M30,35 Q50,30 65,30 Q75,30 80,20 L82,20 L82,24 Q75,35 65,35 L30,35" fill="#FFFFFF" />
-            
-            <!-- Beak -->
-            <path class="bird-beak" d="M82,22 L110,24 L82,26 Z" fill="#FF0000" />
-            
-            <!-- Near Wing -->
-            <g class="bird-wing near">
-                <path d="M45,32 Q60,-10 90,30 Z" fill="#FFFFFF" />
-            </g>
-        </svg>
-    `;
-    
-    const startY = 5 + Math.random() * 30; // Висота від 5% до 35%
-    const speed = 0.5 + Math.random() * 1.5;
-    const amplitude = 10 + Math.random() * 30; // Амплітуда гойдання
-    const frequency = 0.02 + Math.random() * 0.03; // Частота гойдання
+    const startY = 5 + Math.random() * 30;
+    const speed = birdType.speedRange[0] + Math.random() * (birdType.speedRange[1] - birdType.speedRange[0]);
+    const amplitude = birdType.amplitudeRange[0] + Math.random() * (birdType.amplitudeRange[1] - birdType.amplitudeRange[0]);
+    const frequency = 0.02 + Math.random() * 0.03;
     
     birdEl.style.top = startY + '%';
     birdEl.style.left = '-50px';
