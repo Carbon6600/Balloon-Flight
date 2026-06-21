@@ -99,6 +99,13 @@ function updateWeather() {
 
 // ==================== ІНІЦІАЛІЗАЦІЯ ====================
 window.onload = () => {
+    // Фікс висоти для iOS Safari
+    function resetHeight() {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
+    window.addEventListener('resize', resetHeight);
+    resetHeight();
+
     // Перевіряємо Firebase
     setTimeout(() => {
         if (window.isFirebaseReady && window.firebaseDB) {

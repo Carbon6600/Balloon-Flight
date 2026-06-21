@@ -6,6 +6,9 @@
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 :root {
@@ -26,8 +29,8 @@
 
 body {
     font-family: 'Nunito', sans-serif;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+    min-height: -webkit-fill-available;
     overflow: hidden;
     background-size: 400% 400%;
     animation: skyGradient 15s ease infinite;
@@ -75,8 +78,7 @@ body.weather-foggy {
     position: relative;
     z-index: 20;
     display: flex;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
     width: 100%;
     padding: 10px;
     gap: 10px;
@@ -299,7 +301,7 @@ body.weather-foggy {
     margin-bottom: 10px;
     background: var(--bg-light);
     backdrop-filter: blur(12px);
-    padding: 12px 25px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 25px 12px;
     border-radius: 50px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     border: 2px solid rgba(255,255,255,0.8);
@@ -460,6 +462,7 @@ body.weather-foggy {
     justify-content: center;
     width: 100%;
     max-width: 500px;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
 .control-btn {
