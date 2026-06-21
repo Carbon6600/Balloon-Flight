@@ -177,6 +177,24 @@ body {
     box-shadow: 0 4px 12px rgba(102,126,234,0.2);
 }
 
+.leaderboard-item-me {
+    background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%) !important;
+    border: 2px solid #9F7AEA !important;
+    box-shadow: 0 4px 12px rgba(159, 122, 234, 0.3) !important;
+    transform: scale(1.02);
+}
+
+.status-online {
+    font-size: 0.8em;
+    font-weight: 900;
+    color: #2F855A;
+    background: #C6F6D5;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    border: 1px solid #9AE6B4;
+}
+
 .rank-medal {
     font-size: 2em;
     width: 45px;
@@ -236,18 +254,6 @@ body {
     font-weight: 700;
 }
 
-.connection-status {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 8px 18px;
-    border-radius: 40px;
-    font-weight: 900;
-    z-index: 100;
-    border: 2px solid white;
-}
-.connection-online { background: #48BB78; color: white; }
-.connection-offline { background: #FC8181; color: white; }
 
 /* ✦✦✦ СТИЛІ ГРИ ✦✦✦ */
 .main-title {

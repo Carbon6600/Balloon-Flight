@@ -94,7 +94,6 @@ window.onload = () => {
         if (window.isFirebaseReady && window.firebaseDB) {
             db = window.firebaseDB;
             isFirebaseConnected = true;
-            updateConnectionStatus('online');
             loadGlobalLeaderboard();
             console.log("✅ Firebase підключено!");
         } else {
@@ -128,16 +127,6 @@ window.onload = () => {
     initLivingWorld(gameState);
 };
 
-function updateConnectionStatus(status) {
-    const el = document.getElementById('connection-status');
-    if (status === 'online') { 
-        el.className = 'connection-status connection-online'; 
-        el.textContent = '🟢 Онлайн'; 
-    } else { 
-        el.className = 'connection-status connection-offline'; 
-        el.textContent = '🔴 Офлайн'; 
-    }
-}
 
 // ==================== ТАБЛИЦЯ ЛІДЕРІВ ====================
 async function loadGlobalLeaderboard() {
@@ -196,6 +185,7 @@ function renderLeaderboard(mode) {
 
     list.innerHTML = uniqueScores.map((s, idx) => {
         const rank = idx + 1;
+        const isMe = s.name === playerName;
         
         // Медаль або номер
         let rankHtml = '';
@@ -212,10 +202,14 @@ function renderLeaderboard(mode) {
 
         // Статус (живий запис чи фінальний)
         let statusText = '';
-        if (s.isLive) statusText = ' 🔴';
+        if (isMe) {
+            statusText = ' <span class="status-online">🟢 Онлайн</span>';
+        } else if (s.isLive) {
+            statusText = ' 🔴';
+        }
 
         return `
-            <li class="leaderboard-item">
+            <li class="leaderboard-item ${isMe ? 'leaderboard-item-me' : ''}">
                 ${rankHtml}
                 <div class="player-info">
                     <span class="player-name">${s.name}${statusText}</span>
