@@ -29,26 +29,29 @@ function init2DGrass() {
     const ctx = canvas.getContext('2d');
     container.appendChild(canvas);
 
-    let width, height;
+    let width, height, dpr;
     let clumps = [];
     let mountains = [];
 
-    const layers = [
+    const baseLayers = [
         { color: '#2D4A2D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 }, // Far
         { color: '#3B5B32', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 }, // Mid
         { color: '#5A8A5A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 }, // Near
     ];
 
     function initMountains() {
-        // Mountains are currently handled by CSS, but we implement the logic here
-        // to satisfy the requirement and allow for future canvas-based hills.
         mountains = [];
     }
 
     function initGrass() {
         clumps = [];
-        layers.forEach((layer, layerIdx) => {
-            for (let i = 0; i < layer.count; i++) {
+        const isMobile = width < 768;
+        const densityMultiplier = isMobile ? 0.6 : 1.0;
+        const sizeScale = isMobile ? 0.7 : 1.0;
+
+        baseLayers.forEach((layer, layerIdx) => {
+            const count = Math.floor(layer.count * densityMultiplier);
+            for (let i = 0; i < count; i++) {
                 const centerX = Math.random() * width;
                 const centerY = height - (Math.random() * 20);
                 const bladesCount = 3 + Math.floor(Math.random() * 5);
@@ -56,10 +59,10 @@ function init2DGrass() {
 
                 for (let j = 0; j < bladesCount; j++) {
                     blades.push({
-                        offsetX: (Math.random() - 0.5) * 10 * layer.scale,
-                        height: layer.heightRange[0] + Math.random() * (layer.heightRange[1] - layer.heightRange[0]),
-                        lean: (Math.random() - 0.5) * 10,
-                        width: 2 + Math.random() * 2,
+                        offsetX: (Math.random() - 0.5) * 10 * layer.scale * sizeScale,
+                        height: (layer.heightRange[0] + Math.random() * (layer.heightRange[1] - layer.heightRange[0])) * sizeScale,
+                        lean: (Math.random() - 0.5) * 10 * sizeScale,
+                        width: (2 + Math.random() * 2) * sizeScale,
                         phase: Math.random() * Math.PI * 2
                     });
                 }
@@ -70,8 +73,14 @@ function init2DGrass() {
 
     const resizeCanvas = () => {
         const rect = container.getBoundingClientRect();
-        width = canvas.width = rect.width;
-        height = canvas.height = rect.height;
+        dpr = window.devicePixelRatio || 1;
+        
+        width = rect.width;
+        height = rect.height;
+        
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
         
         initMountains();
         initGrass();
@@ -103,7 +112,7 @@ function init2DGrass() {
         ctx.clearRect(0, 0, width, height);
         const t = time * 0.002;
 
-        layers.forEach((layer, layerIdx) => {
+        baseLayers.forEach((layer, layerIdx) => {
             ctx.fillStyle = layer.color;
             ctx.globalAlpha = layer.opacity;
             
@@ -134,14 +143,15 @@ function createTrees() {
         // Очищаємо старі дерева тільки в цьому шарі
         container.querySelectorAll('.tree').forEach(t => t.remove());
 
-        const treeCount = 3 + Math.floor(Math.random() * 3);
+        const isMobile = window.innerWidth < 768;
+        const treeCount = isMobile ? (1 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 3));
         for (let i = 0; i < treeCount; i++) {
             const tree = document.createElement('div');
             tree.className = 'tree';
             
             // Визначаємо позицію X (від 10% до 90%, щоб не вилазили за краї)
             const leftPercent = 10 + Math.random() * 80;
-            const scale = 0.6 + Math.random() * 0.6;
+            const scale = isMobile ? (0.4 + Math.random() * 0.4) : (0.6 + Math.random() * 0.6);
             
             // Розрахунок висоти гори в цій точці (напівеліпс)
             const xPrime = (leftPercent - 50) / 50;
