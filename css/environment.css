@@ -93,10 +93,10 @@
 
 .layer-far {
     height: 35%;
-    background: linear-gradient(180deg, #8BA8A8 0%, #6B8E8E 100%); /* Bluish fog / Atmospheric perspective */
-    border-bottom: 4px solid #5A7A7A;
+    background: linear-gradient(180deg, #4A6B4A 0%, #2D4A2D 100%); /* Darker green for solid fill */
+    border-bottom: 4px solid #253D25;
     border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-    opacity: 0.6;
+    opacity: 1;
     z-index: 1;
     transform: scaleX(1.6);
     filter: blur(1px);
@@ -208,7 +208,8 @@
 .tree-crown {
     position: relative;
     width: 80px;
-    height: 80px;
+    height: 70px;
+    margin-bottom: -10px; /* Overlap with trunk to remove gap */
     animation: leafSway 4s ease-in-out infinite;
     z-index: 2;
 }
@@ -216,8 +217,9 @@
 .crown-cluster {
     position: absolute;
     background: var(--success);
-    border: 3px solid var(--lineart);
+    border: 2px solid var(--lineart);
     border-radius: 50%;
+    filter: blur(0.5px);
 }
 
 .cluster-highlight {

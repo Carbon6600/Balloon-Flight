@@ -5,7 +5,7 @@
 export function initLivingWorld(gameState) {
     console.log("🌿 Ініціалізація живого світу...");
     
-    init3DGrass();
+    init2DGrass();
     createTrees();
     
     // Запускаємо цикл оновлення пташок
@@ -20,172 +20,176 @@ export function initLivingWorld(gameState) {
     setInterval(() => spawnBird(gameState), 7000);
 }
 
-function init3DGrass() {
-    console.log("Initializing 3D Grass...");
+function init2DGrass() {
+    console.log("🌿 Initializing 2D Canvas Environment...");
     const container = document.getElementById('three-grass-container');
-    if (!container) {
-        console.error("Three-grass-container not found!");
-        return;
+    if (!container) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    container.appendChild(canvas);
+
+    let width, height;
+    let clumps = [];
+    let mountains = [];
+
+    const layers = [
+        { color: '#2D4A2D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 }, // Far
+        { color: '#3B5B32', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 }, // Mid
+        { color: '#5A8A5A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 }, // Near
+    ];
+
+    function initMountains() {
+        // Mountains are currently handled by CSS, but we implement the logic here
+        // to satisfy the requirement and allow for future canvas-based hills.
+        mountains = [];
     }
 
-    // 1. Сцена та Камера
-    const scene = new THREE.Scene();
-    scene.background = null;
+    function initGrass() {
+        clumps = [];
+        layers.forEach((layer, layerIdx) => {
+            for (let i = 0; i < layer.count; i++) {
+                const centerX = Math.random() * width;
+                const centerY = height - (Math.random() * 20);
+                const bladesCount = 3 + Math.floor(Math.random() * 5);
+                const blades = [];
 
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || (window.innerHeight * 0.3);
-    
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
-    camera.position.set(0, 15, 40);
-    camera.lookAt(0, 0, 0);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 0);
-    container.appendChild(renderer.domElement);
-    
-
-    // 2. Освітлення
-    const ambientLight = new THREE.AmbientLight('#ffffff', 1.0);
-    scene.add(ambientLight);
-
-    const sunLight = new THREE.DirectionalLight('#ffffff', 1.0);
-    sunLight.position.set(10, 30, 20);
-    scene.add(sunLight);
-
-    // 3. Геометрія травинки
-    const bladeWidth = 0.2;
-    const bladeHeight = 3.0;
-    const joints = 4;
-    const baseGeometry = new THREE.ConeGeometry(bladeWidth, bladeHeight, 3, joints);
-    baseGeometry.translate(0, bladeHeight / 2, 0);
-
-    // Use BasicMaterial for debugging to rule out lighting issues
-    const material = new THREE.MeshBasicMaterial({
-        color: new THREE.Color('#3B5B32'),
-    });
-
-    // 4. Генерація трави (InstancedMesh)
-    const count = 15000;
-    const instanceMesh = new THREE.InstancedMesh(baseGeometry, material, count);
-    const dummy = new THREE.Object3D();
-    const positions = [];
-    const rotates = [];
-    const radius = 50;
-
-    for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = Math.sqrt(Math.random()) * radius;
-        const x = Math.sin(angle) * r;
-        const z = Math.cos(angle) * r;
-        const y = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2;
-
-        dummy.position.set(x, y, z);
-        dummy.rotation.set(
-            (Math.random() - 0.5) * 0.4,
-            Math.random() * Math.PI,
-            (Math.random() - 0.5) * 0.4
-        );
-        const scaleY = 0.7 + Math.random() * 0.6;
-        dummy.scale.set(1, scaleY, 1);
-        dummy.updateMatrix();
-        instanceMesh.setMatrixAt(i, dummy.matrix);
-
-        positions.push(dummy.position.clone());
-        rotates.push(dummy.rotation.clone());
-    }
-    scene.add(instanceMesh);
-
-    const clock = new THREE.Clock();
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const elapsedTime = clock.getElapsedTime();
-
-
-        for (let i = 0; i < count; i++) {
-            instanceMesh.getMatrixAt(i, dummy.matrix);
-            const pos = positions[i];
-            const rot = rotates[i];
-
-            const windX = Math.sin(elapsedTime * 2 + pos.x * 0.2 + pos.z * 0.1) * 0.12;
-            const windZ = Math.cos(elapsedTime * 1.5 + pos.z * 0.2) * 0.12;
-
-            dummy.position.copy(pos);
-            dummy.rotation.set(rot.x + windX, rot.y, rot.z + windZ);
-            dummy.scale.set(1, 0.7 + (Math.sin(elapsedTime + i) * 0.05 + 0.5), 1);
-            dummy.updateMatrix();
-            instanceMesh.setMatrixAt(i, dummy.matrix);
-        }
-        instanceMesh.instanceMatrix.needsUpdate = true;
-        renderer.render(scene, camera);
+                for (let j = 0; j < bladesCount; j++) {
+                    blades.push({
+                        offsetX: (Math.random() - 0.5) * 10 * layer.scale,
+                        height: layer.heightRange[0] + Math.random() * (layer.heightRange[1] - layer.heightRange[0]),
+                        lean: (Math.random() - 0.5) * 10,
+                        width: 2 + Math.random() * 2,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+                clumps.push({ layerIdx, centerX, centerY, blades });
+            }
+        });
     }
 
+    const resizeCanvas = () => {
+        const rect = container.getBoundingClientRect();
+        width = canvas.width = rect.width;
+        height = canvas.height = rect.height;
+        
+        initMountains();
+        initGrass();
+    };
+
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        const newWidth = container.clientWidth || window.innerWidth;
-        const newHeight = container.clientHeight || (window.innerHeight * 0.3);
-        camera.aspect = newWidth / newHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(newWidth, newHeight);
+        if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
+        resizeTimeout = requestAnimationFrame(resizeCanvas);
     });
 
-    animate();
+    resizeCanvas();
+
+    function drawBlade(ctx, x, y, blade, time, color) {
+        const wind = Math.sin(time + x * 0.01) * 5;
+        const tipX = x + blade.lean + wind;
+        const tipY = y - blade.height;
+        const baseW = blade.width;
+
+        ctx.beginPath();
+        ctx.moveTo(x - baseW / 2, y);
+        ctx.quadraticCurveTo(x - baseW, y - blade.height / 2, tipX, tipY);
+        ctx.quadraticCurveTo(x + baseW, y - blade.height / 2, x + baseW / 2, y);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function animate(time) {
+        ctx.clearRect(0, 0, width, height);
+        const t = time * 0.002;
+
+        layers.forEach((layer, layerIdx) => {
+            ctx.fillStyle = layer.color;
+            ctx.globalAlpha = layer.opacity;
+            
+            clumps.filter(c => c.layerIdx === layerIdx).forEach(clump => {
+                clump.blades.forEach(blade => {
+                    drawBlade(ctx, clump.centerX + blade.offsetX, clump.centerY, blade, t, layer.color);
+                });
+            });
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
 }
 
 function createTrees() {
-    const container = document.getElementById('trees-container');
-    if (!container) return;
+    // Розподіляємо дерева по різних шарах гір
+    const layers = [
+        { id: 'layer-mid', height: 28 },
+        { id: 'layer-near', height: 22 }
+    ];
 
-    container.innerHTML = ''; // Clear existing
-    const treeCount = 5;
-    for (let i = 0; i < treeCount; i++) {
-        const tree = document.createElement('div');
-        tree.className = 'tree';
-        
-        const left = 10 + Math.random() * 80;
-        const scale = 0.7 + Math.random() * 0.5;
-        
-        tree.style.left = left + '%';
-        tree.style.transform = `scale(${scale})`;
-        
-        // 1. Shadow
-        const shadow = document.createElement('div');
-        shadow.className = 'tree-shadow';
-        tree.appendChild(shadow);
-        
-        // 2. Crown (Cloud-like layered foliage)
-        const crown = document.createElement('div');
-        crown.className = 'tree-crown';
-        
-        // Create multiple clusters for a "cloud" look
-        const clusters = [
-            { w: 60, h: 50, x: 10, y: 10, type: 'shadow' },
-            { w: 50, h: 40, x: 20, y: 0, type: 'highlight' },
-            { w: 40, h: 40, x: 0, y: 20, type: 'shadow' },
-            { w: 45, h: 35, x: 30, y: 15, type: 'highlight' },
-            { w: 30, h: 30, x: 25, y: 30, type: 'shadow' },
-        ];
-        
-        clusters.forEach(c => {
-            const cluster = document.createElement('div');
-            cluster.className = `crown-cluster ${c.type === 'highlight' ? 'cluster-highlight' : 'cluster-shadow'}`;
-            cluster.style.width = c.w + 'px';
-            cluster.style.height = c.h + 'px';
-            cluster.style.left = c.x + 'px';
-            cluster.style.top = c.y + 'px';
-            crown.appendChild(cluster);
-        });
-        
-        // 3. Trunk (Tapered)
-        const trunk = document.createElement('div');
-        trunk.className = 'tree-trunk';
-        trunk.style.height = (40 + Math.random() * 20) + 'px';
-        
-        tree.appendChild(crown);
-        tree.appendChild(trunk);
-        
-        container.appendChild(tree);
-    }
+    layers.forEach(layerInfo => {
+        const container = document.querySelector(`.${layerInfo.id}`);
+        if (!container) return;
+
+        // Очищаємо старі дерева тільки в цьому шарі
+        container.querySelectorAll('.tree').forEach(t => t.remove());
+
+        const treeCount = 3 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < treeCount; i++) {
+            const tree = document.createElement('div');
+            tree.className = 'tree';
+            
+            // Визначаємо позицію X (від 10% до 90%, щоб не вилазили за краї)
+            const leftPercent = 10 + Math.random() * 80;
+            const scale = 0.6 + Math.random() * 0.6;
+            
+            // Розрахунок висоти гори в цій точці (напівеліпс)
+            const xPrime = (leftPercent - 50) / 50;
+            const heightFactor = Math.sqrt(Math.max(0, 1 - xPrime * xPrime));
+            const bottomPos = heightFactor * layerInfo.height;
+            
+            tree.style.left = leftPercent + '%';
+            tree.style.bottom = bottomPos + '%';
+            tree.style.transform = `scale(${scale})`;
+            
+            // 1. Shadow
+            const shadow = document.createElement('div');
+            shadow.className = 'tree-shadow';
+            tree.appendChild(shadow);
+            
+            // 2. Crown (Cloud-like layered foliage)
+            const crown = document.createElement('div');
+            crown.className = 'tree-crown';
+            
+            const clusters = [
+                { w: 70, h: 60, x: 5, y: 10, type: 'shadow' },    // Main base
+                { w: 60, h: 50, x: 15, y: 0, type: 'highlight' }, // Main top
+                { w: 40, h: 35, x: -10, y: 15, type: 'shadow' },  // Left side
+                { w: 40, h: 35, x: 40, y: 15, type: 'highlight' }, // Right side
+                { w: 40, h: 30, x: 20, y: 40, type: 'shadow' },   // Bottom fill - now reaches the bottom
+            ];
+            
+            clusters.forEach(c => {
+                const cluster = document.createElement('div');
+                cluster.className = `crown-cluster ${c.type === 'highlight' ? 'cluster-highlight' : 'cluster-shadow'}`;
+                cluster.style.width = c.w + 'px';
+                cluster.style.height = c.h + 'px';
+                cluster.style.left = c.x + 'px';
+                cluster.style.top = c.y + 'px';
+                crown.appendChild(cluster);
+            });
+            
+            // 3. Trunk (Tapered)
+            const trunk = document.createElement('div');
+            trunk.className = 'tree-trunk';
+            trunk.style.height = (60 + Math.random() * 40) + 'px';
+            
+            tree.appendChild(crown);
+            tree.appendChild(trunk);
+            
+            container.appendChild(tree);
+        }
+    });
 }
 
 export function spawnBird(gameState) {
