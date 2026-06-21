@@ -86,6 +86,7 @@ let isFirebaseConnected = false;
 // Таблиця лідерів
 let allScores = [];
 let currentTab = 'all';
+let isUserSynced = false;
 
 // ==================== ІНІЦІАЛІЗАЦІЯ ====================
 window.onload = () => {
@@ -145,6 +146,13 @@ async function loadGlobalLeaderboard() {
             
             allScores = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
             renderLeaderboard(currentTab);
+            
+            // Синхронізуємо користувача при першому завантаженні
+            if (!isUserSynced && playerName) {
+                syncUserWithLeaderboard().then(() => {
+                    isUserSynced = true;
+                });
+            }
             
             // Оновлюємо кількість унікальних гравців
             const uniquePlayers = new Set(allScores.map(s => s.name)).size;
@@ -337,13 +345,47 @@ async function clearCurrentLeaderboardEntry() {
 
 
 // ==================== ОСНОВНА ЛОГІКА ====================
-function savePlayerName() {
+async function syncUserWithLeaderboard() {
+    if (!db || !playerName) return;
+    try {
+        const { ref, get, push, set } = window.firebaseRefs;
+        
+        // Шукаємо користувача в існуючих даних
+        const existingUser = allScores.find(s => s.name === playerName);
+        
+        if (existingUser) {
+            gameState.currentLeaderboardId = existingUser.id;
+            console.log(`✅ Користувача ${playerName} знайдено в таблиці. ID: ${gameState.currentLeaderboardId}`);
+        } else {
+            // Створюємо новий запис з 0 очок
+            const leaderboardRef = ref(db, 'leaderboard');
+            const newRef = push(leaderboardRef);
+            await set(newRef, {
+                name: playerName,
+                score: 0,
+                mode: 'single',
+                isLive: true,
+                createdAt: window.firebaseRefs.serverTimestamp()
+            });
+            gameState.currentLeaderboardId = newRef.key;
+            console.log(`✨ Створено новий запис для ${playerName}. ID: ${gameState.currentLeaderboardId}`);
+        }
+        
+        // Оновлюємо відображення таблиці, щоб підсвітити гравця
+        renderLeaderboard(currentTab);
+    } catch (e) {
+        console.error("Error syncing user with leaderboard:", e);
+    }
+}
+
+async function savePlayerName() {
     const input = document.getElementById('player-name');
     if (input.value.trim()) {
         playerName = input.value.trim();
         localStorage.setItem('mathBalloonPlayer', playerName);
         document.getElementById('name-modal').style.display = 'none';
         showNotification('Вітаємо!', `Приємної гри, ${playerName}!`, 'success');
+        await syncUserWithLeaderboard();
     }
 }
 
