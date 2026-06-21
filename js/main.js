@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { initLivingWorld } from './environment.js';
+import { WeatherManager } from './weather.js';
 import { 
     getDatabase, 
     ref, 
@@ -88,6 +89,14 @@ let allScores = [];
 let currentTab = 'all';
 let isUserSynced = false;
 
+const weatherManager = new WeatherManager();
+
+function updateWeather() {
+    const weathers = ['CLEAR', 'RAINY', 'STORMY', 'SNOWY', 'FOGGY'];
+    const randomWeather = weathers[Math.floor(Math.random() * weathers.length)];
+    weatherManager.setWeather(randomWeather);
+}
+
 // ==================== ІНІЦІАЛІЗАЦІЯ ====================
 window.onload = () => {
     // Перевіряємо Firebase
@@ -126,6 +135,10 @@ window.onload = () => {
 
     // Ініціалізуємо живий світ
     initLivingWorld(gameState);
+    
+    // Встановлюємо початкову погоду та запускаємо цикл зміни
+    updateWeather();
+    setInterval(updateWeather, 180000); // Зміна погоди кожні 3 хвилини
 };
 
 
