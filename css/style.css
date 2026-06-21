@@ -29,10 +29,38 @@ body {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-    background: linear-gradient(145deg, #87CEEB, #B0E0FF, #FFE4B5);
     background-size: 400% 400%;
     animation: skyGradient 15s ease infinite;
     touch-action: manipulation;
+    transition: background 2s ease-in-out;
+}
+
+body.weather-clear {
+    background: linear-gradient(145deg, #87CEEB, #B0E0FF, #FFE4B5);
+}
+
+body.weather-cloudy {
+    background: linear-gradient(145deg, #B0C4DE, #B0C4DE, #D3D3D3);
+}
+
+body.weather-rainy {
+    background: linear-gradient(145deg, #607D8B, #78909C, #B0BEC5);
+}
+
+body.weather-stormy {
+    background: linear-gradient(145deg, #37474F, #263238, #455A64);
+}
+
+body.weather-snowy {
+    background: linear-gradient(145deg, #E0F7FA, #F5F5F5, #E0F7FA);
+}
+
+body.weather-night {
+    background: linear-gradient(145deg, #1A237E, #0D47A1, #000051);
+}
+
+body.weather-foggy {
+    background: linear-gradient(145deg, #B0BEC5, #CFD8DC, #ECEFF1);
 }
 
 @keyframes skyGradient {

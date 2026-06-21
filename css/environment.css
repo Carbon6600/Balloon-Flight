@@ -8,20 +8,23 @@
     z-index: 1;
 }
 
-.sun {
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
-    width: 1.8em;
-    height: 1.8em;
-    margin-left: 15px;
-    background: radial-gradient(circle, #fff 0%, #ffeb3b 30%, #fbc02d 60%, #f57f17 100%);
+.sun, .moon {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    box-shadow: 0 0 15px #fff, 0 0 30px #ffeb3b, 0 0 50px #fbc02d;
     cursor: pointer;
-    animation: sunGlow 4s ease-in-out infinite;
     z-index: 2;
     pointer-events: auto;
+    transition: all 3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sun {
+    background: radial-gradient(circle, #fff 0%, #ffeb3b 30%, #fbc02d 60%, #f57f17 100%);
+    box-shadow: 0 0 15px #fff, 0 0 30px #ffeb3b, 0 0 50px #fbc02d;
+    animation: sunGlow 4s ease-in-out infinite;
 }
 
 .sun::after {
@@ -36,6 +39,29 @@
     border-radius: 50%;
     z-index: -1;
     animation: sunPulse 3s ease-in-out infinite;
+}
+
+.moon {
+    background: radial-gradient(circle at 30% 30%, #fdfdfd 0%, #d1d1d1 70%, #a0a0a0 100%);
+    box-shadow: 0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(200,200,255,0.3);
+    animation: moonRotate 10s linear infinite;
+}
+
+.moon::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 60%;
+    width: 40%;
+    height: 40%;
+    background: rgba(0,0,0,0.15);
+    border-radius: 50%;
+    filter: blur(2px);
+}
+
+@keyframes moonRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 @keyframes sunRotate {
@@ -63,6 +89,7 @@
     filter: blur(2px);
     opacity: 0.8;
     box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    transition: background 2s ease, opacity 2s ease;
 }
 
 .cloud::before, .cloud::after {
@@ -70,6 +97,18 @@
     position: absolute;
     background: white;
     border-radius: 50%;
+    transition: background 2s ease;
+}
+
+body.weather-night .cloud {
+    background: #4a5568;
+    opacity: 0.4;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+body.weather-night .cloud::before,
+body.weather-night .cloud::after {
+    background: #4a5568;
 }
 
 .cloud::before { width: 50%; height: 100%; top: -30%; left: 15%; }
@@ -82,6 +121,31 @@
 @keyframes floatCloud {
     from { transform: translateX(0); }
     to { transform: translateX(calc(100vw + 300px)); }
+}
+
+/* 🌟 Зорі */
+.stars-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 2s ease;
+    animation: twinkle var(--duration) ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
 }
 
 /* 🐦 Живі пташки */

@@ -1,6 +1,8 @@
 export class WeatherManager {
     constructor() {
         this.overlay = document.getElementById('weather-overlay');
+        this.celestialBody = document.getElementById('sun');
+        this.starsContainer = document.getElementById('stars-container');
         this.currentWeather = 'CLEAR';
         this.particles = [];
         this.particleInterval = null;
@@ -11,6 +13,12 @@ export class WeatherManager {
         console.log(`🌤️ Weather changing to: ${type}`);
         this.clearWeather();
         this.currentWeather = type;
+
+        const weatherClass = `weather-${type.toLowerCase()}`;
+        
+        // Оновлюємо фон body
+        document.body.className = '';
+        document.body.classList.add(weatherClass);
 
         // Додаємо відповідний клас до оверлею
         if (type !== 'CLEAR') {
@@ -33,6 +41,13 @@ export class WeatherManager {
     clearWeather() {
         this.currentWeather = 'CLEAR';
         this.overlay.className = '';
+        document.body.className = '';
+        document.body.classList.add('weather-clear');
+        
+        // Видаляємо зорі
+        if (this.starsContainer) {
+            this.starsContainer.innerHTML = '';
+        }
         
         // Видаляємо всі частинки
         this.particles.forEach(p => p.remove());
@@ -70,6 +85,68 @@ export class WeatherManager {
                 this.particles = this.particles.filter(p => p !== particle);
             }, duration * 1000);
         }, type === 'rain' ? 20 : 100);
+    }
+
+    updateCelestialBody(type) {
+        if (!this.celestialBody) return;
+
+        if (type === 'NIGHT') {
+            // Анімація заходу сонця
+            this.celestialBody.style.top = '120%';
+            this.celestialBody.style.opacity = '0';
+            
+            setTimeout(() => {
+                this.celestialBody.className = 'moon';
+                this.celestialBody.style.top = '50px';
+                this.celestialBody.style.opacity = '1';
+            }, 1500);
+        } else {
+            // Анімація сходу сонця
+            this.celestialBody.style.top = '120%';
+            this.celestialBody.style.opacity = '0';
+            
+            setTimeout(() => {
+                this.celestialBody.className = 'sun';
+                this.celestialBody.style.top = '50px';
+                this.celestialBody.style.opacity = '1';
+            }, 1500);
+        }
+    }
+
+    manageStars(type) {
+        if (!this.starsContainer) return;
+        
+        this.starsContainer.innerHTML = '';
+        
+        if (type === 'NIGHT') {
+            // Кількість зірок залежить від хмарності
+            let starCount = 100;
+            if (this.currentWeather === 'CLOUDY' || this.currentWeather === 'STORMY' || this.currentWeather === 'RAINY') {
+                starCount = Math.floor(Math.random() * 30); // Мало зірок, якщо хмарно
+            }
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 70}%`;
+                
+                const duration = 2 + Math.random() * 3;
+                star.style.setProperty('--duration', `${duration}s`);
+                
+                this.starsContainer.appendChild(star);
+                
+                // Плавна поява
+                setTimeout(() => {
+                    star.style.opacity = '1';
+                }, Math.random() * 2000);
+            }
+        }
     }
 
     startLightning() {

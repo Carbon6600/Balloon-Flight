@@ -92,7 +92,7 @@ let isUserSynced = false;
 const weatherManager = new WeatherManager();
 
 function updateWeather() {
-    const weathers = ['CLEAR', 'RAINY', 'STORMY', 'SNOWY', 'FOGGY'];
+    const weathers = ['CLEAR', 'CLOUDY', 'RAINY', 'STORMY', 'SNOWY', 'FOGGY', 'NIGHT'];
     const randomWeather = weathers[Math.floor(Math.random() * weathers.length)];
     weatherManager.setWeather(randomWeather);
 }
