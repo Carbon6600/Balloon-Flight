@@ -69,6 +69,7 @@ let gameState = {
     gameEnded: false,
     maxBalloons: 3,
     availableOperations: ['+'],
+    isFrozen: false,
     hintActive: false,
     hintAnswer: null,
     waitingForRematch: false,
@@ -543,11 +544,25 @@ function spawnBalloon() {
     const problem = generateMathProblem(gameState.level);
     
     const balloon = document.createElement('div');
-    balloon.className = 'balloon balloon-normal';
+    
+    const rand = Math.random();
+    let type = 'normal';
+    let typeClass = 'balloon-normal';
+    let content = problem.text;
+
+    if (rand < 0.1) {
+        type = 'bomb';
+        typeClass = 'balloon-bomb';
+    } else if (rand < 0.2) {
+        type = 'freeze';
+        typeClass = 'balloon-freeze';
+    }
+
+    balloon.className = `balloon ${typeClass}`;
     
     // Створюємо живу нитку
     balloon.innerHTML = `
-        <div class="balloon-body">${problem.text}</div>
+        <div class="balloon-body">${content}</div>
         <div class="balloon-string-container">
             <div class="balloon-string"></div>
             <div class="balloon-knot"></div>
@@ -565,6 +580,7 @@ function spawnBalloon() {
 
     gameState.balloons.push({
         element: balloon,
+        type: type,
         baseSpeed: gameState.baseSpeed + Math.random() * 0.2,
         currentSpeed: gameState.baseSpeed + Math.random() * 0.2,
         sway: (Math.random() - 0.5) * 3,
@@ -596,7 +612,7 @@ function updateBalloonPhysics() {
 }
 
 function moveBalloons() {
-    if (gameState.isPaused) return;
+    if (gameState.isPaused || gameState.isFrozen) return;
     
     gameState.balloons.forEach((b, index) => {
         let top = parseFloat(b.element.style.top) - b.currentSpeed;
@@ -660,8 +676,47 @@ function processAnswer(answer, btn = null) {
         if (btn) btn.classList.add('correct');
         audioManager.playPop();
         matches.forEach(b => {
-            // Різні типи кульок дають різні бонуси
-            if (b.element.classList.contains('balloon-golden')) {
+            // Різні типи кульок дають різні бонуси або штрафи
+            if (b.type === 'bomb') {
+                // Ефект ланцюгової реакції Бомби
+                const container = document.getElementById('game-container');
+                container.classList.add('screen-shake', 'screen-flash');
+                
+                let chainScore = 0;
+                
+                // Вибухаємо всіма кульками на екрані
+                gameState.balloons.forEach(balloon => {
+                    let points = 10;
+                    if (balloon.element.classList.contains('balloon-golden')) points = 25;
+                    if (balloon.element.classList.contains('balloon-heart')) points = 10;
+                    
+                    chainScore += points;
+                    balloon.element.classList.add('pop');
+                    
+                    // Видалення через короткий час
+                    setTimeout(() => {
+                        if (balloon.element.parentNode) balloon.element.remove();
+                    }, 300);
+                });
+
+                gameState.score += chainScore;
+                gameState.balloons = []; // Очищаємо список кульок
+                
+                audioManager.playPop();
+                showNotification('💥 МЕГА-ВИБУХ!', `Всі кульки лопнули! +${chainScore} очок`, 'success');
+                
+                setTimeout(() => {
+                    container.classList.remove('screen-shake', 'screen-flash');
+                }, 500);
+            } else if (b.type === 'freeze') {
+                gameState.isFrozen = true;
+                document.getElementById('game-container').classList.add('frozen-effect');
+                showNotification('Заморозка!', 'Час зупинився на 5 секунд', 'info');
+                setTimeout(() => {
+                    gameState.isFrozen = false;
+                    document.getElementById('game-container').classList.remove('frozen-effect');
+                }, 5000);
+            } else if (b.element.classList.contains('balloon-golden')) {
                 gameState.score += 25;
             } else if (b.element.classList.contains('balloon-heart')) {
                 gameState.lives = Math.min(gameState.lives + 1, 5);
