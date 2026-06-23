@@ -102,8 +102,8 @@ body.weather-foggy {
     display: none;
     position: fixed;
     right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 20px;
+    transform: none;
     background: linear-gradient(135deg, #667EEA, #5A67D8);
     color: white;
     width: 50px;
