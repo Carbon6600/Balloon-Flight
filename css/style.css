@@ -32,39 +32,59 @@ body {
     height: calc(var(--vh, 1vh) * 100);
     min-height: -webkit-fill-available;
     overflow: hidden;
+    touch-action: manipulation;
+}
+
+#weather-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -10;
+    overflow: hidden;
+}
+
+.weather-bg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity 2s ease-in-out;
     background-size: 400% 400%;
     animation: skyGradient 15s ease infinite;
-    touch-action: manipulation;
-    transition: background 2s ease-in-out;
 }
 
-body.weather-clear {
+.weather-bg-clear {
     background: linear-gradient(145deg, #87CEEB, #B0E0FF, #FFE4B5);
 }
-
-body.weather-cloudy {
+.weather-bg-cloudy {
     background: linear-gradient(145deg, #B0C4DE, #B0C4DE, #D3D3D3);
 }
-
-body.weather-rainy {
+.weather-bg-rainy {
     background: linear-gradient(145deg, #607D8B, #78909C, #B0BEC5);
 }
-
-body.weather-stormy {
+.weather-bg-stormy {
     background: linear-gradient(145deg, #37474F, #263238, #455A64);
 }
-
-body.weather-snowy {
+.weather-bg-snowy {
     background: linear-gradient(145deg, #E0F7FA, #F5F5F5, #E0F7FA);
 }
-
-body.weather-night {
+.weather-bg-night {
     background: linear-gradient(145deg, #1A237E, #0D47A1, #000051);
 }
-
-body.weather-foggy {
+.weather-bg-foggy {
     background: linear-gradient(145deg, #B0BEC5, #CFD8DC, #ECEFF1);
 }
+
+body.weather-clear {},
+body.weather-cloudy {},
+body.weather-rainy {},
+body.weather-stormy {},
+body.weather-snowy {},
+body.weather-night {},
+body.weather-foggy {}
 
 @keyframes skyGradient {
     0% { background-position: 0% 50%; }

@@ -3,56 +3,87 @@ export class WeatherManager {
         this.overlay = document.getElementById('weather-overlay');
         this.celestialBody = document.getElementById('sun');
         this.starsContainer = document.getElementById('stars-container');
-        this.currentWeather = 'CLEAR';
+        this.bgContainer = document.getElementById('weather-bg-container');
+        this.currentWeather = null;
         this.particles = [];
         this.particleInterval = null;
         this.flashInterval = null;
     }
 
     setWeather(type) {
+        if (this.currentWeather === type) return;
         console.log(`🌤️ Weather changing to: ${type}`);
-        this.clearWeather();
+        
+        const prevWeather = this.currentWeather;
         this.currentWeather = type;
 
+        // 1. Плавна зміна фону через шари
+        this.transitionBackground(prevWeather, type);
+
+        // 2. Оновлення класів body для інших елементів (хмари тощо)
         const weatherClass = `weather-${type.toLowerCase()}`;
-        
-        // Оновлюємо фон body
         document.body.className = '';
         document.body.classList.add(weatherClass);
 
-        // Додаємо відповідний клас до оверлею
-        if (type !== 'CLEAR') {
-            this.overlay.classList.add(`weather-${type.toLowerCase()}`);
+        // 3. Оновлення оверлею
+        if (this.overlay) {
+            this.overlay.className = '';
+            if (type !== 'CLEAR') {
+                this.overlay.classList.add(`weather-${type.toLowerCase()}`);
+            }
+        
         }
 
-        // Запускаємо генерацію частинок
+        // 4. Очищення попередніх ефектів та запуск нових
+        this.clearParticles();
+        
         if (type === 'RAINY' || type === 'STORMY') {
             this.startParticles('rain');
         } else if (type === 'SNOWY') {
             this.startParticles('snow');
         }
 
-        // Спеціальні ефекти для грози
         if (type === 'STORMY') {
             this.startLightning();
         }
     }
 
+    transitionBackground(oldType, newType) {
+        if (!this.bgContainer) return;
+
+        // Створюємо новий шар
+        const newLayer = document.createElement('div');
+        newLayer.className = `weather-bg-layer weather-bg-${newType.toLowerCase()}`;
+        newLayer.style.opacity = '0';
+        this.bgContainer.appendChild(newLayer);
+
+        // Запускаємо проявлення нового шару
+        requestAnimationFrame(() => {
+            newLayer.style.opacity = '1';
+        });
+
+        // Прибираємо старий шар
+        const oldLayer = oldType ? this.bgContainer.querySelector(`.weather-bg-${oldType.toLowerCase()}`) : null;
+        if (oldLayer) {
+            oldLayer.style.opacity = '0';
+            setTimeout(() => oldLayer.remove(), 2000);
+        }
+    }
+
     clearWeather() {
-        this.currentWeather = 'CLEAR';
-        this.overlay.className = '';
-        document.body.className = '';
-        document.body.classList.add('weather-clear');
+        this.setWeather('CLEAR');
+        this.clearParticles();
         
-        // Видаляємо зорі
         if (this.starsContainer) {
             this.starsContainer.innerHTML = '';
         }
-        
-        // Видаляємо всі частинки
-        this.particles.forEach(p => p.remove());
-        this.particles = [];
-        
+    }
+
+    clearParticles() {
+        if (this.particles) {
+            this.particles.forEach(p => p.remove());
+            this.particles = [];
+        }
         clearInterval(this.particleInterval);
         clearInterval(this.flashInterval);
     }
