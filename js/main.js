@@ -1291,6 +1291,7 @@ async function startMultiplayerGame() {
     gameState.isMultiplayer = true;
     gameState.score = 0;
     gameState.lives = 3;
+    gameState.level = 1;
     gameState.balloons = [];
     gameState.gameEnded = false;
     gameState.opponentFinished = false;
