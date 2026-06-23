@@ -1,0 +1,156 @@
+.animal-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    pointer-events: none;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.giraffe {
+    position: absolute;
+    bottom: 20px;
+    width: 80px;
+    height: 120px;
+    transition: transform 0.5s ease, left 0.1s linear;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* Тіло - овал */
+.giraffe-body {
+    position: absolute;
+    bottom: 30px;
+    left: 15px;
+    width: 50px;
+    height: 30px;
+    background-color: #f4d03f;
+    border: 2px solid #b7950b;
+    border-radius: 20px;
+    z-index: 2;
+    background-image: radial-gradient(#b7950b 20%, transparent 20%);
+    background-size: 12px 12px;
+}
+
+/* Шия - довга і тонка */
+.giraffe-neck {
+    position: absolute;
+    bottom: 50px;
+    left: 55px;
+    width: 12px;
+    height: 60px;
+    background-color: #f4d03f;
+    border: 2px solid #b7950b;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    z-index: 1;
+    transform-origin: bottom center;
+    transition: transform 0.3s ease;
+    background-image: radial-gradient(#b7950b 20%, transparent 20%);
+    background-size: 8px 8px;
+}
+
+/* Голова */
+.giraffe-head {
+    position: absolute;
+    top: -15px;
+    left: -6px;
+    width: 24px;
+    height: 18px;
+    background-color: #f4d03f;
+    border: 2px solid #b7950b;
+    border-radius: 10px 10px 5px 5px;
+}
+
+.giraffe-eye {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 50%;
+    top: 5px;
+}
+
+.eye-l { left: 4px; }
+.eye-r { right: 4px; }
+
+.giraffe-mouth {
+    position: absolute;
+    bottom: 3px;
+    left: 8px;
+    width: 8px;
+    height: 2px;
+    border-bottom: 1px solid #b7950b;
+    border-radius: 50%;
+}
+
+/* Рожки (оссикони) */
+.giraffe-head::before, .giraffe-head::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    width: 3px;
+    height: 8px;
+    background-color: #b7950b;
+    border-radius: 2px;
+}
+.giraffe-head::before { left: 5px; }
+.giraffe-head::after { right: 5px; }
+
+/* Ноги */
+.giraffe-legs {
+    position: absolute;
+    bottom: 0;
+    left: 15px;
+    width: 50px;
+    height: 30px;
+    z-index: 1;
+}
+
+.leg {
+    position: absolute;
+    width: 6px;
+    height: 30px;
+    background-color: #f4d03f;
+    border: 2px solid #b7950b;
+    bottom: 0;
+}
+
+.leg:nth-child(1) { left: 5px; }
+.leg:nth-child(2) { left: 15px; }
+.leg:nth-child(3) { left: 30px; }
+.leg:nth-child(4) { left: 40px; }
+
+/* Анімації */
+@keyframes walk-body {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes leg-swing {
+    0%, 100% { transform: rotate(-15deg); }
+    50% { transform: rotate(15deg); }
+}
+
+.walking .giraffe-body {
+    animation: walk-body 0.6s infinite ease-in-out;
+}
+
+.walking .leg {
+    animation: leg-swing 0.6s infinite ease-in-out;
+    transform-origin: top center;
+}
+
+.walking .leg:nth-child(even) {
+    animation-delay: 0.3s;
+}
+
+.looking-left .giraffe-neck {
+    transform: rotate(-20deg);
+}
+
+.looking-right .giraffe-neck {
+    transform: rotate(20deg);
+}

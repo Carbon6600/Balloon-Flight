@@ -28,54 +28,54 @@ let currentGrassWeather = 'CLEAR';
 const GRASS_STYLES = {
     'CLEAR': {
         layers: [
-            { color: '#2D4A2D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 },
-            { color: '#3B5B32', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 },
-            { color: '#5A8A5A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 },
+            { color: '#3E6B3E', heightRange: [12, 25], count: 45, scale: 0.6, opacity: 0.7 },
+            { color: '#5B8B52', heightRange: [18, 35], count: 65, scale: 0.8, opacity: 0.9 },
+            { color: '#8BBE6B', heightRange: [25, 50], count: 55, scale: 1.0, opacity: 1.0 },
         ],
         seedChance: 0.2,
         windStrength: 5
     },
     'CLOUDY': {
         layers: [
-            { color: '#3D5A3D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 },
-            { color: '#4B6B42', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 },
-            { color: '#6A8A6A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 },
+            { color: '#4E7B4E', heightRange: [12, 25], count: 45, scale: 0.6, opacity: 0.7 },
+            { color: '#6B9B62', heightRange: [18, 35], count: 65, scale: 0.8, opacity: 0.9 },
+            { color: '#9BBE8B', heightRange: [25, 50], count: 55, scale: 1.0, opacity: 1.0 },
         ],
         seedChance: 0.4,
         windStrength: 7
     },
     'RAINY': {
         layers: [
-            { color: '#1D3A1D', heightRange: [8, 15], count: 50, scale: 0.6, opacity: 0.7 },
-            { color: '#2B4B22', heightRange: [12, 25], count: 70, scale: 0.8, opacity: 0.9 },
-            { color: '#3A5A3A', heightRange: [15, 35], count: 60, scale: 1.0, opacity: 1.0 },
+            { color: '#2D4A2D', heightRange: [10, 20], count: 50, scale: 0.6, opacity: 0.7 },
+            { color: '#3B5B32', heightRange: [15, 30], count: 70, scale: 0.8, opacity: 0.9 },
+            { color: '#4A6B4A', heightRange: [20, 40], count: 60, scale: 1.0, opacity: 1.0 },
         ],
         seedChance: 0,
         windStrength: 10
     },
     'STORMY': {
         layers: [
-            { color: '#0D2A0D', heightRange: [5, 15], count: 30, scale: 0.6, opacity: 0.7 },
-            { color: '#1B3B12', heightRange: [10, 20], count: 40, scale: 0.8, opacity: 0.9 },
-            { color: '#2A4A2A', heightRange: [15, 30], count: 40, scale: 1.0, opacity: 1.0 },
+            { color: '#1D3A1D', heightRange: [8, 15], count: 30, scale: 0.6, opacity: 0.7 },
+            { color: '#2B4B22', heightRange: [12, 25], count: 40, scale: 0.8, opacity: 0.9 },
+            { color: '#3A5A3A', heightRange: [15, 30], count: 40, scale: 1.0, opacity: 1.0 },
         ],
         seedChance: 0,
         windStrength: 25
     },
     'SNOWY': {
         layers: [
-            { color: '#A0B0A0', heightRange: [5, 10], count: 30, scale: 0.6, opacity: 0.7 },
-            { color: '#B0C0B0', heightRange: [8, 15], count: 40, scale: 0.8, opacity: 0.9 },
-            { color: '#C0D0C0', heightRange: [10, 20], count: 30, scale: 1.0, opacity: 1.0 },
+            { color: '#B0C0B0', heightRange: [5, 12], count: 30, scale: 0.6, opacity: 0.7 },
+            { color: '#C0D0C0', heightRange: [8, 18], count: 40, scale: 0.8, opacity: 0.9 },
+            { color: '#D0E0D0', heightRange: [12, 25], count: 30, scale: 1.0, opacity: 1.0 },
         ],
         seedChance: 0,
         windStrength: 3
     },
     'NIGHT': {
         layers: [
-            { color: '#0D1A0D', heightRange: [10, 20], count: 40, scale: 0.6, opacity: 0.7 },
-            { color: '#1B2B12', heightRange: [15, 30], count: 60, scale: 0.8, opacity: 0.9 },
-            { color: '#2A3A2A', heightRange: [20, 45], count: 50, scale: 1.0, opacity: 1.0 },
+            { color: '#1D2B1D', heightRange: [12, 25], count: 40, scale: 0.6, opacity: 0.7 },
+            { color: '#2B3B22', heightRange: [18, 35], count: 60, scale: 0.8, opacity: 0.9 },
+            { color: '#3A4A3A', heightRange: [25, 50], count: 50, scale: 1.0, opacity: 1.0 },
         ],
         seedChance: 0,
         windStrength: 4
@@ -134,7 +134,7 @@ function initGrass() {
                     offsetX: (Math.random() - 0.5) * 10 * layer.scale * sizeScale,
                     height: (layer.heightRange[0] + Math.random() * (layer.heightRange[1] - layer.heightRange[0])) * sizeScale,
                     lean: (Math.random() - 0.5) * 10 * sizeScale,
-                    width: (2 + Math.random() * 2) * sizeScale,
+                    width: (3 + Math.random() * 3) * sizeScale,
                     phase: Math.random() * Math.PI * 2,
                     hasSeed: Math.random() < style.seedChance
                 });
@@ -153,8 +153,17 @@ function drawBlade(ctx, x, y, blade, time, color) {
 
     ctx.beginPath();
     ctx.moveTo(x - baseW / 2, y);
-    ctx.quadraticCurveTo(x - baseW, y - blade.height / 2, tipX, tipY);
-    ctx.quadraticCurveTo(x + baseW, y - blade.height / 2, x + baseW / 2, y);
+    // Creating a more rounded, organic shape using bezier curves
+    ctx.bezierCurveTo(
+        x - baseW * 2, y - blade.height * 0.4,
+        tipX - baseW, tipY,
+        tipX, tipY
+    );
+    ctx.bezierCurveTo(
+        tipX + baseW, tipY,
+        x + baseW * 2, y - blade.height * 0.4,
+        x + baseW / 2, y
+    );
     ctx.closePath();
     ctx.fill();
 

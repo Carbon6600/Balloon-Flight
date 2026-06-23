@@ -146,6 +146,10 @@ window.onload = () => {
     // Встановлюємо початкову погоду та запускаємо цикл зміни
     updateWeather();
     setInterval(updateWeather, 180000); // Зміна погоди кожні 3 хвилини
+
+    // Ініціалізуємо стаю жирафів
+    const giraffeHerd = new window.GiraffeHerd(3);
+    giraffeHerd.start();
 };
 
 
