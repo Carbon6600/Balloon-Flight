@@ -462,6 +462,23 @@ body.weather-foggy {}
     overflow: hidden;
 }
 
+.answer-btn.correct {
+    background: linear-gradient(135deg, #48BB78, #38A169) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(72, 187, 120, 0.6);
+}
+
+.answer-btn.incorrect {
+    background: linear-gradient(135deg, #F56565, #E53E3E) !important;
+    animation: shake 0.2s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
 .answer-btn.hint {
     background: linear-gradient(135deg, #48BB78, #38A169);
     animation: hintPulse 1s infinite;

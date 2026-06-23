@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { initLivingWorld } from './environment.js';
 import { WeatherManager } from './weather.js';
+import { AudioManager } from './audio.js';
 import { 
     getDatabase, 
     ref, 
@@ -91,6 +92,7 @@ let currentTab = 'all';
 let isUserSynced = false;
 
 const weatherManager = new WeatherManager();
+const audioManager = new AudioManager();
 
 function updateWeather() {
     const weathers = ['CLEAR', 'CLOUDY', 'RAINY', 'STORMY', 'SNOWY', 'FOGGY', 'NIGHT'];
@@ -126,6 +128,11 @@ window.onload = () => {
     } else {
         playerName = localStorage.getItem('mathBalloonPlayer');
     }
+    
+    // Ініціалізація звуку при першій взаємодії (через клік по вікну)
+    window.addEventListener('click', () => {
+        audioManager.init();
+    }, { once: true });
     
     setupKeyboardControls();
     
@@ -411,6 +418,7 @@ async function savePlayerName() {
         document.getElementById('name-modal').style.display = 'none';
         showNotification('Вітаємо!', `Приємної гри, ${playerName}!`, 'success');
         await syncUserWithLeaderboard();
+        audioManager.playClick();
     }
 }
 
@@ -461,6 +469,10 @@ function submitTypedAnswer() {
 }
 
 async function startGame() {
+    audioManager.init();
+    audioManager.playClick();
+    audioManager.startMusic();
+
     // Очищаємо попередній запис якщо є
     await clearCurrentLeaderboardEntry();
     
@@ -636,15 +648,17 @@ function updateAnswerButtons() {
 
 function checkAnswer(btn) {
     if (!gameState.isRunning || gameState.isPaused) return;
-    processAnswer(parseInt(btn.dataset.answer));
+    processAnswer(parseInt(btn.dataset.answer), btn);
 }
 
-function processAnswer(answer) {
-    const matches = gameState.balloons.filter(b => 
+function processAnswer(answer, btn = null) {
+    const matches = gameState.balloons.filter(b =>
         parseInt(b.element.dataset.answer) === answer
     );
 
     if (matches.length > 0) {
+        if (btn) btn.classList.add('correct');
+        audioManager.playPop();
         matches.forEach(b => {
             // Різні типи кульок дають різні бонуси
             if (b.element.classList.contains('balloon-golden')) {
@@ -679,6 +693,8 @@ function processAnswer(answer) {
         // Зберігаємо в таблицю лідерів одразу при зміні рахунку
         saveToLeaderboardRealtime();
     } else {
+        if (btn) btn.classList.add('incorrect');
+        audioManager.playError();
         gameState.score = Math.max(0, gameState.score - 2);
     }
 
@@ -686,11 +702,18 @@ function processAnswer(answer) {
     gameState.hintActive = false;
     gameState.hintAnswer = null;
     
-    updateDisplay();
-    updateAnswerButtons();
+    setTimeout(() => {
+        if (btn) {
+            btn.classList.remove('correct');
+            btn.classList.remove('incorrect');
+        }
+        updateDisplay();
+        updateAnswerButtons();
+    }, 300);
 }
 
 function levelUp() {
+    audioManager.playLevelUp();
     gameState.level++;
     gameState.heartsCollected = 0;
     gameState.spawnInterval = Math.max(2000, gameState.spawnInterval - 300);
@@ -901,6 +924,7 @@ function updateDisplay() {
 
 // ==================== МУЛЬТИПЛЕЄР ====================
 function openMultiplayerMenu() {
+    audioManager.playClick();
     if (!isFirebaseConnected) {
         showNotification('Помилка', 'Немає підключення до Firebase', 'error');
         return;
@@ -1293,6 +1317,7 @@ async function updateMyLives() {
 }
 
 async function requestRematch() {
+    audioManager.playClick();
     if (!roomRef) return;
     
     // Показуємо що ми чекаємо на реванш
@@ -1346,6 +1371,7 @@ async function requestRematch() {
 }
 
 async function closeWinnerAndLeave() {
+    audioManager.playClick();
     document.getElementById('winner-announcement').style.display = 'none';
     
     // Фіналізуємо запис перед виходом
