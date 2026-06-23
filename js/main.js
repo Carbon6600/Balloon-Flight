@@ -736,7 +736,7 @@ function processAnswer(answer, btn = null) {
             parseInt(b.element.dataset.answer) !== answer
         );
 
-        if (!gameState.isMultiplayer && gameState.score >= gameState.level * 30) {
+        if (gameState.score >= gameState.level * 30) {
             levelUp();
         }
         
