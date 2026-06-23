@@ -67,6 +67,7 @@ let gameState = {
     gameStarted: false,
     gameEnded: false,
     maxBalloons: 3,
+    availableOperations: ['+'],
     hintActive: false,
     hintAnswer: null,
     waitingForRematch: false,
@@ -488,19 +489,53 @@ async function startGame() {
     showNotification('Старт!', 'Лови кульки! Результати зберігаються автоматично 💾', 'success');
 }
 
+function generateMathProblem(level) {
+    const ops = [];
+    if (level >= 1) ops.push('+');
+    if (level >= 3) ops.push('-');
+    if (level >= 5) ops.push('*');
+    if (level >= 7) ops.push('/');
+
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let num1, num2, answer;
+
+    switch (op) {
+        case '+':
+            num1 = Math.floor(Math.random() * 10) + 1;
+            num2 = Math.floor(Math.random() * 10) + 1;
+            answer = num1 + num2;
+            break;
+        case '-':
+            num2 = Math.floor(Math.random() * 10) + 1;
+            num1 = num2 + Math.floor(Math.random() * 10) + 1;
+            answer = num1 - num2;
+            break;
+        case '*':
+            num1 = Math.floor(Math.random() * 10) + 1;
+            num2 = Math.floor(Math.random() * 5) + 1;
+            answer = num1 * num2;
+            break;
+        case '/':
+            num2 = Math.floor(Math.random() * 9) + 1;
+            answer = Math.floor(Math.random() * 10) + 1;
+            num1 = num2 * answer;
+            break;
+    }
+
+    return { text: `${num1}${op === '*' ? '×' : op === '/' ? '÷' : op}${num2}`, answer };
+}
+
 function spawnBalloon() {
     if (gameState.balloons.length >= gameState.maxBalloons) return;
     
-    const num1 = Math.floor(Math.random() * 8) + 1;
-    const num2 = Math.floor(Math.random() * 8) + 1;
-    const answer = num1 + num2;
+    const problem = generateMathProblem(gameState.level);
     
     const balloon = document.createElement('div');
     balloon.className = 'balloon balloon-normal';
     
     // Створюємо живу нитку
     balloon.innerHTML = `
-        <div class="balloon-body">${num1}+${num2}</div>
+        <div class="balloon-body">${problem.text}</div>
         <div class="balloon-string-container">
             <div class="balloon-string"></div>
             <div class="balloon-knot"></div>
@@ -512,7 +547,7 @@ function spawnBalloon() {
     
     balloon.style.left = leftPos + 'px';
     balloon.style.top = (container.offsetHeight - 80) + 'px';
-    balloon.dataset.answer = answer;
+    balloon.dataset.answer = problem.answer;
 
     container.appendChild(balloon);
 
