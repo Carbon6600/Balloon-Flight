@@ -667,6 +667,36 @@ function checkAnswer(btn) {
     processAnswer(parseInt(btn.dataset.answer), btn);
 }
 
+function createParticles(x, y, color) {
+    const container = document.getElementById('game-container');
+    for (let i = 0; i < 12; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        
+        const size = Math.random() * 6 + 4;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.backgroundColor = color;
+        
+        p.style.left = `${x}px`;
+        p.style.top = `${y}px`;
+        
+        container.appendChild(p);
+        
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 80 + 40;
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+        
+        setTimeout(() => {
+            p.style.transform = `translate(${tx}px, ${ty}px)`;
+            p.style.opacity = '0';
+        }, 10);
+        
+        setTimeout(() => p.remove(), 600);
+    }
+}
+
 function processAnswer(answer, btn = null) {
     const matches = gameState.balloons.filter(b =>
         parseInt(b.element.dataset.answer) === answer
@@ -676,6 +706,19 @@ function processAnswer(answer, btn = null) {
         if (btn) btn.classList.add('correct');
         audioManager.playPop();
         matches.forEach(b => {
+            const rect = b.element.getBoundingClientRect();
+            const gameRect = document.getElementById('game-container').getBoundingClientRect();
+            const x = rect.left - gameRect.left + rect.width / 2;
+            const y = rect.top - gameRect.top + rect.height / 2;
+            
+            let color = '#667EEA'; // Default blue
+            if (b.element.classList.contains('balloon-golden')) color = '#FFD700';
+            if (b.element.classList.contains('balloon-heart')) color = '#FF7B89';
+            if (b.type === 'bomb') color = '#4A5568';
+            if (b.type === 'freeze') color = '#BEE3F8';
+            
+            createParticles(x, y, color);
+
             // Різні типи кульок дають різні бонуси або штрафи
             if (b.type === 'bomb') {
                 // Ефект ланцюгової реакції Бомби
@@ -736,7 +779,7 @@ function processAnswer(answer, btn = null) {
             parseInt(b.element.dataset.answer) !== answer
         );
 
-        if (gameState.score >= gameState.level * 30) {
+        while (gameState.score >= gameState.level * 30) {
             levelUp();
         }
         
@@ -767,12 +810,33 @@ function processAnswer(answer, btn = null) {
     }, 300);
 }
 
+function updateEnvironment() {
+    const bgLayer = document.querySelector('.weather-bg-layer');
+    if (bgLayer) {
+        const speed = Math.max(5, 15 - (gameState.level * 0.5));
+        bgLayer.style.setProperty('--bg-speed', `${speed}s`);
+    }
+    
+    let aura = document.getElementById('level-aura');
+    if (!aura) {
+        aura = document.createElement('div');
+        aura.id = 'level-aura';
+        aura.className = 'level-aura';
+        document.getElementById('game-container').appendChild(aura);
+    }
+    
+    const intensity = Math.min(0.5, 0.1 + (gameState.level * 0.02));
+    aura.style.boxShadow = `inset 0 0 100px rgba(255, 215, 0, ${intensity})`;
+}
+
 function levelUp() {
     audioManager.playLevelUp();
     gameState.level++;
     gameState.heartsCollected = 0;
     gameState.spawnInterval = Math.max(2000, gameState.spawnInterval - 300);
     gameState.baseSpeed += 0.1;
+    
+    updateEnvironment();
     
     clearInterval(intervals.spawn);
     intervals.spawn = setInterval(spawnBalloon, gameState.spawnInterval);
